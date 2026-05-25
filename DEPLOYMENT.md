@@ -22,10 +22,18 @@ Do not commit `backend/.env` or `backend/credentials.json`. They are ignored by 
 
 ## 2. Create the Earth Engine secret
 
-Convert the local service account JSON into a single-line base64 value:
+Convert the local service account JSON into a single-line base64 value.
+
+If you are in the project root `land_cover`, run:
 
 ```powershell
 [Convert]::ToBase64String([IO.File]::ReadAllBytes("backend\credentials.json")) | Set-Clipboard
+```
+
+If you are already inside the `backend` folder, run:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes(".\credentials.json")) | Set-Clipboard
 ```
 
 Paste that clipboard value into the hosting platform as:

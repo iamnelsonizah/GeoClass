@@ -720,19 +720,33 @@ export default function Home() {
 
   // Check GEE Connection on mount
   useEffect(() => {
+    let isMounted = true;
+
     fetch(`${API_BASE}/api/status`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Backend status check failed with ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
+        if (!isMounted) return;
         setGeeConnected(data.gee_connected);
         if (!data.gee_connected) {
-          setErrorMessage("Earth Engine API is not initialized. Please ensure backend/credentials.json is configured.");
+          setErrorMessage("Earth Engine API is not initialized. Please verify the backend Earth Engine environment variables.");
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        if (!isMounted) return;
+        console.error("Backend status check failed:", error);
         setGeeConnected(false);
-        setErrorMessage("Cannot connect to the backend server. Please verify FastAPI is running on port 8000.");
+        setErrorMessage(`Cannot connect to the backend at ${API_BASE}. Check the backend URL and CORS FRONTEND_ORIGINS setting.`);
       });
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [API_BASE]);
 
   // Handle Drawn AOI Polygon
   const handleAOIDrawn = useCallback((drawnCoords: number[][]) => {
