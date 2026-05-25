@@ -1,0 +1,26 @@
+# Environment and credentials
+.env
+.env.*
+!.env.example
+credentials.json
+backend/credentials.json
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local tooling artifacts
+.chrome-profile/
+*.log
+
+# Generated local screenshots and exports
+frontend/land-cover-*.png
+*.tif
+*.tiff
