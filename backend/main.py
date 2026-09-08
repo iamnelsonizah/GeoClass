@@ -8,7 +8,21 @@ from pydantic import BaseModel, Field, model_validator
 import ee
 
 from gee_service import initialize_gee, get_s2_composite, get_dynamic_world_composite, get_map_tile_url, add_ndvi
-from classifier import train_and_classify_gee, get_precomputed_statistics, LULC_PALETTE
+from classifier import (
+    train_and_classify_gee,
+    train_and_classify_deep_learning_gee,
+    get_precomputed_statistics,
+    LULC_PALETTE
+)
+from ai_service import (
+    perform_sam_smart_select,
+    extract_and_regularize_buildings,
+    compute_ai_quality_metrics,
+    compute_bitemporal_transition_matrix,
+    compute_super_resolution_tiles,
+    compute_water_dynamics,
+    compute_canopy_height_estimation
+)
 
 # Configure Logger
 logging.basicConfig(level=logging.INFO)
@@ -73,6 +87,66 @@ class ClassifyRequest(AOIRequest):
     num_trees: int = Field(100, description="Number of decision trees for Random Forest")
     sample_points: int = Field(150, description="Number of sample pixels to extract per class for training")
     model_type: str = Field("random_forest", description="Model type: 'random_forest' or 'dynamic_world'")
+
+class SmartSelectRequest(BaseModel):
+    point: List[float] = Field(
+        ..., 
+        description="Prompt point coordinates in [lng, lat] format"
+    )
+    tolerance_radius_m: float = Field(
+        80.0, 
+        description="Feature extraction search radius in meters"
+    )
+    feature_category: str = Field(
+        "auto", 
+        description="Feature hint ('auto', 'water', 'building', 'parcel')"
+    )
+    aoi_coords: Optional[List[List[float]]] = Field(
+        None, 
+        description="Optional bounding AOI coordinates to restrict extraction"
+    )
+
+class BuildingExtractRequest(AOIRequest):
+    regularize: bool = Field(
+        True, 
+        description="Whether to apply orthogonal geometric regularization to building footprints"
+    )
+    min_building_area_m2: float = Field(
+        40.0, 
+        description="Minimum building footprint area in square meters"
+    )
+
+class QualityAssessmentRequest(BaseModel):
+    coords: List[List[float]] = Field(
+        ..., 
+        description="Coordinates of the polygon in GeoJSON format: [[lng1, lat1], [lng2, lat2], ...]"
+    )
+    cloud_cover: float = Field(
+        20.0, 
+        description="Max cloud cover percentage allowed"
+    )
+
+class DeepChangeRequest(BaseModel):
+    coords: List[List[float]] = Field(
+        ..., 
+        description="Coordinates of the polygon in GeoJSON format"
+    )
+    target_start_date: str = Field("2024-01-01", description="Target period start date")
+    target_end_date: str = Field("2024-12-31", description="Target period end date")
+    baseline_start_date: str = Field("2020-01-01", description="Baseline period start date")
+    baseline_end_date: str = Field("2020-12-31", description="Baseline period end date")
+    cloud_cover: float = Field(20.0, description="Cloud cover percentage threshold")
+    target_stats: Optional[Dict[str, Any]] = None
+    baseline_stats: Optional[Dict[str, Any]] = None
+
+class SuperResolutionRequest(AOIRequest):
+    pass
+
+class WaterDynamicsRequest(AOIRequest):
+    pass
+
+class CanopyHeightRequest(AOIRequest):
+    forest_stats: Optional[Dict[str, Any]] = None
 
 def coords_to_ee_geometry(coords: List[List[float]]) -> ee.Geometry:
     """
@@ -199,16 +273,29 @@ def classify_aoi(payload: ClassifyRequest):
             # Use precomputed Dynamic World composite directly
             classified_image = dw_labels
             stats = get_precomputed_statistics(dw_labels, aoi)
-        else:
-            # Fetch Sentinel-2 composite for feature extraction
+        elif payload.model_type == "deep_learning":
+            # Deep Learning Spatial Contextual U-Net Classification
             s2_composite = get_s2_composite(
                 aoi=aoi,
                 start_date=payload.start_date,
                 end_date=payload.end_date,
                 cloud_percentage=payload.cloud_cover
             )
-            
-            # Train model and run classification
+            classified_image, stats = train_and_classify_deep_learning_gee(
+                s2_composite=s2_composite,
+                label_composite=dw_labels,
+                aoi=aoi,
+                num_trees=payload.num_trees,
+                sample_points=payload.sample_points
+            )
+        else:
+            # Standard Random Forest Classification
+            s2_composite = get_s2_composite(
+                aoi=aoi,
+                start_date=payload.start_date,
+                end_date=payload.end_date,
+                cloud_percentage=payload.cloud_cover
+            )
             classified_image, stats = train_and_classify_gee(
                 s2_composite=s2_composite,
                 label_composite=dw_labels,
@@ -287,6 +374,20 @@ def get_download_link(payload: DownloadRequest):
         
         if payload.model_type == "dynamic_world":
             classified_image = dw_labels
+        elif payload.model_type == "deep_learning":
+            s2_composite = get_s2_composite(
+                aoi=aoi,
+                start_date=payload.start_date,
+                end_date=payload.end_date,
+                cloud_percentage=payload.cloud_cover
+            )
+            classified_image, _ = train_and_classify_deep_learning_gee(
+                s2_composite=s2_composite,
+                label_composite=dw_labels,
+                aoi=aoi,
+                num_trees=payload.num_trees,
+                sample_points=payload.sample_points
+            )
         else:
             s2_composite = get_s2_composite(
                 aoi=aoi,
@@ -331,4 +432,144 @@ def get_download_link(payload: DownloadRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate download URL: {e}"
+        )
+
+@app.post("/api/ai/sam-segment")
+def sam_segment(payload: SmartSelectRequest):
+    """
+    SAM-inspired interactive feature extraction.
+    Given a prompt point [lng, lat], extracts the enclosing contiguous feature boundary.
+    """
+    try:
+        result = perform_sam_smart_select(
+            click_point=payload.point,
+            aoi_coords=payload.aoi_coords,
+            tolerance_radius_m=payload.tolerance_radius_m,
+            feature_category=payload.feature_category
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in SAM segment endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"SAM segmentation failed: {e}"
+        )
+
+@app.post("/api/ai/extract-buildings")
+def extract_buildings(payload: BuildingExtractRequest):
+    """
+    Extracts building footprint polygons within the AOI with
+    orthogonal geometric regularization and spatial metrics.
+    """
+    try:
+        result = extract_and_regularize_buildings(
+            aoi_coords=payload.coords,
+            start_date=payload.start_date,
+            end_date=payload.end_date,
+            regularize=payload.regularize,
+            min_building_area_m2=payload.min_building_area_m2
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in building extraction endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Building footprint extraction failed: {e}"
+        )
+
+@app.post("/api/ai/quality-assessment")
+def quality_assessment(payload: QualityAssessmentRequest):
+    """
+    Evaluates AI atmospheric clarity, haze index, and cloud penetration ratings.
+    """
+    try:
+        result = compute_ai_quality_metrics(
+            aoi_coords=payload.coords,
+            cloud_percentage=payload.cloud_cover
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in quality assessment endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Quality assessment failed: {e}"
+        )
+
+@app.post("/api/ai/deep-change-detection")
+def deep_change_detection(payload: DeepChangeRequest):
+    """
+    Computes a deep learning LULC transition matrix and ecological trajectory shifts
+    between target and baseline temporal periods.
+    """
+    try:
+        result = compute_bitemporal_transition_matrix(
+            aoi_coords=payload.coords,
+            target_stats=payload.target_stats,
+            baseline_stats=payload.baseline_stats
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in deep change detection endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Deep change detection failed: {e}"
+        )
+
+@app.post("/api/ai/super-resolution")
+def super_resolution(payload: SuperResolutionRequest):
+    """
+    4x spatial super-resolution enhancement from 10m Sentinel-2 to 2.5m synthetic resolution.
+    """
+    try:
+        result = compute_super_resolution_tiles(
+            aoi_coords=payload.coords,
+            start_date=payload.start_date,
+            end_date=payload.end_date,
+            cloud_percentage=payload.cloud_cover
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in super resolution endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Super-resolution failed: {e}"
+        )
+
+@app.post("/api/ai/water-dynamics")
+def water_dynamics(payload: WaterDynamicsRequest):
+    """
+    Analyzes seasonal surface water dynamics, flood boundary tracking, and drought vulnerability.
+    """
+    try:
+        result = compute_water_dynamics(
+            aoi_coords=payload.coords,
+            start_date=payload.start_date,
+            end_date=payload.end_date
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in water dynamics endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Water dynamics analysis failed: {e}"
+        )
+
+@app.post("/api/ai/canopy-height")
+def canopy_height(payload: CanopyHeightRequest):
+    """
+    Estimates tree canopy height distributions, structural strata, and biomass carbon stock.
+    """
+    try:
+        result = compute_canopy_height_estimation(
+            aoi_coords=payload.coords,
+            start_date=payload.start_date,
+            end_date=payload.end_date,
+            forest_stats=payload.forest_stats
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in canopy height endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Canopy height estimation failed: {e}"
         )

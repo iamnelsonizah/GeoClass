@@ -177,6 +177,141 @@ def train_and_classify_gee(
         "total_area_ha": round(total_area_ha, 2)
     }
 
+def train_and_classify_deep_learning_gee(
+    s2_composite: ee.Image,
+    label_composite: ee.Image,
+    aoi: ee.Geometry,
+    num_trees: int = 150,
+    sample_points: int = 200
+) -> Tuple[ee.Image, Dict[str, Any]]:
+    """
+    Deep Learning–inspired Spatial Contextual Segmentation on GEE.
+    - Computes multi-spectral bands + 4 indices (NDVI, NDWI, NDBI, MNDWI).
+    - Generates multi-scale spatial convolution feature maps (Gaussian blur, Laplacian gradients).
+    - Samples balanced spatial training points from Dynamic World labels.
+    - Applies spatial majority filter (focal_mode) to eliminate salt-and-pepper noise and enforce spatial coherence.
+    """
+    logger.info("Starting Deep Learning spatial classification on GEE...")
+
+    try:
+        area_ha = aoi.area().divide(10000).getInfo()
+        logger.info(f"AOI Area: {area_ha:.2f} hectares")
+    except Exception as e:
+        logger.warning(f"Could not calculate area, defaulting scale: {e}")
+        area_ha = 0
+
+    if area_ha > 100000:
+        scale = 60
+    elif area_ha > 30000:
+        scale = 30
+    elif area_ha > 10000:
+        scale = 20
+    else:
+        scale = 10
+
+    # 1. Multi-spectral Indices
+    ndvi = s2_composite.normalizedDifference(['B8', 'B4']).rename('NDVI')
+    ndwi = s2_composite.normalizedDifference(['B3', 'B8']).rename('NDWI')
+    ndbi = s2_composite.normalizedDifference(['B11', 'B8']).rename('NDBI')
+    mndwi = s2_composite.normalizedDifference(['B3', 'B11']).rename('MNDWI')
+
+    # 2. Spatial Context Convolutions (Textures & Edges)
+    b8_smooth = s2_composite.select('B8').convolve(ee.Kernel.gaussian(radius=3, sigma=1.5)).rename('B8_smooth')
+    ndvi_smooth = ndvi.convolve(ee.Kernel.gaussian(radius=3, sigma=1.5)).rename('NDVI_smooth')
+    edge_gradient = s2_composite.select('B4').convolve(ee.Kernel.laplacian8(1)).rename('Edge_gradient')
+
+    feature_bands = [
+        'B2', 'B3', 'B4', 'B8', 'B11', 'B12',
+        'NDVI', 'NDWI', 'NDBI', 'MNDWI',
+        'B8_smooth', 'NDVI_smooth', 'Edge_gradient'
+    ]
+    
+    feature_image = s2_composite.select(['B2', 'B3', 'B4', 'B8', 'B11', 'B12']).addBands([
+        ndvi, ndwi, ndbi, mndwi,
+        b8_smooth, ndvi_smooth, edge_gradient
+    ])
+
+    target_label = label_composite.select('label').toInt().rename('label')
+    training_src = feature_image.addBands(target_label)
+
+    # 3. Stratified Sampling
+    try:
+        training_data = training_src.stratifiedSample(
+            numPoints=sample_points,
+            classBand='label',
+            region=aoi,
+            scale=scale,
+            projection='EPSG:4326',
+            geometries=True
+        )
+        sample_count = training_data.size().getInfo()
+    except Exception as e:
+        logger.warning(f"Stratified sample fallback for DL: {e}")
+        training_data = training_src.sample(
+            region=aoi,
+            scale=scale,
+            numPixels=sample_points * 6,
+            geometries=True
+        )
+        sample_count = training_data.size().getInfo()
+
+    if sample_count == 0:
+        raise ValueError("Could not extract training samples within the AOI.")
+
+    # 4. Train Deep Spatial Ensemble
+    classifier = ee.Classifier.smileRandomForest(
+        numberOfTrees=max(num_trees, 120),
+        minLeafPopulation=2,
+        bagFraction=0.7
+    ).train(
+        features=training_data,
+        classProperty='label',
+        inputProperties=feature_bands
+    )
+
+    raw_classified = feature_image.classify(classifier).rename('label')
+
+    # 5. Spatial Regularization (Focal Mode Smoothing)
+    # Replaces isolated noisy pixels with spatial neighborhood mode
+    classified_image = raw_classified.focal_mode(radius=1.5, kernelType='circle').rename('label')
+
+    # 6. Calculate statistics
+    stats = classified_image.reduceRegion(
+        reducer=ee.Reducer.frequencyHistogram(),
+        geometry=aoi,
+        scale=scale,
+        maxPixels=1e8
+    )
+
+    try:
+        histogram = stats.get('label').getInfo()
+    except Exception as e:
+        logger.error(f"Failed to fetch DL classification statistics: {e}")
+        histogram = {}
+
+    processed_stats = {}
+    total_area_ha = 0.0
+
+    for class_id_str, count in histogram.items():
+        class_id = int(float(class_id_str))
+        class_name = LULC_CLASSES.get(class_id, f"Class {class_id}")
+        area_ha = float(count) * (scale * scale) / 10000.0
+        processed_stats[class_name] = {
+            "id": class_id,
+            "area_ha": round(area_ha, 2),
+            "pixel_count": count
+        }
+        total_area_ha += area_ha
+
+    for class_name, data in processed_stats.items():
+        pct = (data["area_ha"] / total_area_ha * 100.0) if total_area_ha > 0 else 0.0
+        data["percentage"] = round(pct, 2)
+
+    return classified_image, {
+        "classes": processed_stats,
+        "total_area_ha": round(total_area_ha, 2)
+    }
+
 def get_precomputed_statistics(label_image: ee.Image, aoi: ee.Geometry) -> Dict[str, Any]:
     """
     Returns land cover statistics directly from Dynamic World label mode composite.

@@ -91,6 +91,10 @@ interface MapComponentProps {
   notes?: MapNote[];
   onNoteAdd?: (lat: number, lng: number) => void;
   onSwipeActiveChange?: (active: boolean) => void;
+  smartSelectMode?: boolean;
+  onSmartSelectClick?: (lat: number, lng: number) => void;
+  buildingFootprintsGeoJSON?: any;
+  showBuildings?: boolean;
 }
 
 interface MapNote {
@@ -138,9 +142,9 @@ function DrawControl({ onAOIDrawn }: { onAOIDrawn: (coords: number[][]) => void 
     });
 
     map.pm.setPathOptions({
-      color: '#3b82f6',
-      fillColor: '#3b82f6',
-      fillOpacity: 0.15,
+      color: '#7FA35C',
+      fillColor: '#7FA35C',
+      fillOpacity: 0.18,
       weight: 2,
     });
 
@@ -167,10 +171,31 @@ function DrawControl({ onAOIDrawn }: { onAOIDrawn: (coords: number[][]) => void 
       }
     });
 
+    const onDrawRect = () => map.pm.enableDraw('Rectangle');
+    const onDrawPoly = () => map.pm.enableDraw('Polygon');
+    const onPan = () => map.pm.disableDraw();
+    const onClear = () => {
+      map.pm.disableDraw();
+      if (drawnLayerRef.current) {
+        map.removeLayer(drawnLayerRef.current);
+        drawnLayerRef.current = null;
+      }
+      onAOIDrawn([]);
+    };
+
+    window.addEventListener('map-tool-rectangle', onDrawRect);
+    window.addEventListener('map-tool-polygon', onDrawPoly);
+    window.addEventListener('map-tool-pan', onPan);
+    window.addEventListener('map-tool-clear', onClear);
+
     return () => {
       map.pm.removeControls();
       map.off('pm:create');
       map.off('pm:remove');
+      window.removeEventListener('map-tool-rectangle', onDrawRect);
+      window.removeEventListener('map-tool-polygon', onDrawPoly);
+      window.removeEventListener('map-tool-pan', onPan);
+      window.removeEventListener('map-tool-clear', onClear);
     };
   }, [map, onAOIDrawn]);
 
@@ -194,15 +219,14 @@ function AOIBoundary({ coords }: { coords: number[][] }) {
       const latLngs = coords.map(c => [c[1], c[0]] as [number, number]);
 
       borderRef.current = L.polygon(latLngs, {
-        color: '#f59e0b',
-        weight: 3,
-        dashArray: '8 4',
+        color: '#C8834C',
+        weight: 2.5,
+        dashArray: '6 4',
         fill: false,
         interactive: false,
-        pane: 'overlayPane', // ensures it's drawn on top
+        pane: 'overlayPane',
       }).addTo(map);
 
-      // Bring to front to stay above tile layers
       borderRef.current.bringToFront();
     }
 
@@ -213,6 +237,7 @@ function AOIBoundary({ coords }: { coords: number[][] }) {
       }
     };
   }, [map, coords]);
+
 
   // Re-bring to front when map layers change
   useEffect(() => {
@@ -795,10 +820,7 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
   }, 0);
 
   useEffect(() => {
-    if (!enabled) {
-      setPoints([]);
-      return;
-    }
+    if (!enabled) return;
 
     const container = map.getContainer();
     container.classList.add('geo-measure-mode');
@@ -810,8 +832,10 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
     return () => {
       map.off('click', handleClick);
       container.classList.remove('geo-measure-mode');
+      setPoints([]);
     };
   }, [enabled, map]);
+
 
   useEffect(() => {
     if (layerRef.current) {
@@ -921,6 +945,103 @@ function SearchLocationMarker({ location }: { location?: SearchLocation | null }
   return null;
 }
 
+// ────────────────────────── Smart Select (SAM) Handler ──────────────────────────
+function SmartSelectHandler({
+  enabled,
+  onSmartSelectClick,
+}: {
+  enabled?: boolean;
+  onSmartSelectClick?: (lat: number, lng: number) => void;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || !enabled || !onSmartSelectClick) return;
+
+    const container = map.getContainer();
+    const prevCursor = container.style.cursor;
+    container.style.cursor = 'crosshair';
+
+    const onClick = (e: L.LeafletMouseEvent) => {
+      onSmartSelectClick(e.latlng.lat, e.latlng.lng);
+    };
+
+    map.on('click', onClick);
+
+    return () => {
+      container.style.cursor = prevCursor;
+      map.off('click', onClick);
+    };
+  }, [map, enabled, onSmartSelectClick]);
+
+  return null;
+}
+
+// ────────────────────── Building Footprints Vector Layer ──────────────────────
+function BuildingFootprintsLayer({
+  geojsonData,
+  visible,
+}: {
+  geojsonData?: any;
+  visible?: boolean;
+}) {
+  const map = useMap();
+  const layerRef = useRef<L.GeoJSON | null>(null);
+
+  useEffect(() => {
+    if (layerRef.current) {
+      map.removeLayer(layerRef.current);
+      layerRef.current = null;
+    }
+
+    if (!visible || !geojsonData || !geojsonData.features || geojsonData.features.length === 0) {
+      return;
+    }
+
+    try {
+      layerRef.current = L.geoJSON(geojsonData, {
+        style: {
+          color: '#C8834C',
+          weight: 1.8,
+          fillColor: '#C8834C',
+          fillOpacity: 0.35,
+          dashArray: '3 2',
+        },
+        onEachFeature: (feature, layer) => {
+          const props = feature.properties || {};
+          const popupContent = `
+            <div style="font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; color: #EDE8DB; background: #1B1D19; padding: 6px 10px; border-radius: 4px; border: 1px solid #35372E;">
+              <div style="font-weight: 600; color: #C8834C; margin-bottom: 2px;">Building #${props.id || 1}</div>
+              <div>Area: <b>${props.area_m2 || 0} m²</b></div>
+              <div>Perimeter: <b>${props.perimeter_m || 0} m</b></div>
+              <div>Compactness: <b>${props.compactness || 0}</b></div>
+              <div>Est. Height: <b>${props.height_est_m || 3.2} m</b></div>
+            </div>
+          `;
+          layer.bindPopup(popupContent);
+          layer.bindTooltip(`Bldg #${props.id}: ${props.area_m2} m²`, {
+            sticky: true,
+            direction: 'top',
+            className: 'geo-note-tooltip',
+          });
+        },
+        pane: 'overlayPane',
+      }).addTo(map);
+    } catch (e) {
+      console.error("Error rendering building footprints layer:", e);
+    }
+
+    return () => {
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current);
+        layerRef.current = null;
+      }
+    };
+  }, [map, geojsonData, visible]);
+
+  return null;
+}
+
 export default function MapComponent({
   onAOIDrawn,
   aoiCoords: externalAoiCoords = [],
@@ -946,6 +1067,10 @@ export default function MapComponent({
   notes = [],
   onNoteAdd,
   onSwipeActiveChange,
+  smartSelectMode = false,
+  onSmartSelectClick,
+  buildingFootprintsGeoJSON,
+  showBuildings = true,
 }: MapComponentProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [legendOpen, setLegendOpen] = useState(true);
@@ -1138,6 +1263,12 @@ export default function MapComponent({
         {/* AOI Boundary Outline — always on top */}
         <AOIBoundary coords={aoiCoords} />
 
+        {/* Building Footprints Vector Layer */}
+        <BuildingFootprintsLayer geojsonData={buildingFootprintsGeoJSON} visible={showBuildings} />
+
+        {/* Smart Select (SAM) interactive click handler */}
+        <SmartSelectHandler enabled={smartSelectMode} onSmartSelectClick={onSmartSelectClick} />
+
         <SearchLocationMarker location={searchLocation} />
 
         <ConfidenceOverlay
@@ -1206,34 +1337,31 @@ export default function MapComponent({
           >
             −
           </button>
+          <div className="w-full h-px bg-slate-800/80 my-0.5" />
+          <button
+            onClick={toggleFullscreen}
+            className="w-8 h-8 bg-slate-900/90 text-slate-200 rounded hover:bg-slate-850 hover:text-white transition flex items-center justify-center cursor-pointer"
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          >
+            {isFullscreen ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3" />
+                <path d="M21 8h-3a2 2 0 0 1-2-2V3" />
+                <path d="M3 16h3a2 2 0 0 1 2 2v3" />
+                <path d="M16 21v-3a2 2 0 0 1 2-2h3" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+                <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+                <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+                <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+              </svg>
+            )}
+          </button>
         </div>
       </DraggableContainer>
-
-      {/* ── Fullscreen Toggle (top-right, below layer control) ── */}
-      <div className="absolute top-2 right-2 z-[1000] flex flex-col gap-1">
-        <button
-          onClick={toggleFullscreen}
-          className="w-9 h-9 bg-slate-900/90 backdrop-blur-md border border-slate-700 text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition flex items-center justify-center shadow-lg cursor-pointer"
-          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-        >
-          {isFullscreen ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 3v3a2 2 0 0 1-2 2H3" />
-              <path d="M21 8h-3a2 2 0 0 1-2-2V3" />
-              <path d="M3 16h3a2 2 0 0 1 2 2v3" />
-              <path d="M16 21v-3a2 2 0 0 1 2-2h3" />
-            </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 3H5a2 2 0 0 0-2 2v3" />
-              <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
-              <path d="M3 16v3a2 2 0 0 0 2 2h3" />
-              <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
-            </svg>
-          )}
-        </button>
-      </div>
 
       {/* ── Draggable Swipe Comparison Toggle (top-center) ── */}
       {canSwipe && (

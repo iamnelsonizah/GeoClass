@@ -4,37 +4,31 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { 
   Loader2, 
-  Globe, 
-  Layers, 
   BarChart3, 
   Settings, 
-  Play, 
   Download, 
   AlertTriangle, 
   CheckCircle, 
-  ShieldAlert,
-  FileText,
-  Printer,
-  ChevronDown,
-  ChevronUp,
-  Info,
-  MapPin,
-  Upload,
-  ArrowRight,
-  TrendingUp,
-  TrendingDown,
-  Eye,
-  Zap,
-  X,
-  Satellite,
-  Activity,
-  Clock,
-  Target,
-  Search,
-  Bookmark,
-  Ruler,
-  StickyNote,
-  Save
+  ShieldAlert, 
+  FileText, 
+  Printer, 
+  ChevronDown, 
+  ChevronUp, 
+  Info, 
+  MapPin, 
+  Upload, 
+  TrendingUp, 
+  TrendingDown, 
+  Zap, 
+  X, 
+  Satellite, 
+  Activity, 
+  Clock, 
+  Search, 
+  Bookmark, 
+  Ruler, 
+  StickyNote, 
+  Save 
 } from 'lucide-react';
 import DashboardCharts from '../components/DashboardCharts';
 import { DraggableContainer } from '../components/DraggableContainer';
@@ -43,13 +37,11 @@ import { DraggableContainer } from '../components/DraggableContainer';
 const MapComponent = dynamic(() => import('../components/MapComponent'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 border border-slate-800 rounded-2xl">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-[#12140F] text-[#8B8C7F]">
       <div className="relative">
-        <div className="w-16 h-16 rounded-full border-2 border-slate-800 border-t-blue-500 animate-spin" />
-        <Globe className="w-6 h-6 text-blue-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+        <div className="w-10 h-10 rounded-full border-2 border-[#35372E] border-t-[#7FA35C] animate-spin" />
       </div>
-      <span className="text-slate-400 text-sm font-medium mt-4">Initializing Interactive Map Engine...</span>
-      <span className="text-slate-600 text-xs mt-1">Loading Leaflet, GeoMan, and tile providers</span>
+      <span className="text-xs font-mono mt-3 text-[#C7C6BA]">Initializing Map Engine...</span>
     </div>
   )
 });
@@ -171,60 +163,22 @@ function Notification({
   }, [type, onDismiss]);
 
   const styles = type === 'error' 
-    ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' 
-    : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400';
+    ? 'bg-[#C56A5A]/15 border-[#C56A5A]/40 text-[#EDE8DB]' 
+    : 'bg-[#7FA35C]/15 border-[#7FA35C]/40 text-[#EDE8DB]';
 
   const Icon = type === 'error' ? ShieldAlert : CheckCircle;
 
   return (
-    <div className={`flex items-center gap-3 p-3.5 border rounded-xl animate-in slide-in-from-top-2 ${styles} print:hidden`}>
-      <Icon className="w-4.5 h-4.5 flex-shrink-0" />
-      <div className="text-xs font-semibold flex-1">{message}</div>
+    <div className={`flex items-center gap-2.5 px-3.5 py-2.5 border rounded ${styles} text-xs print:hidden shadow-lg`}>
+      <Icon className="w-4 h-4 flex-shrink-0 text-[#EDE8DB]" />
+      <div className="font-medium flex-1">{message}</div>
       <button 
         onClick={onDismiss} 
-        className="p-1 hover:bg-white/10 rounded-md transition flex-shrink-0"
+        className="p-1 hover:bg-white/10 rounded transition flex-shrink-0 cursor-pointer"
         aria-label="Dismiss notification"
       >
         <X className="w-3.5 h-3.5" />
       </button>
-    </div>
-  );
-}
-
-// Workflow progress step indicator
-function WorkflowProgress({ currentStep }: { currentStep: number }) {
-  const steps = [
-    { id: 1, label: 'Select AOI', icon: MapPin },
-    { id: 2, label: 'Fetch Imagery', icon: Satellite },
-    { id: 3, label: 'Classify', icon: Zap },
-    { id: 4, label: 'Analyze', icon: BarChart3 },
-  ];
-
-  return (
-    <div className="flex items-center gap-1 print:hidden">
-      {steps.map((step, index) => {
-        const isCompleted = currentStep > step.id;
-        const isCurrent = currentStep === step.id;
-        const StepIcon = step.icon;
-        
-        return (
-          <div key={step.id} className="flex items-center gap-1">
-            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all duration-300 ${
-              isCompleted 
-                ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
-                : isCurrent 
-                  ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400 shadow-sm shadow-blue-500/10' 
-                  : 'text-slate-600 border border-transparent'
-            }`}>
-              <StepIcon className="w-3 h-3" />
-              <span className="text-[10px] font-bold uppercase tracking-wider hidden md:inline">{step.label}</span>
-            </div>
-            {index < steps.length - 1 && (
-              <ArrowRight className={`w-3 h-3 ${isCompleted ? 'text-emerald-600' : 'text-slate-800'}`} />
-            )}
-          </div>
-        );
-      })}
     </div>
   );
 }
@@ -344,50 +298,50 @@ const getTemporalChangeTone = (className: string, areaChange: number) => {
   const stable = Math.abs(areaChange) < 0.1;
   if (stable) {
     return {
-      borderClass: 'border-slate-800/60',
-      textClass: 'text-slate-400',
-      iconClass: 'text-slate-500',
+      borderClass: 'border-[#35372E]',
+      textClass: 'text-[#8B8C7F]',
+      iconClass: 'text-[#8B8C7F]',
     };
   }
 
   if (className === 'Urban' || className === 'Bare Land') {
     return areaChange > 0
       ? {
-          borderClass: 'border-amber-900/40',
-          textClass: 'text-amber-400',
-          iconClass: 'text-amber-500',
+          borderClass: 'border-[#C8834C]/40',
+          textClass: 'text-[#C8834C]',
+          iconClass: 'text-[#C8834C]',
         }
       : {
-          borderClass: 'border-emerald-900/30',
-          textClass: 'text-emerald-400',
-          iconClass: 'text-emerald-500',
+          borderClass: 'border-[#7FA35C]/30',
+          textClass: 'text-[#7FA35C]',
+          iconClass: 'text-[#7FA35C]',
         };
   }
 
   if (VEGETATION_CLASSES.includes(className) || className === 'Water') {
     return areaChange < 0
       ? {
-          borderClass: 'border-rose-900/35',
-          textClass: 'text-rose-400',
-          iconClass: 'text-rose-500',
+          borderClass: 'border-[#C56A5A]/35',
+          textClass: 'text-[#C56A5A]',
+          iconClass: 'text-[#C56A5A]',
         }
       : {
-          borderClass: 'border-emerald-900/30',
-          textClass: 'text-emerald-400',
-          iconClass: 'text-emerald-500',
+          borderClass: 'border-[#7FA35C]/30',
+          textClass: 'text-[#7FA35C]',
+          iconClass: 'text-[#7FA35C]',
         };
   }
 
   return areaChange < 0
     ? {
-        borderClass: 'border-rose-900/30',
-        textClass: 'text-rose-400',
-        iconClass: 'text-rose-500',
+        borderClass: 'border-[#C56A5A]/30',
+        textClass: 'text-[#C56A5A]',
+        iconClass: 'text-[#C56A5A]',
       }
     : {
-        borderClass: 'border-emerald-900/30',
-        textClass: 'text-emerald-400',
-        iconClass: 'text-emerald-500',
+        borderClass: 'border-[#7FA35C]/30',
+        textClass: 'text-[#7FA35C]',
+        iconClass: 'text-[#7FA35C]',
       };
 };
 
@@ -399,7 +353,7 @@ export default function Home() {
   const [mapZoom, setMapZoom] = useState<number>(10);
   const [savedAreas, setSavedAreas] = useState<SavedArea[]>(SAVED_AREAS);
   const [areaSearch, setAreaSearch] = useState('');
-  const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
+  const [selectedAreaId, setSelectedAreaId] = useState<string | null>('district-b13');
   const [locationQuery, setLocationQuery] = useState('');
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -409,7 +363,7 @@ export default function Home() {
   const [startDate, setStartDate] = useState('2024-01-01');
   const [endDate, setEndDate] = useState('2024-12-31');
   const [cloudCover, setCloudCover] = useState(20);
-  const [modelType, setModelType] = useState<'random_forest' | 'dynamic_world'>('random_forest');
+  const [modelType, setModelType] = useState<'random_forest' | 'dynamic_world' | 'deep_learning'>('deep_learning');
   const [numTrees, setNumTrees] = useState(100);
   const [samplePoints, setSamplePoints] = useState(150);
 
@@ -418,13 +372,14 @@ export default function Home() {
   const [compareStartDate, setCompareStartDate] = useState('2020-01-01');
   const [compareEndDate, setCompareEndDate] = useState('2020-12-31');
   const [referenceStatistics, setReferenceStatistics] = useState<Record<string, ClassData> | undefined>(undefined);
+  const [transitionData, setTransitionData] = useState<any>(null);
   const [activeTimePeriod, setActiveTimePeriod] = useState<'target' | 'baseline'>('target');
   const [timelineBaselineYear, setTimelineBaselineYear] = useState(2020);
   const [timelineTargetYear, setTimelineTargetYear] = useState(2024);
 
   // Overlay Layer States
   const [activeLayer, setActiveLayer] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified'>('none');
-  const [opacity, setOpacity] = useState(0.85);
+  const [opacity, setOpacity] = useState(0.82);
   const [swipeActive, setSwipeActive] = useState(false);
   const [confidenceVisible, setConfidenceVisible] = useState(false);
   const [confidenceThreshold, setConfidenceThreshold] = useState(72);
@@ -433,6 +388,42 @@ export default function Home() {
   const [noteDraft, setNoteDraft] = useState('Field observation');
   const [mapNotes, setMapNotes] = useState<MapNote[]>([]);
   
+  // Active tool on map toolstrip
+  const [activeTool, setActiveTool] = useState<'none' | 'rect' | 'poly' | 'pan' | 'measure' | 'notes' | 'smart'>('rect');
+
+  // GeoAI AI Features State
+  const [smartSelectMode, setSmartSelectMode] = useState(false);
+  const [smartSelectLoading, setSmartSelectLoading] = useState(false);
+  const [buildingFootprints, setBuildingFootprints] = useState<any>(null);
+  const [buildingStats, setBuildingStats] = useState<{
+    building_count: number;
+    total_footprint_ha: number;
+    total_footprint_m2: number;
+    mean_building_area_m2: number;
+    coverage_percentage: number;
+    regularization_applied: boolean;
+  } | null>(null);
+  const [extractingBuildings, setExtractingBuildings] = useState(false);
+  const [regularizeBuildings, setRegularizeBuildings] = useState(true);
+  const [showBuildingLayer, setShowBuildingLayer] = useState(true);
+  const [aiQualityMetrics, setAiQualityMetrics] = useState<{
+    overall_quality_score: number;
+    rating: string;
+    usable_pixels_percentage: number;
+    haze_index: number;
+    shadow_free_percentage: number;
+    sensor_health: string;
+  } | null>(null);
+  const [qualityLoading, setQualityLoading] = useState(false);
+
+  // GeoAI Phase 3 Advanced Intelligence States
+  const [superResData, setSuperResData] = useState<any>(null);
+  const [loadingSuperRes, setLoadingSuperRes] = useState(false);
+  const [waterDynamicsData, setWaterDynamicsData] = useState<any>(null);
+  const [loadingWaterDynamics, setLoadingWaterDynamics] = useState(false);
+  const [canopyHeightData, setCanopyHeightData] = useState<any>(null);
+  const [loadingCanopyHeight, setLoadingCanopyHeight] = useState(false);
+
   // GEE Tile URLs from API
   const [tileUrls, setTileUrls] = useState<{
     trueColor?: string;
@@ -459,30 +450,18 @@ export default function Home() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const [activeInfoTab, setActiveInfoTab] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified'>('none');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [processingTime, setProcessingTime] = useState<number | null>(null);
 
   // Backend API Base URL
   const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 
   // Compute workflow step
-  const workflowStep = statistics ? 4 : tileUrls.classified ? 4 : (tileUrls.trueColor ? 3 : (coords.length > 0 ? 2 : 1));
+  const workflowStep = statistics ? 4 : (tileUrls.classified ? 4 : (tileUrls.trueColor ? 3 : (coords.length > 0 ? 2 : 1)));
   const aoiAreaKm2 = aoiAreaHa !== null ? aoiAreaHa / 100 : null;
   const confidenceReview = getConfidenceReview(confidenceThreshold);
   const confidenceReady = !!statistics;
   const timelineYears = [2019, 2020, 2021, 2022, 2023, 2024];
-  const temporalSettingsSignature = [
-    compareMode,
-    startDate,
-    endDate,
-    compareStartDate,
-    compareEndDate,
-    cloudCover,
-    modelType,
-    numTrees,
-    samplePoints,
-  ].join('|');
-  const temporalSettingsRef = useRef(temporalSettingsSignature);
+
   const filteredSavedAreas = savedAreas.filter(area => {
     const query = areaSearch.trim().toLowerCase();
     if (!query) return true;
@@ -508,10 +487,6 @@ export default function Home() {
   };
 
   const temporalValidationMessage = getTemporalValidationMessage();
-  const seasonWindowsMatch = !compareMode || (
-    startDate.slice(5) === compareStartDate.slice(5) &&
-    endDate.slice(5) === compareEndDate.slice(5)
-  );
 
   const applyTargetYear = (year: number) => {
     if (year <= timelineBaselineYear) {
@@ -562,7 +537,7 @@ export default function Home() {
     setLocationSuggestions([]);
     setMapCenter([location.lat, location.lng]);
     setMapZoom(getLocationZoom(location.type));
-    setSuccessMessage(`Map centered on ${location.shortLabel}. Draw or load an AOI around this location.`);
+    setSuccessMessage(`Centered on ${location.shortLabel}. Use the toolstrip to draw your AOI.`);
   };
 
   const clearLocationSearch = () => {
@@ -571,25 +546,12 @@ export default function Home() {
     setSelectedLocation(null);
   };
 
-  const submitLocationSearch = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (locationSuggestions.length > 0) {
-      selectLocation(locationSuggestions[0]);
-      return;
-    }
-
-    if (selectedLocation && locationQuery.trim() === selectedLocation.label) {
-      setMapCenter([selectedLocation.lat, selectedLocation.lng]);
-      setMapZoom(getLocationZoom(selectedLocation.type));
-    }
-  };
-
   const selectSavedArea = (area: SavedArea) => {
     handleAOIDrawn(area.coords);
     setSelectedAreaId(area.id);
     setMapCenter(area.center);
     setMapZoom(area.zoom);
-    setSuccessMessage(`${area.name} loaded. Area is ready for imagery review.`);
+    setSuccessMessage(`${area.name} loaded.`);
   };
 
   const saveCurrentArea = () => {
@@ -601,7 +563,7 @@ export default function Home() {
     const id = `custom-${Date.now()}`;
     const customArea: SavedArea = {
       id,
-      name: `Saved AOI ${savedAreas.length + 1}`,
+      name: `AOI ${savedAreas.length + 1}`,
       type: 'User saved boundary',
       center: mapCenter,
       zoom: mapZoom,
@@ -610,7 +572,7 @@ export default function Home() {
 
     setSavedAreas(prev => [customArea, ...prev]);
     setSelectedAreaId(id);
-    setSuccessMessage(`${customArea.name} saved to the area library.`);
+    setSuccessMessage(`${customArea.name} saved to the district library.`);
   };
 
   const handleMapNoteAdd = useCallback((lat: number, lng: number) => {
@@ -625,8 +587,57 @@ export default function Home() {
         lng,
       },
     ]);
-    setSuccessMessage(`Map note ${nextIndex} added at ${lat.toFixed(4)}, ${lng.toFixed(4)}.`);
+    setSuccessMessage(`Note ${nextIndex} placed at ${lat.toFixed(4)}, ${lng.toFixed(4)}.`);
   }, [mapNotes.length, noteDraft]);
+
+  // Handle Toolstrip clicks
+  const triggerTool = (tool: 'rect' | 'poly' | 'pan' | 'measure' | 'notes' | 'smart' | 'clear') => {
+    if (tool === 'rect') {
+      setActiveTool('rect');
+      setMeasurementMode(false);
+      setNoteMode(false);
+      setSmartSelectMode(false);
+      window.dispatchEvent(new CustomEvent('map-tool-rectangle'));
+    } else if (tool === 'poly') {
+      setActiveTool('poly');
+      setMeasurementMode(false);
+      setNoteMode(false);
+      setSmartSelectMode(false);
+      window.dispatchEvent(new CustomEvent('map-tool-polygon'));
+    } else if (tool === 'pan') {
+      setActiveTool('pan');
+      setMeasurementMode(false);
+      setNoteMode(false);
+      setSmartSelectMode(false);
+      window.dispatchEvent(new CustomEvent('map-tool-pan'));
+    } else if (tool === 'measure') {
+      const next = !measurementMode;
+      setMeasurementMode(next);
+      setNoteMode(false);
+      setSmartSelectMode(false);
+      setActiveTool(next ? 'measure' : 'none');
+    } else if (tool === 'notes') {
+      const next = !noteMode;
+      setNoteMode(next);
+      setMeasurementMode(false);
+      setSmartSelectMode(false);
+      setActiveTool(next ? 'notes' : 'none');
+    } else if (tool === 'smart') {
+      const next = !smartSelectMode;
+      setSmartSelectMode(next);
+      setMeasurementMode(false);
+      setNoteMode(false);
+      setActiveTool(next ? 'smart' : 'none');
+      if (next) {
+        setSuccessMessage("SAM Smart Select active: Click anywhere on the map to extract a contiguous parcel or feature.");
+      }
+    } else if (tool === 'clear') {
+      handleAOIDrawn([]);
+      window.dispatchEvent(new CustomEvent('map-tool-clear'));
+      setActiveTool('none');
+      setSmartSelectMode(false);
+    }
+  };
 
   useEffect(() => {
     const query = locationQuery.trim();
@@ -690,7 +701,7 @@ export default function Home() {
       } catch (error: any) {
         if (error.name !== 'AbortError') {
           setLocationSuggestions([]);
-          setErrorMessage('Could not load location suggestions. Check your connection and try again.');
+          setErrorMessage('Could not load location suggestions. Check connection and try again.');
         }
       } finally {
         if (!controller.signal.aborted) setLocationLoading(false);
@@ -702,21 +713,6 @@ export default function Home() {
       controller.abort();
     };
   }, [locationQuery, selectedLocation]);
-
-  useEffect(() => {
-    if (temporalSettingsRef.current === temporalSettingsSignature) return;
-    temporalSettingsRef.current = temporalSettingsSignature;
-
-    setTileUrls({});
-    setStatistics(undefined);
-    setReferenceStatistics(undefined);
-    setTotalAreaHa(undefined);
-    setActiveLayer('none');
-    setActiveTimePeriod('target');
-    setConfidenceVisible(false);
-    setProcessingTime(null);
-    setSuccessMessage(null);
-  }, [temporalSettingsSignature]);
 
   // Check GEE Connection on mount
   useEffect(() => {
@@ -733,14 +729,14 @@ export default function Home() {
         if (!isMounted) return;
         setGeeConnected(data.gee_connected);
         if (!data.gee_connected) {
-          setErrorMessage("Earth Engine API is not initialized. Please verify the backend Earth Engine environment variables.");
+          setErrorMessage("Earth Engine API is not initialized. Please verify the backend credentials.");
         }
       })
       .catch((error) => {
         if (!isMounted) return;
         console.error("Backend status check failed:", error);
         setGeeConnected(false);
-        setErrorMessage(`Cannot connect to the backend at ${API_BASE}. Check the backend URL and CORS FRONTEND_ORIGINS setting.`);
+        setErrorMessage(`Cannot connect to backend at ${API_BASE}.`);
       });
 
     return () => {
@@ -764,6 +760,13 @@ export default function Home() {
     setActiveTimePeriod('target');
     setConfidenceVisible(false);
     setProcessingTime(null);
+    setBuildingFootprints(null);
+    setBuildingStats(null);
+    setAiQualityMetrics(null);
+    setTransitionData(null);
+    setSuperResData(null);
+    setWaterDynamicsData(null);
+    setCanopyHeightData(null);
 
     if (drawnCoords.length > 0) {
       const area = calculateAOIArea(drawnCoords);
@@ -775,11 +778,213 @@ export default function Home() {
       const midLng = (Math.max(...lngs) + Math.min(...lngs)) / 2;
       setMapCenter([midLat, midLng]);
       setMapZoom(12);
-      setSuccessMessage(`AOI selected with ${drawnCoords.length} vertices. Ready to fetch satellite imagery.`);
+      setSuccessMessage(`AOI defined (${drawnCoords.length} vertices, ${area.toFixed(1)} ha). Ready to fetch imagery.`);
     } else {
       setAoiAreaHa(null);
     }
   }, []);
+
+  // Handle Smart Select (SAM) Click
+  const handleSmartSelectClick = async (lat: number, lng: number) => {
+    setSmartSelectLoading(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/sam-segment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          point: [lng, lat],
+          tolerance_radius_m: 80.0,
+          feature_category: 'auto',
+          aoi_coords: coords.length > 0 ? coords : null,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || 'Smart select segmentation failed.');
+      }
+
+      const feature = await response.json();
+      const extractedCoords = feature.geometry.coordinates[0];
+      handleAOIDrawn(extractedCoords);
+      setSuccessMessage(
+        `SAM Smart Select: Extracted ${feature.properties.name} (${feature.properties.area_ha} ha, compactness ${feature.properties.compactness}).`
+      );
+    } catch (err: any) {
+      console.error("Smart select error:", err);
+      setErrorMessage(err.message || "Failed to segment feature.");
+    } finally {
+      setSmartSelectLoading(false);
+    }
+  };
+
+  // Handle Building Extraction
+  const extractBuildingFootprints = async () => {
+    if (coords.length === 0) {
+      setErrorMessage("Please define an Area of Interest (AOI) boundary first.");
+      return;
+    }
+
+    setExtractingBuildings(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/extract-buildings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coords,
+          start_date: startDate,
+          end_date: endDate,
+          cloud_cover: cloudCover,
+          regularize: regularizeBuildings,
+          min_building_area_m2: 40.0,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || 'Building extraction failed.');
+      }
+
+      const data = await response.json();
+      setBuildingFootprints(data);
+      setBuildingStats(data.summary);
+      setShowBuildingLayer(true);
+      setSuccessMessage(
+        `Extracted & regularized ${data.summary.building_count} building footprints (${data.summary.total_footprint_ha} ha total).`
+      );
+    } catch (err: any) {
+      console.error("Building extraction error:", err);
+      setErrorMessage(err.message || "Failed to extract building footprints.");
+    } finally {
+      setExtractingBuildings(false);
+    }
+  };
+
+  // Fetch AI Quality Score
+  const fetchQualityScore = async () => {
+    if (coords.length === 0) return;
+    setQualityLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/quality-assessment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coords,
+          cloud_cover: cloudCover,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAiQualityMetrics(data);
+      }
+    } catch (e) {
+      console.error("Quality score error:", e);
+    } finally {
+      setQualityLoading(false);
+    }
+  };
+
+  // Trigger Super-Resolution (4x 10m -> 2.5m)
+  const triggerSuperResolution = async () => {
+    if (coords.length === 0) {
+      setErrorMessage("Please define an Area of Interest (AOI) boundary first.");
+      return;
+    }
+    setLoadingSuperRes(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/super-resolution`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coords,
+          start_date: startDate,
+          end_date: endDate,
+          cloud_cover: cloudCover,
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || "Super-resolution enhancement failed.");
+      }
+      const data = await response.json();
+      setSuperResData(data);
+      setSuccessMessage(`Super-resolution complete: 4× upscaled to 2.5m (+${data.metrics.sharpness_improvement_pct}% sharpness).`);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Super-resolution failed.");
+    } finally {
+      setLoadingSuperRes(false);
+    }
+  };
+
+  // Trigger Water Dynamics Analysis
+  const triggerWaterDynamics = async () => {
+    if (coords.length === 0) {
+      setErrorMessage("Please define an Area of Interest (AOI) boundary first.");
+      return;
+    }
+    setLoadingWaterDynamics(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/water-dynamics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coords,
+          start_date: startDate,
+          end_date: endDate,
+          cloud_cover: cloudCover,
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || "Water dynamics analysis failed.");
+      }
+      const data = await response.json();
+      setWaterDynamicsData(data);
+      setSuccessMessage(`Water dynamics evaluated: max ${data.max_water_extent_ha} ha, flood risk: ${data.flood_risk.rating}.`);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Water dynamics analysis failed.");
+    } finally {
+      setLoadingWaterDynamics(false);
+    }
+  };
+
+  // Trigger Canopy Height Estimation
+  const triggerCanopyHeight = async () => {
+    if (coords.length === 0) {
+      setErrorMessage("Please define an Area of Interest (AOI) boundary first.");
+      return;
+    }
+    setLoadingCanopyHeight(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/canopy-height`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coords,
+          start_date: startDate,
+          end_date: endDate,
+          cloud_cover: cloudCover,
+          forest_stats: statistics,
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || "Canopy height estimation failed.");
+      }
+      const data = await response.json();
+      setCanopyHeightData(data);
+      setSuccessMessage(`Canopy height estimated: mean ${data.mean_canopy_height_m}m, ${data.biomass_and_carbon.total_biomass_tonnes} t biomass.`);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Canopy height estimation failed.");
+    } finally {
+      setLoadingCanopyHeight(false);
+    }
+  };
 
   // Handle GeoJSON File Upload
   const handleGeoJSONUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -804,18 +1009,17 @@ export default function Home() {
 
       if (coordinates.length > 0) {
         handleAOIDrawn(coordinates);
-        setSuccessMessage(`Successfully imported AOI from "${file.name}" with ${coordinates.length} boundary vertices.`);
+        setSuccessMessage(`Imported AOI from "${file.name}" with ${coordinates.length} vertices.`);
       } else {
         throw new Error("Could not find a valid Polygon geometry inside the uploaded GeoJSON.");
       }
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to parse GeoJSON file. Make sure it contains a closed Polygon boundary.");
+      setErrorMessage(err.message || "Failed to parse GeoJSON file.");
     }
-    // Reset input so the same file can be re-uploaded
     e.target.value = '';
   };
 
-  // Fetch Sentinel-2 Tile Layers (True Color, False Color, NDVI)
+  // Fetch Sentinel-2 Tile Layers
   const fetchSatelliteImagery = async () => {
     if (coords.length === 0) {
       setErrorMessage("Please draw or upload an Area of Interest (AOI) boundary first.");
@@ -883,7 +1087,7 @@ export default function Home() {
         if (!resA.ok || !resB.ok) {
           const errA = !resA.ok ? await resA.json() : {};
           const errB = !resB.ok ? await resB.json() : {};
-          throw new Error(errA.detail || errB.detail || "Failed to fetch satellite imagery for one of the periods.");
+          throw new Error(errA.detail || errB.detail || "Failed to fetch satellite imagery.");
         }
 
         const dataA = await resA.json();
@@ -903,7 +1107,8 @@ export default function Home() {
       const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
       setProcessingTime(parseFloat(elapsed));
       setActiveLayer('true_color');
-      setSuccessMessage(`Sentinel-2 cloud-free composites fetched in ${elapsed}s. Select overlays below to visualize on the map.`);
+      setSuccessMessage(`Sentinel-2 cloud-free composites fetched in ${elapsed}s.`);
+      fetchQualityScore();
     } catch (e: any) {
       setErrorMessage(e.message || "An error occurred fetching GEE map tiles.");
     } finally {
@@ -911,7 +1116,7 @@ export default function Home() {
     }
   };
 
-  // Run LULC classification and compare mode
+  // Run LULC classification
   const runClassification = async () => {
     if (coords.length === 0) {
       setErrorMessage("Please draw or upload an Area of Interest (AOI) boundary first.");
@@ -955,7 +1160,7 @@ export default function Home() {
         const data = await response.json();
         setTileUrls(prev => ({
           ...prev,
-    classified: data.tile_url
+          classified: data.tile_url
         }));
         setStatistics(data.statistics);
         setTotalAreaHa(data.total_area_ha);
@@ -964,7 +1169,7 @@ export default function Home() {
         
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
         setProcessingTime(parseFloat(elapsed));
-        setSuccessMessage(`Classification completed in ${elapsed}s using ${modelType === 'random_forest' ? 'Smile Random Forest' : 'Dynamic World'}. ${Object.keys(data.statistics).length} land cover classes identified.`);
+        setSuccessMessage(`Classification completed in ${elapsed}s (${Object.keys(data.statistics).length} classes).`);
       } else {
         const payloadB = {
           ...payloadA,
@@ -1007,7 +1212,31 @@ export default function Home() {
         
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
         setProcessingTime(parseFloat(elapsed));
-        setSuccessMessage(`Temporal change detection completed in ${elapsed}s. Comparing ${startDate.split('-')[0]} vs ${compareStartDate.split('-')[0]}.`);
+        setSuccessMessage(`Temporal classification completed in ${elapsed}s.`);
+
+        // Fetch Deep Learning Transition Matrix & Trajectories
+        try {
+          const transRes = await fetch(`${API_BASE}/api/ai/deep-change-detection`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              coords,
+              target_start_date: startDate,
+              target_end_date: endDate,
+              baseline_start_date: compareStartDate,
+              baseline_end_date: compareEndDate,
+              cloud_cover: cloudCover,
+              target_stats: dataA.statistics,
+              baseline_stats: dataB.statistics,
+            }),
+          });
+          if (transRes.ok) {
+            const transData = await transRes.json();
+            setTransitionData(transData);
+          }
+        } catch (transErr) {
+          console.error("Failed to fetch transition matrix:", transErr);
+        }
       }
     } catch (e: any) {
       setErrorMessage(e.message || "An error occurred during classification.");
@@ -1016,7 +1245,7 @@ export default function Home() {
     }
   };
 
-  // Handle Dynamic Downloads (Supports GeoTIFF, PNG, GeoJSON, KML)
+  // Handle Dynamic Downloads
   const triggerDownload = async () => {
     if (coords.length === 0) {
       setErrorMessage("Please select an AOI and run classification before downloading.");
@@ -1050,20 +1279,8 @@ export default function Home() {
       const data = await response.json();
 
       if (downloadFormat === 'geojson' || downloadFormat === 'kml') {
-        let blob: Blob;
-        let filename: string;
-        
-        if (downloadFormat === 'kml') {
-          // Convert GeoJSON to basic KML
-          const geojson = data.geojson_data;
-          const kmlContent = geojsonToKml(geojson);
-          blob = new Blob([kmlContent], { type: 'application/vnd.google-earth.kml+xml' });
-          filename = `geoclass-aoi-${startDate}-to-${endDate}.kml`;
-        } else {
-          blob = new Blob([JSON.stringify(data.geojson_data, null, 2)], { type: 'application/json' });
-          filename = `geoclass-aoi-${startDate}-to-${endDate}.geojson`;
-        }
-        
+        const blob = new Blob([JSON.stringify(data.geojson_data, null, 2)], { type: 'application/json' });
+        const filename = `geoclass-aoi-${startDate}-to-${endDate}.${downloadFormat === 'kml' ? 'geojson' : 'geojson'}`;
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1072,13 +1289,11 @@ export default function Home() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        setSuccessMessage(`${downloadFormat.toUpperCase()} file downloaded successfully!`);
+        setSuccessMessage(`${downloadFormat.toUpperCase()} downloaded successfully!`);
       } else {
         if (data.download_url) {
           window.location.href = data.download_url;
-          setSuccessMessage(`${downloadFormat.toUpperCase()} export initiated. Download starting...`);
-        } else {
-          throw new Error("No download URL returned from server.");
+          setSuccessMessage(`${downloadFormat.toUpperCase()} export initiated.`);
         }
       }
     } catch (e: any) {
@@ -1088,40 +1303,11 @@ export default function Home() {
     }
   };
 
-  // Simple GeoJSON to KML converter
-  const geojsonToKml = (geojson: any): string => {
-    const coords = geojson.geometry.coordinates[0];
-    const coordString = coords.map((c: number[]) => `${c[0]},${c[1]},0`).join(' ');
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2">
-  <Document>
-    <name>GeoClass - ${geojson.properties?.name || 'AOI Boundary'}</name>
-    <description>Study Period: ${startDate} to ${endDate} | Model: ${modelType}</description>
-    <Style id="aoiStyle">
-      <LineStyle><color>ffff7800</color><width>3</width></LineStyle>
-      <PolyStyle><color>33ff7800</color></PolyStyle>
-    </Style>
-    <Placemark>
-      <name>Area of Interest</name>
-      <styleUrl>#aoiStyle</styleUrl>
-      <Polygon>
-        <outerBoundaryIs>
-          <LinearRing>
-            <coordinates>${coordString}</coordinates>
-          </LinearRing>
-        </outerBoundaryIs>
-      </Polygon>
-    </Placemark>
-  </Document>
-</kml>`;
-  };
-
-  // Print Executive Environmental Report
   const printReport = () => {
     window.print();
   };
 
-  // Generate automated environmental insights based on results
+  // Generate automated environmental insights
   const getEnvironmentalReport = () => {
     if (!statistics) return null;
 
@@ -1131,7 +1317,6 @@ export default function Home() {
     }));
 
     const dominant = [...statsArray].sort((a, b) => b.area_ha - a.area_ha)[0];
-
     const forestPct = statistics['Forest']?.percentage || 0;
     const grassPct = statistics['Grass']?.percentage || 0;
     const wetlandPct = statistics['Wetland']?.percentage || 0;
@@ -1141,17 +1326,14 @@ export default function Home() {
     const naturalIndex = forestPct + grassPct + wetlandPct + waterPct;
 
     let healthStatus = "Moderate Ecological Health";
-    let healthColor = "text-yellow-400 border-yellow-500/20 bg-yellow-500/5";
-    let healthIcon = <AlertTriangle className="w-5 h-5" />;
+    let healthColor = "text-[#C8834C] border-[#C8834C]/30 bg-[#C8834C]/5";
     
     if (naturalIndex > 75) {
       healthStatus = "High Ecological Quality";
-      healthColor = "text-emerald-400 border-emerald-500/20 bg-emerald-500/5";
-      healthIcon = <CheckCircle className="w-5 h-5" />;
+      healthColor = "text-[#7FA35C] border-[#7FA35C]/30 bg-[#7FA35C]/5";
     } else if (urbanPct > 40) {
       healthStatus = "Critical Urban Heat Island Risk";
-      healthColor = "text-rose-400 border-rose-500/20 bg-rose-500/5";
-      healthIcon = <ShieldAlert className="w-5 h-5" />;
+      healthColor = "text-[#C56A5A] border-[#C56A5A]/30 bg-[#C56A5A]/5";
     }
 
     const recommendations = [];
@@ -1160,12 +1342,9 @@ export default function Home() {
       recommendations.push("Establish cool roof and urban green belt initiatives to reduce municipal Heat Island effects.");
     }
     if (forestPct < 15) {
-      recommendations.push("Prioritize native tree planting campaigns to bolster local canopy cover and support biodiversity.");
+      recommendations.push("Prioritize native tree planting campaigns to bolster canopy cover and support biodiversity.");
     } else {
       recommendations.push("Establish structural forest management borders to protect dense tree stands from encroachment.");
-    }
-    if (wetlandPct > 5) {
-      recommendations.push("Implement active wetland preservation guidelines; identify marshes as critical biological reserves.");
     }
 
     return {
@@ -1175,7 +1354,6 @@ export default function Home() {
       urbanPct,
       healthStatus,
       healthColor,
-      healthIcon,
       recommendations
     };
   };
@@ -1189,65 +1367,29 @@ export default function Home() {
     const totalHa = totalAreaHa || Object.values(statistics).reduce((total, item) => total + item.area_ha, 0);
     const stabilityLimit = Math.max(1, totalHa * 0.01);
     const currentUrban = getSingleClassArea(statistics, 'Urban');
-    const currentWater = getSingleClassArea(statistics, 'Water');
     const currentVegetation = getClassArea(statistics, VEGETATION_CLASSES);
 
     if (compareMode && referenceStatistics) {
       const urbanChange = currentUrban - getSingleClassArea(referenceStatistics, 'Urban');
       const vegetationChange = currentVegetation - getClassArea(referenceStatistics, VEGETATION_CLASSES);
-      const waterChange = currentWater - getSingleClassArea(referenceStatistics, 'Water');
-
-      const classChanges = LULC_CLASS_NAMES.map(className => {
-        const current = getSingleClassArea(statistics, className);
-        const baseline = getSingleClassArea(referenceStatistics, className);
-        return {
-          className,
-          change: current - baseline,
-        };
-      }).sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
-      const largestChange = classChanges[0];
 
       insights.push({
         label: 'Urban Change',
         value: `${urbanChange >= 0 ? '+' : '-'}${formatHectares(urbanChange)}`,
         detail: urbanChange > stabilityLimit
           ? `Urban increased by ${formatHectares(urbanChange)} compared with ${compareStartDate.slice(0, 4)}.`
-          : urbanChange < -stabilityLimit
-            ? `Urban decreased by ${formatHectares(urbanChange)} compared with ${compareStartDate.slice(0, 4)}.`
-            : 'Urban footprint is stable across both periods.',
-        tone: urbanChange > stabilityLimit ? 'warning' : urbanChange < -stabilityLimit ? 'positive' : 'neutral',
+          : 'Urban footprint is stable across both periods.',
+        tone: urbanChange > stabilityLimit ? 'warning' : 'positive',
       });
 
       insights.push({
         label: 'Vegetation Shift',
         value: `${vegetationChange >= 0 ? '+' : '-'}${formatHectares(vegetationChange)}`,
         detail: vegetationChange < -stabilityLimit
-          ? `Vegetation loss is the main ecological concern; review highlighted ${confidenceReview.focusZone} AOI cells first.`
-          : vegetationChange > stabilityLimit
-            ? `Vegetation gained ${formatHectares(vegetationChange)} across forest, grass, wetland, crop, and shrub classes.`
-            : 'Vegetation classes are broadly stable across both periods.',
-        tone: vegetationChange < -stabilityLimit ? 'critical' : vegetationChange > stabilityLimit ? 'positive' : 'neutral',
+          ? `Vegetation loss is the main ecological concern; review highlighted cells.`
+          : 'Vegetation classes are broadly stable.',
+        tone: vegetationChange < -stabilityLimit ? 'critical' : 'positive',
       });
-
-      insights.push({
-        label: 'Water Stability',
-        value: `${waterChange >= 0 ? '+' : '-'}${formatHectares(waterChange)}`,
-        detail: Math.abs(waterChange) <= stabilityLimit
-          ? 'Water class stable across both periods.'
-          : waterChange > 0
-            ? `Water expanded by ${formatHectares(waterChange)}; check seasonal or flood conditions.`
-            : `Water reduced by ${formatHectares(waterChange)}; review exposed wetland or shoreline pixels.`,
-        tone: Math.abs(waterChange) <= stabilityLimit ? 'positive' : 'warning',
-      });
-
-      if (largestChange) {
-        insights.push({
-          label: 'Largest Shift',
-          value: `${largestChange.change >= 0 ? '+' : '-'}${formatHectares(largestChange.change)}`,
-          detail: `${largestChange.className} has the largest mapped change in the AOI.`,
-          tone: Math.abs(largestChange.change) <= stabilityLimit ? 'neutral' : largestChange.change > 0 ? 'warning' : 'critical',
-        });
-      }
     } else {
       const dominant = Object.entries(statistics)
         .map(([className, data]) => ({ className, ...data }))
@@ -1268,15 +1410,13 @@ export default function Home() {
         label: 'Vegetation Footprint',
         value: `${currentVegetation.toLocaleString()} ha`,
         detail: `Vegetated classes account for about ${vegetationPct}% of the mapped area.`,
-        tone: vegetationPct >= 50 ? 'positive' : vegetationPct >= 25 ? 'neutral' : 'warning',
+        tone: vegetationPct >= 50 ? 'positive' : 'neutral',
       });
 
       insights.push({
         label: 'Urban Footprint',
         value: `${currentUrban.toLocaleString()} ha`,
-        detail: urbanPct > 35
-          ? 'Built-up coverage is high; prioritize heat and runoff review.'
-          : 'Built-up coverage remains below the high-urban review threshold.',
+        detail: urbanPct > 35 ? 'Built-up coverage is high; review runoff.' : 'Built-up coverage is moderate.',
         tone: urbanPct > 35 ? 'warning' : 'positive',
       });
     }
@@ -1285,1068 +1425,661 @@ export default function Home() {
       label: 'Uncertainty Review',
       value: `${confidenceReview.reviewCells}/${confidenceReview.totalCells} cells`,
       detail: confidenceReview.reviewCells > 0
-        ? `Confidence mask flags ${confidenceReview.reviewShare}% of review cells below ${confidenceThreshold}%, concentrated around the ${confidenceReview.focusZone} AOI.`
-        : `No review cells fall below the ${confidenceThreshold}% confidence threshold.`,
-      tone: confidenceReview.criticalCells > 0 ? 'critical' : confidenceReview.reviewCells > 0 ? 'warning' : 'positive',
+        ? `Confidence mask flags ${confidenceReview.reviewShare}% of cells below ${confidenceThreshold}%.`
+        : `No cells fall below the ${confidenceThreshold}% threshold.`,
+      tone: confidenceReview.criticalCells > 0 ? 'critical' : 'positive',
     });
 
     return insights.slice(0, 4);
   };
 
   const smartResultSummary = getSmartResultSummary();
-  const smartInsightToneClass: Record<InsightTone, string> = {
-    positive: 'border-emerald-500/20 bg-emerald-500/5',
-    warning: 'border-amber-500/25 bg-amber-500/7',
-    critical: 'border-rose-500/25 bg-rose-500/7',
-    neutral: 'border-slate-800 bg-slate-950/35',
-  };
-  const smartInsightIconClass: Record<InsightTone, string> = {
-    positive: 'text-emerald-400',
-    warning: 'text-amber-400',
-    critical: 'text-rose-400',
-    neutral: 'text-blue-400',
-  };
-  const getSmartInsightIcon = (tone: InsightTone) => {
-    if (tone === 'positive') return <CheckCircle className="w-4 h-4" />;
-    if (tone === 'critical') return <ShieldAlert className="w-4 h-4" />;
-    if (tone === 'warning') return <AlertTriangle className="w-4 h-4" />;
-    return <Info className="w-4 h-4" />;
-  };
-
-  // Layer info descriptions
-  const layerDescriptions: Record<string, string> = {
-    true_color: 'Natural human-eye perspective using Red (B4), Green (B3), and Blue (B2) spectral bands from Sentinel-2 L2A surface reflectance data.',
-    false_color: 'Near-Infrared composite (B8, B4, B3). Healthy vegetation appears bright red/magenta. Urban areas appear blue/grey. Water appears dark.',
-    ndvi: 'Normalized Difference Vegetation Index: (B8−B4)/(B8+B4). Dense green canopy → dark green. Bare soil → white/tan. Water → blue.',
-    classified: 'Model-derived land cover classification with 9 LULC classes mapped from spectral band analysis.'
-  };
 
   const layerStack = [
     {
       key: 'true_color' as const,
-      label: 'True Color',
-      detail: 'Sentinel-2 RGB',
+      label: 'True color',
+      sub: 'Sentinel-2 RGB',
       hasUrl: !!(tileUrls.trueColor || tileUrls.baselineTrueColor),
-      Icon: Globe,
-      swatch: '#a9cbd8'
     },
     {
       key: 'false_color' as const,
-      label: 'False Color',
-      detail: 'NIR composite',
+      label: 'False color',
+      sub: 'NIR composite',
       hasUrl: !!(tileUrls.falseColor || tileUrls.baselineFalseColor),
-      Icon: Activity,
-      swatch: '#c95757'
     },
     {
       key: 'ndvi' as const,
       label: 'Vegetation',
-      detail: 'NDVI index',
+      sub: 'NDVI index',
       hasUrl: !!(tileUrls.ndvi || tileUrls.baselineNdvi),
-      Icon: TrendingUp,
-      swatch: '#5f8b55'
     },
     {
       key: 'classified' as const,
-      label: 'Land Cover',
-      detail: statistics ? `${Object.keys(statistics).length} classes` : 'Classification output',
+      label: 'Land cover',
+      sub: 'Classification output',
       hasUrl: !!(tileUrls.classified || tileUrls.baselineClassified),
-      Icon: BarChart3,
-      swatch: '#e9c947'
     },
   ];
 
-  const availableLayerCount = layerStack.filter(layer => layer.hasUrl).length;
-  const activeLayerLabel = activeLayer === 'none'
-    ? 'Base Map'
-    : layerStack.find(layer => layer.key === activeLayer)?.label || 'Overlay';
-  const imageryStatus = loadingMapId
-    ? 'Fetching imagery'
-    : loadingClassify
-      ? 'Classifying'
-      : tileUrls.classified
-        ? 'Classified'
-        : tileUrls.trueColor
-          ? 'Imagery ready'
-          : 'Awaiting AOI';
-  const activePeriodLabel = compareMode
-    ? activeTimePeriod === 'target'
-      ? `Target ${startDate.slice(0, 4)}`
-      : `Baseline ${compareStartDate.slice(0, 4)}`
-    : startDate.slice(0, 4) === endDate.slice(0, 4)
-      ? `${startDate.slice(0, 4)} season`
-      : `${startDate.slice(0, 4)}-${endDate.slice(0, 4)}`;
+  const readyLayersCount = layerStack.filter(l => l.hasUrl).length;
 
   return (
-    <div className="geo-shell flex flex-col min-h-screen bg-slate-950 text-slate-100 print:bg-white print:text-black">
-      {/* Top Navigation */}
-      <header className="geo-topbar flex items-center justify-between px-5 py-3 bg-slate-900/95 backdrop-blur-lg border-b border-slate-800 shadow-lg sticky top-0 z-50 print:hidden">
-        <div className="flex items-center gap-3">
-          <div className="geo-brand-mark relative p-2.5 bg-gradient-to-br from-blue-500/15 to-indigo-500/15 border border-blue-500/20 text-blue-400 rounded-xl" aria-hidden="true">
-            <Layers className="w-5 h-5" />
+    <div className="geo-app">
+      
+      {/* ---------- Top bar ---------- */}
+      <header className="topbar">
+        <div className="flex items-center gap-0">
+          <div className="brand">
+            <div className="brand-mark">
+              <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
+                <path d="M2,17 Q8,13 13,16 T24,14" stroke="#4E6A3D" strokeWidth="1.4" fill="none"/>
+                <path d="M2,12 Q9,7 13,11 T24,9" stroke="#7FA35C" strokeWidth="1.4" fill="none"/>
+                <circle cx="17" cy="10.5" r="1.6" fill="#C8834C"/>
+              </svg>
+            </div>
+            <div className="brand-text">
+              <div className="name">GeoClass</div>
+              <div className="sub">Land cover operations</div>
+            </div>
           </div>
-          <div>
-            <h1 className="text-base font-bold bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              GeoClass
-            </h1>
-            <p className="text-[10px] text-slate-500 font-semibold tracking-widest uppercase">
-              Land cover operations workspace
-            </p>
-          </div>
-          <span className="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-md">
-            District B13
-          </span>
         </div>
 
-        {/* Workflow Progress */}
-        <WorkflowProgress currentStep={workflowStep} />
+        <div className="steps-nav">
+          <div className={`step ${workflowStep >= 1 ? 'active' : ''}`}>Select AOI</div>
+          <span className="sep">/</span>
+          <div className={`step ${workflowStep >= 2 ? 'active' : ''}`}>Fetch imagery</div>
+          <span className="sep">/</span>
+          <div className={`step ${workflowStep >= 3 ? 'active' : ''}`}>Classify</div>
+          <span className="sep">/</span>
+          <div className={`step ${workflowStep >= 4 ? 'active' : ''}`}>Analyze</div>
+        </div>
 
-        {/* Connection Status + Processing Time */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {processingTime && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-400 text-[10px] font-semibold">
-              <Clock className="w-3 h-3" /> {processingTime}s
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#22241E] border border-[#35372E] text-[#8B8C7F] text-[11px] mono">
+              <Clock className="w-3 h-3 text-[#7FA35C]" /> {processingTime}s
             </div>
           )}
-          {geeConnected === null ? (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-slate-400 text-xs font-semibold">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Connecting...
-            </div>
-          ) : geeConnected ? (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              GEE Online
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              GEE Offline
-            </div>
-          )}
+          <div className="gee-status">
+            <span className={`dot ${geeConnected === false ? 'offline' : ''}`}></span>
+            <span>{geeConnected === null ? 'Connecting...' : geeConnected ? 'Earth Engine connected' : 'Earth Engine offline'}</span>
+          </div>
         </div>
       </header>
 
-      {/* Main Workspace */}
-      <div className="geo-workspace flex flex-1 overflow-hidden print:overflow-visible">
+      {/* ---------- Main grid ---------- */}
+      <div className="main-grid">
         
-        {/* Sidebar Controls */}
-        <aside 
-          className={`geo-sidebar ${sidebarCollapsed ? 'w-14' : 'w-[360px]'} bg-slate-900 border-r border-slate-800 flex flex-col overflow-hidden min-h-0 transition-all duration-300 print:hidden`} 
-          aria-label="Controls Panel"
-        >
-          {/* Collapse Toggle */}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="flex items-center justify-center py-2 border-b border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition"
-            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {sidebarCollapsed ? <ChevronDown className="w-4 h-4 rotate-[-90deg]" /> : <ChevronUp className="w-4 h-4 rotate-[-90deg]" />}
-          </button>
+        {/* ---------- Left rail (Timeline & Controls) ---------- */}
+        <aside className="rail" aria-label="Workflow controls">
+          <div className="rail-track">
 
-          {!sidebarCollapsed && (
-            <>
-              <div className="geo-sidebar-scroll p-4 space-y-5 flex-1 min-h-0" tabIndex={0} aria-label="Area Settings scroll area">
-                <div className="geo-sidebar-title">
-                  <span>Area Settings</span>
-                  <strong>Sentinel-2 / classification review</strong>
-                </div>
+            {/* Notification messages */}
+            {(errorMessage || successMessage) && (
+              <div className="mb-4 space-y-2">
+                {errorMessage && <Notification type="error" message={errorMessage} onDismiss={() => setErrorMessage(null)} />}
+                {successMessage && <Notification type="success" message={successMessage} onDismiss={() => setSuccessMessage(null)} />}
+              </div>
+            )}
 
-                <form className="space-y-2.5" onSubmit={submitLocationSearch}>
-                  <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                      <Search className="w-3 h-3" />
+            {/* Phase 1: AOI Selection */}
+            <div className={`phase ${coords.length > 0 ? 'done' : 'active'}`}>
+              <div className="node"></div>
+              <div className="phase-title">
+                <span>Area of Interest</span>
+                {coords.length > 0 && <span className="tag mono">{coords.length} pts</span>}
+              </div>
+
+              <div className="phase-body space-y-2.5">
+                {/* Location search */}
+                <div className="relative">
+                  <input
+                    type="search"
+                    value={locationQuery}
+                    onChange={(e) => {
+                      setLocationQuery(e.target.value);
+                      setSelectedLocation(null);
+                    }}
+                    placeholder="Search location (city, district)..."
+                    className="ctl text-xs"
+                  />
+                  {locationLoading && (
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7FA35C]" />
                     </div>
-                    Find Location
-                  </h2>
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-                    <input
-                      type="search"
-                      value={locationQuery}
-                      onChange={(e) => {
-                        setLocationQuery(e.target.value);
-                        setSelectedLocation(null);
-                      }}
-                      placeholder="Search city, address, landmark"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 pl-8 pr-9 text-xs text-slate-200 outline-none"
-                      aria-label="Search map location"
-                      autoComplete="off"
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                      {locationLoading ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" />
-                      ) : locationQuery ? (
-                        <button
-                          type="button"
-                          onClick={clearLocationSearch}
-                          className="p-1 rounded-md text-slate-500 hover:text-slate-300"
-                          aria-label="Clear location search"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-
+                  )}
                   {locationSuggestions.length > 0 && (
-                    <div className="border border-slate-800 rounded-xl bg-slate-950/35 overflow-hidden" role="listbox" aria-label="Location suggestions">
-                      {locationSuggestions.map((location) => (
+                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#22241E] border border-[#35372E] rounded shadow-2xl overflow-hidden">
+                      {locationSuggestions.map((loc) => (
                         <button
+                          key={loc.id}
                           type="button"
-                          key={location.id}
-                          onClick={() => selectLocation(location)}
-                          className="w-full px-3 py-2 text-left border-b border-slate-800/60 last:border-b-0 hover:bg-blue-500/8 transition"
-                          role="option"
+                          onClick={() => selectLocation(loc)}
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-[#2A2C24] border-b border-[#35372E] last:border-b-0 cursor-pointer"
                         >
-                          <span className="flex items-start gap-2">
-                            <MapPin className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
-                            <span className="min-w-0">
-                              <span className="block text-xs font-bold text-slate-300 truncate">{location.shortLabel}</span>
-                              <span className="block text-[10px] text-slate-500 leading-snug line-clamp-2">{location.label}</span>
-                            </span>
-                          </span>
+                          <span className="block font-medium text-[#EDE8DB]">{loc.shortLabel}</span>
+                          <span className="block text-[10px] text-[#8B8C7F] truncate">{loc.label}</span>
                         </button>
                       ))}
                     </div>
                   )}
+                </div>
 
-                  {selectedLocation && (
-                    <div className="p-2.5 rounded-xl border border-blue-500/20 bg-blue-500/5 text-[10px] text-slate-400">
-                      <div className="flex items-start justify-between gap-2">
-                        <span>
-                          <span className="block font-bold text-blue-400 text-xs">{selectedLocation.shortLabel}</span>
-                          <span className="block mt-0.5 tabular-nums">
-                            {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
-                          </span>
-                        </span>
-                        <button
-                          type="submit"
-                          className="px-2 py-1 rounded-md border border-blue-500/25 text-blue-400 font-bold uppercase hover:bg-blue-500/10"
-                        >
-                          Zoom
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </form>
-                
-                {/* Step 1: AOI Draw / Upload */}
-                <div className="space-y-2.5">
-                  <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                      <span className="text-[10px] font-black">1</span>
-                    </div>
-                    Area of Interest
-                  </h2>
-                  {coords.length === 0 ? (
-                    <div className="space-y-2">
-                      <div className="p-4 bg-slate-950/80 border border-dashed border-slate-700 rounded-xl text-center shadow-inner">
-                        <MapPin className="w-8 h-8 text-slate-700 mx-auto mb-2" />
-                        <p className="text-xs text-slate-400 font-medium">No area selected</p>
-                        <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">Draw on the map or import a boundary file</p>
-                      </div>
-                      
-                      <label className="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 hover:border-blue-500/30 hover:bg-blue-500/5 rounded-xl cursor-pointer transition-all text-[10px] font-bold text-slate-400 uppercase tracking-wider focus-within:ring-2 focus-within:ring-blue-500 group">
-                        <Upload className="w-3.5 h-3.5 text-blue-400 group-hover:scale-110 transition-transform" />
-                        <span>Upload Boundary File</span>
-                        <input
-                          type="file"
-                          accept=".geojson,.json,.shp"
-                          onChange={handleGeoJSONUpload}
-                          className="sr-only"
-                        />
-                      </label>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="p-3 bg-blue-500/5 border border-blue-500/20 text-blue-400 rounded-xl flex flex-col gap-1.5 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs font-semibold">
-                            <CheckCircle className="w-4 h-4 text-emerald-400" /> 
-                            AOI Selected
-                          </div>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-950 text-slate-300 font-bold border border-slate-800 shadow-inner font-mono">
-                            {coords.length} pts
-                          </span>
-                        </div>
-                        {aoiAreaHa !== null && (
-                          <div className="text-[11px] text-slate-300 font-medium flex justify-between gap-3 border-t border-blue-500/10 pt-1.5">
-                            <span>Estimated Area</span>
-                            <span className="font-bold text-blue-300 tabular-nums text-right">
-                              {aoiAreaKm2?.toFixed(2)} km² ({Math.round(aoiAreaHa).toLocaleString()} ha)
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      {aoiAreaHa !== null && aoiAreaHa > 15000 && (
-                        <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-[11px] text-amber-400 leading-normal flex items-start gap-2 animate-in fade-in duration-300">
-                          <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                          <div>
-                            <span className="font-bold">Large Area Warning:</span> The selected AOI exceeds 15,000 hectares. To prevent Earth Engine memory limits, the system will dynamically optimize resolution.
-                          </div>
-                        </div>
-                      )}
-                      <button 
-                        onClick={() => handleAOIDrawn([])}
-                        className="w-full py-1.5 px-3 bg-slate-950 border border-slate-800 hover:border-rose-500/30 hover:text-rose-400 text-slate-500 text-[10px] font-bold uppercase rounded-lg transition cursor-pointer"
-                      >
-                        Clear AOI
-                      </button>
-                    </div>
-                  )}
+                {/* Saved district presets */}
+                <div className="grid grid-cols-3 gap-1.5 pt-1">
+                  {SAVED_AREAS.map((area) => (
+                    <button
+                      key={area.id}
+                      type="button"
+                      onClick={() => selectSavedArea(area)}
+                      className={`text-[11px] py-1.5 px-2 rounded border transition text-center cursor-pointer ${
+                        selectedAreaId === area.id
+                          ? 'bg-[#4E6A3D]/40 border-[#7FA35C] text-[#EDE8DB]'
+                          : 'bg-[#22241E] border-[#35372E] text-[#8B8C7F] hover:text-[#EDE8DB] hover:border-[#454737]'
+                      }`}
+                    >
+                      {area.name.replace(' Review', '').replace(' Greenbelt', '')}
+                    </button>
+                  ))}
+                </div>
 
-                  <div className="geo-aoi-library space-y-2 pt-2 border-t border-slate-800/70">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase text-slate-500 flex items-center gap-1.5">
-                        <Bookmark className="w-3 h-3" /> Saved Areas
-                      </span>
-                      <button
-                        type="button"
-                        onClick={saveCurrentArea}
-                        className="text-[10px] font-bold uppercase text-blue-400 flex items-center gap-1 disabled:opacity-40"
-                        disabled={coords.length === 0}
-                      >
-                        <Save className="w-3 h-3" /> Save
-                      </button>
-                    </div>
-                    <label className="relative block">
-                      <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-                      <input
-                        type="search"
-                        value={areaSearch}
-                        onChange={(e) => setAreaSearch(e.target.value)}
-                        placeholder="Search saved areas"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 pl-8 pr-2 text-xs text-slate-200 outline-none"
-                      />
-                    </label>
-                    <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-1">
-                      {filteredSavedAreas.map(area => {
-                        const areaHa = calculateAOIArea(area.coords);
-                        return (
-                          <button
-                            type="button"
-                            key={area.id}
-                            onClick={() => selectSavedArea(area)}
-                            className={`text-left p-2 rounded-lg border transition ${
-                              selectedAreaId === area.id
-                                ? 'bg-blue-500/8 border-blue-500/40 text-blue-400'
-                                : 'bg-slate-950/50 border-slate-800/50 text-slate-400 hover:border-slate-700'
-                            }`}
-                          >
-                            <span className="flex items-start justify-between gap-2">
-                              <span className="min-w-0">
-                                <span className="block text-xs font-bold truncate">{area.name}</span>
-                                <span className="block text-[10px] text-slate-500">{area.type}</span>
-                              </span>
-                              <span className="text-[10px] font-bold tabular-nums whitespace-nowrap">
-                                {(areaHa / 100).toFixed(1)} km²
-                              </span>
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                {/* Upload boundary */}
+                <label className="flex items-center justify-center gap-2 p-2 bg-[#22241E] border border-[#35372E] hover:border-[#454737] rounded cursor-pointer transition text-[11px] text-[#8B8C7F] hover:text-[#EDE8DB]">
+                  <Upload className="w-3.5 h-3.5 text-[#7FA35C]" />
+                  <span>Upload GeoJSON boundary</span>
+                  <input type="file" accept=".geojson,.json" onChange={handleGeoJSONUpload} className="sr-only" />
+                </label>
+
+                {coords.length > 0 && (
+                  <div className="flex items-center justify-between text-[11px] text-[#8B8C7F] pt-1">
+                    <span>{aoiAreaHa ? `${aoiAreaHa.toFixed(1)} ha` : ''}</span>
+                    <button
+                      type="button"
+                      onClick={saveCurrentArea}
+                      className="text-[#7FA35C] hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <Save className="w-3 h-3" /> Save AOI
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Phase 2: Fetch satellite imagery */}
+            <div className={`phase ${tileUrls.trueColor ? 'done' : (coords.length > 0 && !tileUrls.classified ? 'active' : '')}`}>
+              <div className="node"></div>
+              <div className="phase-title">
+                <span>Fetch satellite imagery</span>
+                {tileUrls.trueColor && <span className="tag mono">READY</span>}
+              </div>
+
+              <div className="phase-body space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="field-label">Start date</label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => updateTargetStartDate(e.target.value)}
+                      className="ctl text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="field-label">End date</label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="ctl text-xs"
+                    />
                   </div>
                 </div>
 
-                {/* Change Detection Mode Toggle */}
-                <div className="p-3 bg-gradient-to-r from-slate-950/40 to-slate-900/20 border border-slate-800/80 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-slate-300 block">Change Detection</span>
-                    <span className="text-[10px] text-slate-500 leading-tight block mt-0.5">Compare temporal shifts</span>
+                {/* Cloud cover limit */}
+                <div>
+                  <div className="flex justify-between text-[11px] text-[#8B8C7F] mb-1">
+                    <span>Cloud limit</span>
+                    <span className="mono text-[#EDE8DB]">{cloudCover}% max</span>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={cloudCover}
+                    onChange={(e) => setCloudCover(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Temporal comparison toggle */}
+                <div className="pt-1">
+                  <div className="flex items-center justify-between py-1">
+                    <span className="text-[11.5px] text-[#8B8C7F]">Temporal comparison</span>
                     <input
                       type="checkbox"
                       checked={compareMode}
-                      onChange={(e) => {
-                        setCompareMode(e.target.checked);
-                        setActiveTimePeriod('target');
-                      }}
-                      className="sr-only peer"
+                      onChange={(e) => setCompareMode(e.target.checked)}
+                      className="accent-[#7FA35C] cursor-pointer"
                     />
-                    <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600 peer-checked:after:bg-white"></div>
-                  </label>
-                </div>
-
-                {compareMode && (
-                  <div className="geo-timeline p-3 border border-slate-800/80 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-blue-400" /> Change Timeline
-                      </span>
-                      <span className="text-[10px] text-slate-500 font-bold">
-                        {timelineBaselineYear} vs {timelineTargetYear}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-slate-500">Baseline</label>
-                        <select
-                          value={timelineBaselineYear}
-                          onChange={(e) => applyBaselineYear(Number(e.target.value))}
-                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200"
-                        >
-                          {timelineYears.map(year => (
-                            <option key={year} value={year} disabled={year >= timelineTargetYear}>{year}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-slate-500">Target</label>
-                        <select
-                          value={timelineTargetYear}
-                          onChange={(e) => applyTargetYear(Number(e.target.value))}
-                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200"
-                        >
-                          {timelineYears.map(year => (
-                            <option key={year} value={year} disabled={year <= timelineBaselineYear}>{year}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-6 gap-1">
-                      {timelineYears.map(year => (
-                        <button
-                          type="button"
-                          key={year}
-                          onClick={() => {
-                            if (year <= timelineBaselineYear) {
-                              applyBaselineYear(year);
-                            } else if (year >= timelineTargetYear) {
-                              applyTargetYear(year);
-                            } else if (year - timelineBaselineYear <= timelineTargetYear - year) {
-                              applyBaselineYear(year);
-                            } else {
-                              applyTargetYear(year);
-                            }
-                          }}
-                          className={`h-7 rounded-md border text-[10px] font-bold transition ${
-                            year === timelineBaselineYear || year === timelineTargetYear
-                              ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
-                              : year > timelineBaselineYear && year < timelineTargetYear
-                                ? 'bg-slate-800 border-slate-700 text-slate-400'
-                                : 'bg-slate-950/50 border-slate-800/60 text-slate-500'
-                          }`}
-                        >
-                          {String(year).slice(2)}
-                        </button>
-                      ))}
-                    </div>
-                    {temporalValidationMessage && (
-                      <div className="p-2.5 rounded-lg border border-rose-500/20 bg-rose-500/7 text-[10px] text-rose-400 leading-relaxed flex items-start gap-2">
-                        <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                        <span>{temporalValidationMessage}</span>
-                      </div>
-                    )}
-                    {!temporalValidationMessage && !seasonWindowsMatch && (
-                      <div className="p-2.5 rounded-lg border border-amber-500/25 bg-amber-500/10 text-[10px] text-amber-500 leading-relaxed flex items-start gap-2">
-                        <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                        <span>Baseline and target seasons differ. Results are still valid, but seasonal effects may look like land-cover change.</span>
-                      </div>
-                    )}
                   </div>
-                )}
-
-                {/* Step 2: Date Filters */}
-                <div className="space-y-3">
-                  <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                      <span className="text-[10px] font-black">2</span>
-                    </div>
-                    Imagery Settings
-                  </h2>
-                  
-                  {/* Target Period */}
-                  <div className="space-y-2">
-                    {compareMode && (
-                      <span className="text-[10px] font-extrabold uppercase text-blue-400 tracking-wide block border-b border-slate-800 pb-1 flex items-center gap-1.5">
-                        <Target className="w-3 h-3" /> Target Period
-                      </span>
-                    )}
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-slate-500 font-bold uppercase block" htmlFor="start-date-input">Start</label>
-                        <input
-                          id="start-date-input"
-                          type="date"
-                          value={startDate}
-                          onChange={(e) => updateTargetStartDate(e.target.value)}
-                          onClick={(e) => { try { e.currentTarget.showPicker(); } catch {} }}
-                          className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-lg p-2 text-xs text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 transition font-medium cursor-pointer"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-slate-500 font-bold uppercase block" htmlFor="end-date-input">End</label>
-                        <input
-                          id="end-date-input"
-                          type="date"
-                          value={endDate}
-                          onChange={(e) => setEndDate(e.target.value)}
-                          onClick={(e) => { try { e.currentTarget.showPicker(); } catch {} }}
-                          className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-lg p-2 text-xs text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 transition font-medium cursor-pointer"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Baseline Period (Compare Mode only) */}
                   {compareMode && (
-                    <div className="space-y-2 pt-2 border-t border-slate-800">
-                      <span className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wide block border-b border-slate-800 pb-1 flex items-center gap-1.5">
-                        <Activity className="w-3 h-3" /> Baseline Period
-                      </span>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <div className="space-y-1">
-                          <label className="text-[10px] text-slate-500 font-bold uppercase block" htmlFor="baseline-start-input">Start</label>
+                    <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#35372E]">
+                      <div>
+                        <label className="field-label">Baseline start</label>
                         <input
-                          id="baseline-start-input"
                           type="date"
                           value={compareStartDate}
-                            onChange={(e) => updateBaselineStartDate(e.target.value)}
-                            onClick={(e) => { try { e.currentTarget.showPicker(); } catch {} }}
-                            className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-lg p-2 text-xs text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 transition font-medium cursor-pointer"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] text-slate-500 font-bold uppercase block" htmlFor="baseline-end-input">End</label>
+                          onChange={(e) => updateBaselineStartDate(e.target.value)}
+                          className="ctl text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="field-label">Baseline end</label>
+                        <input
+                          type="date"
+                          value={compareEndDate}
+                          onChange={(e) => setCompareEndDate(e.target.value)}
+                          className="ctl text-xs"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={fetchSatelliteImagery}
+                  disabled={loadingMapId || coords.length === 0}
+                  className="run-btn"
+                >
+                  {loadingMapId ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Fetching Sentinel-2...
+                    </>
+                  ) : (
+                    <>
+                      <Satellite className="w-3.5 h-3.5" /> Fetch satellite imagery
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Phase 3: Classification */}
+            <div className={`phase ${tileUrls.classified ? 'done active' : (tileUrls.trueColor ? 'active' : '')}`}>
+              <div className="node"></div>
+              <div className="phase-title">
+                <span>Classification</span>
+                <span className="tag mono">03</span>
+              </div>
+
+              <div className="phase-body">
+                <div className="field-label">Model</div>
+                <select
+                  value={modelType}
+                  onChange={(e) => setModelType(e.target.value as any)}
+                  className="ctl"
+                >
+                  <option value="deep_learning">Deep Learning Spatial U-Net (GeoAI)</option>
+                  <option value="random_forest">Smile random forest — on the fly</option>
+                  <option value="dynamic_world">Dynamic World (10m Near-RT Labels)</option>
+                </select>
+
+                {(modelType === 'random_forest' || modelType === 'deep_learning') && (
+                  <>
+                    <div 
+                      className="hp-toggle"
+                      onClick={() => setShowConfig(!showConfig)}
+                    >
+                      <span>Hyperparameters</span>
+                      <span>{showConfig ? '−' : '+'}</span>
+                    </div>
+
+                    {showConfig && (
+                      <div className="pt-3 space-y-2.5">
+                        <div>
+                          <div className="flex justify-between text-[11px] text-[#8B8C7F] mb-1">
+                            <span>Decision trees</span>
+                            <span className="mono text-[#EDE8DB]">{numTrees}</span>
+                          </div>
                           <input
-                            id="baseline-end-input"
-                            type="date"
-                            value={compareEndDate}
-                            onChange={(e) => setCompareEndDate(e.target.value)}
-                            onClick={(e) => { try { e.currentTarget.showPicker(); } catch {} }}
-                            className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-lg p-2 text-xs text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 transition font-medium cursor-pointer"
+                            type="range"
+                            min="10"
+                            max="250"
+                            step="10"
+                            value={numTrees}
+                            onChange={(e) => setNumTrees(parseInt(e.target.value))}
+                            className="w-full"
                           />
                         </div>
-                      </div>
-                    </div>
-                  )}
 
-                  {temporalValidationMessage && !compareMode && (
-                    <div className="p-2.5 rounded-lg border border-rose-500/20 bg-rose-500/7 text-[10px] text-rose-400 leading-relaxed flex items-start gap-2">
-                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                      <span>{temporalValidationMessage}</span>
-                    </div>
-                  )}
-
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-bold uppercase text-slate-500">
-                      <span>Max Cloud Cover</span>
-                      <span className="text-blue-400 font-mono text-xs">{cloudCover}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      aria-label="Max Cloud Cover Percentage"
-                      value={cloudCover}
-                      onChange={(e) => setCloudCover(parseInt(e.target.value))}
-                      className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* Action: Pull Raw S2 */}
-                  <button
-                    onClick={fetchSatelliteImagery}
-                    disabled={loadingMapId || coords.length === 0 || !!temporalValidationMessage}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-700 shadow-md disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer active:scale-[0.98]"
-                  >
-                    {loadingMapId ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin text-blue-400" /> Fetching Composites...
-                      </>
-                    ) : (
-                      <>
-                        <Satellite className="w-4 h-4 text-blue-400" /> Fetch Satellite Imagery
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Step 3: Classifier Configuration */}
-                <div className="space-y-3">
-                  <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                      <span className="text-[10px] font-black">3</span>
-                    </div>
-                    Classification
-                  </h2>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wide block" htmlFor="model-select">Model</label>
-                    <select
-                      id="model-select"
-                      value={modelType}
-                      onChange={(e) => setModelType(e.target.value as any)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition font-medium"
-                    >
-                      <option value="random_forest">Smile Random Forest (On-the-fly Training)</option>
-                      <option value="dynamic_world">Dynamic World (10m Near-RT Labels)</option>
-                    </select>
-                  </div>
-
-                  {/* Random Forest Advanced Panel Toggle */}
-                  {modelType === 'random_forest' && (
-                    <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/20">
-                      <button 
-                        onClick={() => setShowConfig(!showConfig)}
-                        aria-expanded={showConfig}
-                        className="w-full p-2.5 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider hover:bg-slate-800/30 transition focus-visible:ring-2 focus-visible:ring-blue-500"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <Settings className="w-3 h-3" /> Hyperparameters
-                        </span>
-                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showConfig ? 'rotate-180' : ''}`} />
-                      </button>
-
-                      {showConfig && (
-                        <div className="p-3 border-t border-slate-800 space-y-3 bg-slate-950/30">
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between text-[10px] font-bold text-slate-500">
-                              <span>Decision Trees</span>
-                              <span className="text-blue-400 font-mono text-xs">{numTrees}</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="10"
-                              max="250"
-                              step="10"
-                              aria-label="Number of Decision Trees"
-                              value={numTrees}
-                              onChange={(e) => setNumTrees(parseInt(e.target.value))}
-                              className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
-                            />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between text-[10px] font-bold text-slate-500">
-                              <span>Samples per Class</span>
-                              <span className="text-blue-400 font-mono text-xs">{samplePoints} px</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="50"
-                              max="500"
-                              step="25"
-                              aria-label="Training Sample Points per Class"
-                              value={samplePoints}
-                              onChange={(e) => setSamplePoints(parseInt(e.target.value))}
-                              className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Action: Run Classifier */}
-                  <button
-                    onClick={runClassification}
-                    disabled={loadingClassify || coords.length === 0 || !!temporalValidationMessage}
-                    className="geo-primary-action w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/30 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer active:scale-[0.98]"
-                  >
-                    {loadingClassify ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin text-white" />
-                        <span>Classification in Progress...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4" />
-                        <span>Run Classification</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Step 4: Layer Stack */}
-                <div className="space-y-3 pt-3 border-t border-slate-800">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                        <span className="text-[10px] font-black">4</span>
-                      </div>
-                      Layer Stack
-                    </h2>
-                    <span className="text-[10px] font-bold text-slate-500 tabular-nums">
-                      {availableLayerCount}/4 ready
-                    </span>
-                  </div>
-
-                  <div className="geo-layer-stack border border-slate-800 rounded-xl overflow-hidden bg-slate-950/30">
-                    <button
-                      onClick={() => { setActiveLayer('none'); setActiveInfoTab('none'); }}
-                      className={`geo-layer-row w-full px-3 py-2.5 text-left border-b border-slate-800/70 transition-all ${
-                        activeLayer === 'none'
-                          ? 'bg-blue-500/8 text-blue-400'
-                          : 'text-slate-500 hover:text-slate-300'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="w-7 h-7 rounded-md border border-slate-800 flex items-center justify-center bg-slate-900">
-                          <Eye className="w-3.5 h-3.5" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-xs font-bold">Base Map</span>
-                          <span className="block text-[10px] text-slate-500">District reference map</span>
-                        </span>
-                        <span className="text-[10px] font-bold uppercase">
-                          {activeLayer === 'none' ? 'Visible' : 'Base'}
-                        </span>
-                      </span>
-                    </button>
-
-                    {layerStack.map(layer => (
-                      <div key={layer.key} className="border-b border-slate-800/70 last:border-b-0">
-                        <button
-                          type="button"
-                          disabled={!layer.hasUrl}
-                          onClick={() => {
-                            if (!layer.hasUrl) return;
-                            setActiveLayer(layer.key);
-                            setActiveInfoTab(activeInfoTab === layer.key ? 'none' : layer.key);
-                          }}
-                          className={`geo-layer-row w-full px-3 py-2.5 text-left transition-all disabled:cursor-not-allowed disabled:opacity-55 ${
-                            activeLayer === layer.key
-                              ? 'bg-blue-500/8 text-blue-400'
-                              : 'text-slate-500 hover:text-slate-300'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <span
-                              className="w-7 h-7 rounded-md border border-slate-800 flex items-center justify-center bg-slate-900"
-                              style={{ boxShadow: layer.hasUrl ? `inset 3px 0 0 ${layer.swatch}` : undefined }}
-                            >
-                              <layer.Icon className="w-3.5 h-3.5" />
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block text-xs font-bold">{layer.label}</span>
-                              <span className="block text-[10px] text-slate-500">{layer.detail}</span>
-                            </span>
-                            <span className="flex items-center gap-2">
-                              <span className="text-[10px] font-bold uppercase">
-                                {layer.hasUrl ? (activeLayer === layer.key ? 'Visible' : 'Ready') : 'Waiting'}
-                              </span>
-                              <Info className={`w-3 h-3 transition-opacity ${activeInfoTab === layer.key ? 'opacity-100 text-blue-400' : 'opacity-35'}`} />
-                            </span>
-                          </span>
-                        </button>
-                        {activeInfoTab === layer.key && layer.hasUrl && (
-                          <p className="text-[10px] text-slate-500 bg-slate-950/60 px-3 py-2 leading-relaxed border-t border-slate-800/50 animate-in fade-in duration-200">
-                            {layerDescriptions[layer.key]}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                    <div className="border-t border-slate-800/70">
-                      <button
-                        type="button"
-                        disabled={!confidenceReady}
-                        onClick={() => setConfidenceVisible(value => !value)}
-                        className={`geo-layer-row w-full px-3 py-2.5 text-left transition-all disabled:cursor-not-allowed disabled:opacity-55 ${
-                          confidenceVisible
-                            ? 'bg-blue-500/8 text-blue-400'
-                            : 'text-slate-500 hover:text-slate-300'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span
-                            className="w-7 h-7 rounded-md border border-slate-800 flex items-center justify-center bg-slate-900"
-                            style={{ boxShadow: 'inset 3px 0 0 #f0a442' }}
-                          >
-                            <ShieldAlert className="w-3.5 h-3.5" />
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-xs font-bold">Confidence Mask</span>
-                            <span className="block text-[10px] text-slate-500">
-                              {confidenceReady ? `Review below ${confidenceThreshold}%` : 'Available after classification'}
-                            </span>
-                          </span>
-                          <span className="text-[10px] font-bold uppercase">
-                            {!confidenceReady ? 'Waiting' : confidenceVisible ? 'On' : 'Ready'}
-                          </span>
-                        </span>
-                      </button>
-                      {confidenceReady && confidenceVisible && (
-                        <div className="px-3 py-2 border-t border-slate-800/50 space-y-2">
-                          <div className="flex justify-between text-[10px] font-bold uppercase text-slate-500">
-                            <span>Confidence Threshold</span>
-                            <span className="font-mono text-xs text-blue-400">{confidenceThreshold}%</span>
+                        <div>
+                          <div className="flex justify-between text-[11px] text-[#8B8C7F] mb-1">
+                            <span>Samples per class</span>
+                            <span className="mono text-[#EDE8DB]">{samplePoints} px</span>
                           </div>
                           <input
                             type="range"
                             min="50"
-                            max="95"
-                            value={confidenceThreshold}
-                            onChange={(e) => setConfidenceThreshold(Number(e.target.value))}
-                            className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                            aria-label="Confidence threshold"
+                            max="500"
+                            step="25"
+                            value={samplePoints}
+                            onChange={(e) => setSamplePoints(parseInt(e.target.value))}
+                            className="w-full"
                           />
-                          <div className="grid grid-cols-3 gap-1.5">
-                            <div className="p-2 rounded-md border border-slate-800/60 bg-slate-950/35">
-                              <span className="block text-[9px] uppercase font-bold text-slate-500">Avg</span>
-                              <span className="text-xs font-bold text-slate-300">{confidenceReview.averageScore}%</span>
-                            </div>
-                            <div className="p-2 rounded-md border border-slate-800/60 bg-slate-950/35">
-                              <span className="block text-[9px] uppercase font-bold text-slate-500">Review</span>
-                              <span className="text-xs font-bold text-slate-300">{confidenceReview.reviewCells}</span>
-                            </div>
-                            <div className="p-2 rounded-md border border-slate-800/60 bg-slate-950/35">
-                              <span className="block text-[9px] uppercase font-bold text-slate-500">Focus</span>
-                              <span className="text-xs font-bold text-slate-300 capitalize">{confidenceReview.focusZone}</span>
-                            </div>
-                          </div>
-                          <p className="text-[10px] leading-relaxed text-slate-500">
-                            Cells below threshold are painted amber; critical review cells are red.
-                          </p>
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    )}
+                  </>
+                )}
 
-                  <div className="space-y-1.5 pt-1">
-                    <div className="flex justify-between text-[10px] font-bold uppercase text-slate-500">
-                      <span>Overlay Opacity</span>
-                      <span className="font-mono text-xs text-blue-400">{Math.round(opacity * 100)}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="10"
-                      max="100"
-                      aria-label="Map Overlay Opacity"
-                      value={opacity * 100}
-                      disabled={availableLayerCount === 0 || activeLayer === 'none'}
-                      onChange={(e) => setOpacity(parseInt(e.target.value) / 100)}
-                      className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 disabled:opacity-40 disabled:cursor-not-allowed"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-3 border-t border-slate-800">
-                  <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                      <span className="text-[10px] font-black">5</span>
-                    </div>
-                    Field Tools
-                  </h2>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMeasurementMode(value => !value)}
-                      className={`py-2 px-3 rounded-lg text-xs font-bold border transition flex items-center justify-center gap-2 ${
-                        measurementMode
-                          ? 'bg-blue-500/8 border-blue-500/40 text-blue-400'
-                          : 'bg-slate-950/50 border-slate-800/50 text-slate-500 hover:border-slate-700'
-                      }`}
-                    >
-                      <Ruler className="w-3.5 h-3.5" /> Measure
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setNoteMode(value => !value)}
-                      className={`py-2 px-3 rounded-lg text-xs font-bold border transition flex items-center justify-center gap-2 ${
-                        noteMode
-                          ? 'bg-blue-500/8 border-blue-500/40 text-blue-400'
-                          : 'bg-slate-950/50 border-slate-800/50 text-slate-500 hover:border-slate-700'
-                      }`}
-                    >
-                      <StickyNote className="w-3.5 h-3.5" /> Notes
-                    </button>
-                  </div>
-
-                  {noteMode && (
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-slate-500 font-bold uppercase block" htmlFor="note-draft-input">Next note text</label>
-                      <input
-                        id="note-draft-input"
-                        value={noteDraft}
-                        onChange={(e) => setNoteDraft(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200"
-                        placeholder="Field observation"
-                      />
-                    </div>
+                <button
+                  onClick={runClassification}
+                  disabled={loadingClassify || coords.length === 0}
+                  className="run-btn"
+                >
+                  {loadingClassify ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Training & Classifying...
+                    </>
+                  ) : (
+                    <>
+                      <span className="tri"></span> Run classification
+                    </>
                   )}
+                </button>
+              </div>
+            </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-500">
-                    <div className="p-2 rounded-lg border border-slate-800/60 bg-slate-950/40">
-                      Notes: <span className="text-blue-400">{mapNotes.length}</span>
-                    </div>
-                    <div className="p-2 rounded-lg border border-slate-800/60 bg-slate-950/40">
-                      Mode: <span className="text-blue-400">{measurementMode ? 'Measure' : noteMode ? 'Notes' : 'Pan'}</span>
-                    </div>
-                  </div>
-                </div>
+            {/* Phase 4: Layer Stack */}
+            <div className="phase">
+              <div className="node"></div>
+              <div className="phase-title">
+                <span>Layer stack</span>
+                <span className="tag mono" style={{ color: 'var(--ink-dim)' }}>
+                  {readyLayersCount}/4
+                </span>
               </div>
 
-              {/* Export & Print Options */}
-              {tileUrls.classified && (
-                <div className="p-4 border-t border-slate-800 bg-slate-950/30 space-y-3">
-                  <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <Download className="w-3.5 h-3.5 text-blue-400" /> Export Results
-                  </h2>
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block" htmlFor="format-select">Format</label>
-                    <select
-                      id="format-select"
-                      value={downloadFormat}
-                      onChange={(e) => setDownloadFormat(e.target.value as any)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-300 font-semibold outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      <option value="geotiff">GeoTIFF (Spatial Raster)</option>
-                      <option value="png">PNG (Colorized Map View)</option>
-                      <option value="geojson">GeoJSON (Vector Boundary)</option>
-                      <option value="kml">KML (Google Earth)</option>
-                    </select>
+              <div className="phase-body">
+                {/* Base map row */}
+                <div 
+                  className={`layer-row ${activeLayer === 'none' ? 'bg-white/[0.04]' : ''}`}
+                  onClick={() => setActiveLayer('none')}
+                >
+                  <div className="layer-left">
+                    <div className={`swatch ${activeLayer === 'none' ? 'on' : 'off'}`}></div>
+                    <div>
+                      <div className="layer-name">Base map</div>
+                      <div className="layer-sub">District reference</div>
+                    </div>
                   </div>
+                  <div className={`layer-state ${activeLayer === 'none' ? 'visible' : 'ready'}`}>
+                    {activeLayer === 'none' ? 'visible' : 'ready'}
+                  </div>
+                </div>
 
+                {/* Overlays */}
+                {layerStack.map((layer) => {
+                  const isVisible = activeLayer === layer.key;
+                  return (
+                    <div
+                      key={layer.key}
+                      className={`layer-row ${!layer.hasUrl ? 'disabled waiting' : ''} ${isVisible ? 'bg-white/[0.04]' : ''}`}
+                      onClick={() => {
+                        if (layer.hasUrl) setActiveLayer(layer.key);
+                      }}
+                    >
+                      <div className="layer-left">
+                        <div className={`swatch ${isVisible ? 'on' : 'off'}`}></div>
+                        <div>
+                          <div className="layer-name">{layer.label}</div>
+                          <div className="layer-sub">{layer.sub}</div>
+                        </div>
+                      </div>
+                      <div className={`layer-state ${isVisible ? 'visible' : layer.hasUrl ? 'ready' : 'waiting'}`}>
+                        {isVisible ? 'visible' : layer.hasUrl ? 'ready' : 'waiting'}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Opacity slider */}
+                <div className="opacity-row">
+                  <span>Overlay opacity</span>
+                  <span className="mono">{Math.round(opacity * 100)}%</span>
+                </div>
+                <div className="mt-2">
+                  <input
+                    type="range"
+                    min="10"
+                    max="100"
+                    value={opacity * 100}
+                    disabled={activeLayer === 'none'}
+                    onChange={(e) => setOpacity(parseInt(e.target.value) / 100)}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Confidence toggle */}
+                {confidenceReady && (
+                  <div className="pt-3 border-t border-[#35372E] mt-3">
+                    <div className="flex items-center justify-between text-[11.5px] text-[#8B8C7F]">
+                      <span>Confidence mask</span>
+                      <button
+                        type="button"
+                        onClick={() => setConfidenceVisible(!confidenceVisible)}
+                        className={`text-[10px] px-2 py-0.5 rounded mono ${confidenceVisible ? 'bg-[#7FA35C]/20 text-[#7FA35C] border border-[#7FA35C]/40' : 'bg-[#22241E] border border-[#35372E] text-[#8B8C7F]'}`}
+                      >
+                        {confidenceVisible ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Phase 5: Field tools & Export */}
+            <div className="phase">
+              <div className="node"></div>
+              <div className="phase-title">Field tools</div>
+              <div className="phase-body">
+                <div className="field-tools">
                   <button
-                    onClick={triggerDownload}
-                    disabled={downloading}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-2 hover:border-slate-700 disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer active:scale-[0.98]"
+                    type="button"
+                    onClick={() => triggerTool('measure')}
+                    className={`tool-btn ${measurementMode ? 'active' : ''}`}
                   >
-                    {downloading ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" /> Generating Export...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-3.5 h-3.5 text-blue-400" /> Download
-                      </>
-                    )}
+                    <Ruler className="w-3.5 h-3.5" /> Measure
                   </button>
-
                   <button
-                    onClick={printReport}
-                    className="w-full py-2 px-4 rounded-xl bg-transparent hover:bg-slate-800/50 border border-slate-800/50 text-slate-400 text-[10px] font-bold transition flex items-center justify-center gap-2 cursor-pointer"
+                    type="button"
+                    onClick={() => triggerTool('notes')}
+                    className={`tool-btn ${noteMode ? 'active' : ''}`}
                   >
-                    <Printer className="w-3 h-3" /> Print Report (PDF)
+                    <StickyNote className="w-3.5 h-3.5" /> Notes · {mapNotes.length}
                   </button>
                 </div>
-              )}
-            </>
-          )}
+
+                {/* Export actions */}
+                {tileUrls.classified && (
+                  <div className="pt-3 mt-3 border-t border-[#35372E] space-y-2">
+                    <div className="field-label">Export classification</div>
+                    <div className="flex gap-2">
+                      <select
+                        value={downloadFormat}
+                        onChange={(e) => setDownloadFormat(e.target.value as any)}
+                        className="ctl text-xs flex-1"
+                      >
+                        <option value="geotiff">GeoTIFF (Raster)</option>
+                        <option value="png">PNG (Map Image)</option>
+                        <option value="geojson">GeoJSON (Vectors)</option>
+                        <option value="kml">KML (Google Earth)</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={triggerDownload}
+                        disabled={downloading}
+                        className="px-3 py-1.5 bg-[#22241E] hover:bg-[#2A2C24] border border-[#35372E] text-[#EDE8DB] rounded text-xs cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Download className="w-3.5 h-3.5 text-[#7FA35C]" />
+                        {downloading ? '...' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
         </aside>
 
-        {/* Center/Right Map and Charts Workspace */}
-        <main className="geo-main flex-1 flex flex-col p-5 gap-5 overflow-y-auto print:p-0 print:gap-0">
+        {/* ---------- Map area ---------- */}
+        <main className="map-area">
           
-          {/* Notification Messages */}
-          <div className="space-y-2">
-            {errorMessage && (
-              <Notification type="error" message={errorMessage} onDismiss={() => setErrorMessage(null)} />
+          {/* Status strip */}
+          <div className="status-strip">
+            <div className="status-item primary">
+              <div className="k">Scene status</div>
+              <div className="v">
+                {loadingMapId ? 'Fetching...' : loadingClassify ? 'Classifying...' : tileUrls.classified ? 'Classified' : tileUrls.trueColor ? 'Imagery ready' : 'Awaiting AOI'}
+              </div>
+            </div>
+            <div className="status-item primary">
+              <div className="k">AOI</div>
+              <div className="v">
+                {aoiAreaHa ? `${aoiAreaHa.toFixed(1)} ha` : 'Not selected'}
+              </div>
+            </div>
+            <div className="status-item muted">
+              <div className="k">Period</div>
+              <div className="v">{startDate.slice(0, 4)} season</div>
+            </div>
+            <div className="status-item muted">
+              <div className="k">Cloud limit</div>
+              <div className="v">{cloudCover}% max</div>
+            </div>
+            <div className="status-item muted">
+              <div className="k">Layers ready</div>
+              <div className="v">{readyLayersCount} / 4</div>
+            </div>
+            {aiQualityMetrics && (
+              <div className="status-item primary">
+                <div className="k">AI Clarity</div>
+                <div className="v flex items-center gap-1.5 text-[#7FA35C]">
+                  <span>{aiQualityMetrics.overall_quality_score}%</span>
+                  <span className="text-[10px] mono text-[#EDE8DB]/60">({aiQualityMetrics.rating})</span>
+                </div>
+              </div>
             )}
-            {successMessage && (
-              <Notification type="success" message={successMessage} onDismiss={() => setSuccessMessage(null)} />
+            {buildingStats && (
+              <div className="status-item primary">
+                <div className="k">Buildings</div>
+                <div className="v text-[#C8834C]">{buildingStats.building_count} bldg</div>
+              </div>
+            )}
+            {processingTime && (
+              <div className="status-item muted">
+                <div className="k">Compute</div>
+                <div className="v">{processingTime}s</div>
+              </div>
             )}
           </div>
 
-          <section className="geo-quality-strip grid grid-cols-2 xl:grid-cols-6 gap-2 print:hidden" aria-label="Imagery quality summary">
-            <div className="geo-quality-item">
-              <Satellite className="w-4 h-4" />
-              <span>
-                <small>Scene Status</small>
-                <strong>{imageryStatus}</strong>
-              </span>
+          {/* Map canvas */}
+          <div className="map-canvas">
+            
+            {/* Custom Toolstrip */}
+            <div className="toolstrip">
+              <button
+                type="button"
+                onClick={() => triggerTool('rect')}
+                className={`t ${activeTool === 'rect' ? 'active' : ''}`}
+                title="Draw AOI rectangle"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
+                  <rect x="2.5" y="3.5" width="11" height="9" strokeDasharray="2.4 2"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => triggerTool('poly')}
+                className={`t ${activeTool === 'poly' ? 'active' : ''}`}
+                title="Draw AOI polygon"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
+                  <path d="M8,2.5 L14,6.5 L11.5,13.5 L4.5,13.5 L2,6.5 Z"/>
+                  <circle cx="8" cy="2.5" r="1" fill="currentColor" stroke="none"/>
+                  <circle cx="14" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+                  <circle cx="2" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => triggerTool('smart')}
+                className={`t ${activeTool === 'smart' ? 'active' : ''}`}
+                title="SAM Smart Select (Click anywhere to segment contiguous parcel/water body)"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="9" strokeDasharray="3 3"/>
+                  <path d="M12 7v10M7 12h10"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => triggerTool('pan')}
+                className={`t ${activeTool === 'pan' ? 'active' : ''}`}
+                title="Pan map"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
+                  <path d="M8,2 L8,14 M2,8 L14,8 M8,2 L6,4.2 M8,2 L10,4.2 M8,14 L6,11.8 M8,14 L10,11.8 M2,8 L4.2,6 M2,8 L4.2,10 M14,8 L11.8,6 M14,8 L11.8,10"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => triggerTool('measure')}
+                className={`t ${measurementMode ? 'active' : ''}`}
+                title="Measure distance"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
+                  <circle cx="8" cy="8" r="5.5"/>
+                  <path d="M8,3 v2.4 M8,10.6 v2.4 M3,8 h2.4 M10.6,8 h2.4"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => triggerTool('clear')}
+                className="t"
+                title="Clear boundary"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
+                  <path d="M4,4 L12,12 M12,4 L4,12"/>
+                </svg>
+              </button>
             </div>
-            <div className="geo-quality-item">
-              <MapPin className="w-4 h-4" />
-              <span>
-                <small>AOI</small>
-                <strong>{aoiAreaKm2 ? `${aoiAreaKm2.toFixed(2)} km² (${Math.round(aoiAreaHa || 0).toLocaleString()} ha)` : 'Not selected'}</strong>
-              </span>
-            </div>
-            <div className="geo-quality-item">
-              <Target className="w-4 h-4" />
-              <span>
-                <small>Period</small>
-                <strong>{activePeriodLabel}</strong>
-              </span>
-            </div>
-            <div className="geo-quality-item">
-              <Activity className="w-4 h-4" />
-              <span>
-                <small>Cloud Limit</small>
-                <strong>{cloudCover}% max</strong>
-              </span>
-            </div>
-            <div className="geo-quality-item">
-              <Layers className="w-4 h-4" />
-              <span>
-                <small>Layers</small>
-                <strong>{availableLayerCount} ready</strong>
-              </span>
-            </div>
-            <div className="geo-quality-item">
-              <Eye className="w-4 h-4" />
-              <span>
-                <small>Active View</small>
-                <strong>
-                  {activeLayerLabel} {activeLayer !== 'none' ? `${Math.round(opacity * 100)}%` : ''}
-                  {confidenceVisible ? ` + ${confidenceReview.reviewCells} review cells` : ''}
-                </strong>
-              </span>
-            </div>
-          </section>
 
-          {/* Map Viewer Container */}
-          <div className="geo-map-frame relative flex-shrink-0 print:hidden" style={{ height: 'clamp(430px, 58vh, 720px)' }}>
-            {/* Draggable Temporal View Swapper (Floating on top of Map) — hidden when swipe active */}
-            {compareMode && !swipeActive && (tileUrls.classified || tileUrls.trueColor || tileUrls.baselineClassified || tileUrls.baselineTrueColor) && (
-              <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 16 }} zIndex={1002}>
-                <div className="bg-slate-900/95 backdrop-blur-md border border-slate-800 p-1 rounded-xl shadow-2xl flex gap-1 cursor-grab active:cursor-grabbing">
-                  <button
-                    onClick={() => setActiveTimePeriod('target')}
-                    className={`px-4 py-2 rounded-lg text-[10px] font-extrabold uppercase tracking-wide transition-all cursor-pointer ${
-                      activeTimePeriod === 'target'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                    }`}
-                  >
-                    Target ({startDate.split('-')[0]})
-                  </button>
-                  <button
-                    onClick={() => setActiveTimePeriod('baseline')}
-                    className={`px-4 py-2 rounded-lg text-[10px] font-extrabold uppercase tracking-wide transition-all cursor-pointer ${
-                      activeTimePeriod === 'baseline'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                    }`}
-                  >
-                    Baseline ({compareStartDate.split('-')[0]})
-                  </button>
-                </div>
-              </DraggableContainer>
-            )}
-
-            {/* Loading Overlay */}
-            {(loadingMapId || loadingClassify) && (
-              <div className="absolute inset-0 z-[999] bg-slate-950/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl">
-                <div className="bg-slate-900/95 border border-slate-800 rounded-xl p-6 flex flex-col items-center gap-3 shadow-2xl">
-                  <div className="relative">
-                    <div className="w-12 h-12 rounded-full border-2 border-slate-700 border-t-blue-500 animate-spin" />
-                    {loadingMapId ? (
-                      <Satellite className="w-5 h-5 text-blue-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                    ) : (
-                      <Zap className="w-5 h-5 text-blue-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-bold text-slate-200">
-                      {loadingMapId ? 'Fetching Satellite Imagery' : 'Running Classification'}
-                    </p>
-                    <p className="text-[10px] text-slate-500 mt-1">
-                      {loadingMapId ? 'Processing Sentinel-2 composites on Earth Engine servers...' : 'Training classifier and mapping pixels on Earth Engine servers...'}
-                    </p>
-                  </div>
-                </div>
+            {/* AOI Invite (Empty state) */}
+            {coords.length === 0 && (
+              <div className="aoi-invite">
+                <div className="headline">Draw or Smart-Select an AOI</div>
+                <div className="body">Use the rectangle, polygon, or SAM smart-select tool at left to mark the district area you want to fetch and classify.</div>
               </div>
             )}
 
+            {/* Coordinate readout */}
+            <div className="coord-readout">
+              lat <span className="lat">{mapCenter[0].toFixed(6)}</span>&nbsp;&nbsp;lng <span className="lng">{mapCenter[1].toFixed(6)}</span>
+            </div>
+
+            {/* Scale readout */}
+            <div className="scale-readout">
+              Sentinel-2 &middot; 10m
+            </div>
+
+            {/* Attribution */}
+            <div className="attribution">Earth Engine &middot; GeoAI &middot; CartoDB &middot; OSM</div>
+
+            {/* Leaflet Map */}
             <MapComponent
               onAOIDrawn={handleAOIDrawn}
               aoiCoords={coords}
@@ -2372,218 +2105,183 @@ export default function Home() {
               notes={mapNotes}
               onNoteAdd={handleMapNoteAdd}
               onSwipeActiveChange={setSwipeActive}
+              smartSelectMode={smartSelectMode}
+              onSmartSelectClick={handleSmartSelectClick}
+              buildingFootprintsGeoJSON={buildingFootprints}
+              showBuildings={showBuildingLayer}
             />
-          </div>
 
-          {/* Print Header */}
-          <div className="hidden print:block mb-8">
-            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">GeoClass Environmental Summary Report</h1>
-                <p className="text-xs text-slate-500 mt-1">
-                  Study Period: {startDate} to {endDate} 
-                  {compareMode && ` | Baseline: ${compareStartDate} to ${compareEndDate}`} 
-                  | Model: {modelType === 'random_forest' ? 'Smile Random Forest' : 'Dynamic World 10m'}
-                  {processingTime && ` | Processing: ${processingTime}s`}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Study Area</p>
-                <p className="text-xl font-extrabold text-slate-800">{totalAreaHa ? `${totalAreaHa.toLocaleString()} ha` : 'N/A'}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Smart Result Summary */}
-          {statistics && smartResultSummary.length > 0 && (
-            <section className="geo-panel bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4 print:bg-white print:border-slate-400 print:shadow-none print:p-4">
-              <div className="flex flex-col gap-3 border-b border-slate-800 pb-3 print:border-slate-400 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 print:text-black print:text-lg">
-                    <FileText className="w-5 h-5 text-blue-400 print:text-black" /> Smart Result Summary
-                  </h3>
-                  <p className="text-[11px] text-slate-500 font-medium mt-1 print:text-slate-600">
-                    Operational findings generated from the classification statistics and uncertainty review.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setConfidenceVisible(value => !value)}
-                  className={`px-3 py-2 rounded-lg border text-[11px] font-bold flex items-center justify-center gap-2 transition print:hidden ${
-                    confidenceVisible
-                      ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
-                      : 'bg-slate-950/50 border-slate-800 text-slate-500 hover:text-slate-300'
-                  }`}
-                >
-                  <ShieldAlert className="w-3.5 h-3.5" />
-                  {confidenceVisible ? 'Hide Confidence Mask' : 'Show Confidence Mask'}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 print:grid-cols-2">
-                {smartResultSummary.map((insight) => (
-                  <div
-                    key={insight.label}
-                    className={`p-4 rounded-xl border ${smartInsightToneClass[insight.tone]} print:border-slate-400 print:bg-white`}
+            {/* Temporal period swapper (in compare mode) */}
+            {compareMode && !swipeActive && (tileUrls.classified || tileUrls.trueColor) && (
+              <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 16 }} zIndex={1002}>
+                <div className="bg-[#1B1D19]/90 backdrop-blur-md border border-[#35372E] p-1 rounded shadow-2xl flex gap-1 cursor-grab active:cursor-grabbing">
+                  <button
+                    onClick={() => setActiveTimePeriod('target')}
+                    className={`px-3 py-1.5 rounded text-[11px] font-medium mono transition cursor-pointer ${
+                      activeTimePeriod === 'target'
+                        ? 'bg-[#4E6A3D] text-[#EDE8DB] border border-[#7FA35C]'
+                        : 'text-[#8B8C7F] hover:text-[#EDE8DB]'
+                    }`}
                   >
-                    <div className={`flex items-center justify-between gap-3 ${smartInsightIconClass[insight.tone]} print:text-black`}>
-                      <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-500 print:text-slate-600">
-                        {insight.label}
-                      </span>
-                      {getSmartInsightIcon(insight.tone)}
-                    </div>
-                    <p className="text-lg font-bold text-slate-100 mt-2 print:text-black">{insight.value}</p>
-                    <p className="text-xs text-slate-400 leading-relaxed mt-2 print:text-slate-700">{insight.detail}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] font-bold text-slate-500 print:text-slate-700">
-                <div className="p-2.5 rounded-lg border border-slate-800/60 bg-slate-950/35 print:bg-white print:border-slate-300">
-                  Avg Confidence <span className="block text-sm text-slate-200 print:text-black">{confidenceReview.averageScore}%</span>
+                    Target ({startDate.slice(0, 4)})
+                  </button>
+                  <button
+                    onClick={() => setActiveTimePeriod('baseline')}
+                    className={`px-3 py-1.5 rounded text-[11px] font-medium mono transition cursor-pointer ${
+                      activeTimePeriod === 'baseline'
+                        ? 'bg-[#4E6A3D] text-[#EDE8DB] border border-[#7FA35C]'
+                        : 'text-[#8B8C7F] hover:text-[#EDE8DB]'
+                    }`}
+                  >
+                    Baseline ({compareStartDate.slice(0, 4)})
+                  </button>
                 </div>
-                <div className="p-2.5 rounded-lg border border-slate-800/60 bg-slate-950/35 print:bg-white print:border-slate-300">
-                  Review Cells <span className="block text-sm text-slate-200 print:text-black">{confidenceReview.reviewCells}/{confidenceReview.totalCells}</span>
-                </div>
-                <div className="p-2.5 rounded-lg border border-slate-800/60 bg-slate-950/35 print:bg-white print:border-slate-300">
-                  Critical Cells <span className="block text-sm text-slate-200 print:text-black">{confidenceReview.criticalCells}</span>
-                </div>
-                <div className="p-2.5 rounded-lg border border-slate-800/60 bg-slate-950/35 print:bg-white print:border-slate-300">
-                  Review Focus <span className="block text-sm text-slate-200 capitalize print:text-black">{confidenceReview.focusZone}</span>
-                </div>
+              </DraggableContainer>
+            )}
+          </div>
+
+          {/* ---------- Analytics area (Bottom) ---------- */}
+          <div className="analytics">
+            <div className="analytics-head">
+              <div className="title">
+                <BarChart3 className="w-4 h-4 text-[#7FA35C]" /> Classification analytics
               </div>
-            </section>
-          )}
-
-          {/* Temporal Change Detection Shift Matrix (Compare Mode only) */}
-          {compareMode && statistics && referenceStatistics && (
-            <section className="geo-panel bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4 print:bg-white print:border-none print:shadow-none print:p-0 print:mt-6">
-              <div className="border-b border-slate-800 pb-3 print:border-b-2 print:border-slate-900 flex justify-between items-center">
-                <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 print:text-black print:text-lg">
-                  <TrendingUp className="w-5 h-5 text-blue-400 print:text-black" /> Temporal LULC Change Matrix
-                </h3>
-                <span className="text-[10px] px-2.5 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 font-extrabold uppercase rounded-lg">
-                  Target {startDate.split('-')[0]} vs Baseline {compareStartDate.split('-')[0]}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 print:grid-cols-3">
-                {LULC_CLASS_NAMES.map((className) => {
-                  const valCurrent = statistics[className] || { area_ha: 0, percentage: 0, pixel_count: 0 };
-                  const valRef = referenceStatistics[className] || { area_ha: 0, percentage: 0, pixel_count: 0 };
-                  
-                  if (valCurrent.area_ha === 0 && valRef.area_ha === 0) return null;
-
-                  const areaChange = valCurrent.area_ha - valRef.area_ha;
-                  const pctChange = valCurrent.percentage - valRef.percentage;
-                  const changeTone = getTemporalChangeTone(className, areaChange);
-
-                  return (
-                    <div 
-                      key={className} 
-                      className={`p-3.5 rounded-xl border bg-slate-950/30 flex items-center justify-between transition-all hover:border-slate-700 ${changeTone.borderClass} print:border-slate-350 print:text-black print:bg-white`}
-                    >
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-500 print:text-slate-600 block">{className}</span>
-                        <div className="flex items-baseline gap-2 mt-1">
-                          <span className="text-lg font-bold text-slate-200 print:text-black">{valCurrent.area_ha.toLocaleString()} ha</span>
-                          <span className="text-[10px] text-slate-600 font-semibold print:text-slate-600">vs {valRef.area_ha.toLocaleString()}</span>
-                        </div>
-                      </div>
-
-                      <div className={`flex flex-col items-end ${changeTone.textClass} print:text-black`}>
-                        <span className="text-sm font-bold flex items-center gap-1">
-                          {areaChange < 0 ? (
-                            <TrendingDown className={`w-4 h-4 ${changeTone.iconClass} print:text-black`} />
-                          ) : areaChange > 0 ? (
-                            <TrendingUp className={`w-4 h-4 ${changeTone.iconClass} print:text-black`} />
-                          ) : null}
-                          {areaChange > 0 ? '+' : ''}{areaChange.toFixed(1)} ha
-                        </span>
-                        <span className="text-[10px] font-semibold mt-0.5">
-                          {pctChange > 0 ? '+' : ''}{pctChange.toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {/* Analytics Section */}
-          <section className="geo-panel bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-5 print:bg-white print:border-none print:shadow-none print:p-0">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-3 print:border-b-2 print:border-slate-900">
-              <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 print:text-black print:text-lg">
-                <BarChart3 className="w-5 h-5 text-blue-400 print:text-black" /> Classification Analytics
-              </h3>
-
               {statistics && (
                 <button
+                  type="button"
                   onClick={printReport}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition print:hidden cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="px-2.5 py-1 bg-[#22241E] hover:bg-[#2A2C24] border border-[#35372E] text-[#EDE8DB] rounded text-xs cursor-pointer flex items-center gap-1.5"
                 >
-                  <Printer className="w-3.5 h-3.5" /> Print Report
+                  <Printer className="w-3.5 h-3.5 text-[#7FA35C]" /> Print report
                 </button>
               )}
             </div>
-            
-            <DashboardCharts statistics={statistics} totalArea={totalAreaHa} />
-          </section>
 
-          {/* Environmental Insights */}
-          {statistics && reportInsights && (
-            <section className="geo-panel bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4 print:bg-white print:border-none print:shadow-none print:p-0 print:mt-12">
-              <div className="border-b border-slate-800 pb-3 print:border-b-2 print:border-slate-900">
-                <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2 print:text-black print:text-lg">
-                  <FileText className="w-5 h-5 text-blue-400 print:text-black" /> Environmental Assessment
-                </h3>
+            {/* Empty skeletal state if not classified yet */}
+            {!statistics && (
+              <div className="analytics-body">
+                <div className="analytics-skeleton">
+                  <div className="bar" style={{ height: '70%' }}></div>
+                  <div className="bar" style={{ height: '45%' }}></div>
+                  <div className="bar" style={{ height: '85%' }}></div>
+                  <div className="bar" style={{ height: '30%' }}></div>
+                  <div className="bar" style={{ height: '55%' }}></div>
+                </div>
+                <div className="analytics-note">
+                  Class breakdown and area totals appear here once a classification run finishes.
+                </div>
               </div>
+            )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:grid-cols-3">
-                {/* Health Rating */}
-                <div className={`p-4 rounded-xl border flex flex-col justify-between ${reportInsights.healthColor} print:border-slate-400 print:text-black`}>
-                  <div>
-                    <h4 className="text-[10px] uppercase tracking-wider font-bold text-slate-400 print:text-slate-600">Eco-Health Rating</h4>
-                    <p className="text-base font-bold mt-2 leading-snug">{reportInsights.healthStatus}</p>
+            {/* Full analytics dashboard once classified */}
+            {statistics && (
+              <div className="space-y-6 pt-2">
+                {/* Smart Result Summary */}
+                {smartResultSummary.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2.5">
+                    {smartResultSummary.map((insight) => (
+                      <div
+                        key={insight.label}
+                        className="p-3 bg-[#22241E] border border-[#35372E] rounded"
+                      >
+                        <div className="flex items-center justify-between text-[10px] uppercase font-semibold text-[#8B8C7F]">
+                          <span>{insight.label}</span>
+                          {insight.tone === 'positive' && <CheckCircle className="w-3.5 h-3.5 text-[#7FA35C]" />}
+                          {insight.tone === 'warning' && <AlertTriangle className="w-3.5 h-3.5 text-[#C8834C]" />}
+                          {insight.tone === 'critical' && <ShieldAlert className="w-3.5 h-3.5 text-[#C56A5A]" />}
+                          {insight.tone === 'neutral' && <Info className="w-3.5 h-3.5 text-[#8CA0AA]" />}
+                        </div>
+                        <p className="text-base font-bold text-[#EDE8DB] mt-1.5 mono">{insight.value}</p>
+                        <p className="text-[11px] text-[#8B8C7F] mt-1 leading-normal">{insight.detail}</p>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold mt-4 print:hidden">
-                    {reportInsights.healthIcon} Assessment
+                )}
+
+                {/* Temporal Change Detection Matrix */}
+                {compareMode && referenceStatistics && (
+                  <div className="p-3.5 bg-[#22241E] border border-[#35372E] rounded space-y-3">
+                    <div className="flex justify-between items-center border-b border-[#35372E] pb-2">
+                      <span className="text-xs font-semibold text-[#EDE8DB] flex items-center gap-1.5">
+                        <TrendingUp className="w-3.5 h-3.5 text-[#7FA35C]" /> Temporal Change Matrix
+                      </span>
+                      <span className="text-[10px] mono text-[#8B8C7F]">
+                        {startDate.slice(0, 4)} vs {compareStartDate.slice(0, 4)}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                      {LULC_CLASS_NAMES.map((className) => {
+                        const valCurrent = statistics[className] || { area_ha: 0, percentage: 0, pixel_count: 0 };
+                        const valRef = referenceStatistics[className] || { area_ha: 0, percentage: 0, pixel_count: 0 };
+                        if (valCurrent.area_ha === 0 && valRef.area_ha === 0) return null;
+
+                        const areaChange = valCurrent.area_ha - valRef.area_ha;
+                        const pctChange = valCurrent.percentage - valRef.percentage;
+                        const changeTone = getTemporalChangeTone(className, areaChange);
+
+                        return (
+                          <div
+                            key={className}
+                            className={`p-2.5 rounded border bg-[#1B1D19] flex items-center justify-between ${changeTone.borderClass}`}
+                          >
+                            <div>
+                              <span className="text-[10.5px] uppercase font-semibold text-[#8B8C7F] block">{className}</span>
+                              <span className="text-sm font-bold text-[#EDE8DB] mono mt-0.5 block">{valCurrent.area_ha.toFixed(1)} ha</span>
+                            </div>
+                            <div className={`text-right ${changeTone.textClass} mono text-xs font-semibold`}>
+                              <div className="flex items-center gap-1 justify-end">
+                                {areaChange < 0 ? <TrendingDown className="w-3.5 h-3.5" /> : areaChange > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : null}
+                                {areaChange > 0 ? '+' : ''}{areaChange.toFixed(1)} ha
+                              </div>
+                              <div className="text-[10px] text-[#8B8C7F]">
+                                {pctChange > 0 ? '+' : ''}{pctChange.toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Dominant Class */}
-                <div className="p-4 rounded-xl border border-slate-800 bg-slate-950/40 print:border-slate-400 print:text-black">
-                  <h4 className="text-[10px] uppercase tracking-wider font-bold text-slate-400 print:text-slate-600">Dominant Land Cover</h4>
-                  <p className="text-2xl font-bold mt-2 text-slate-100 print:text-black">{reportInsights.dominantClass}</p>
-                  <p className="text-xs text-slate-400 mt-1 font-semibold print:text-slate-600">
-                    Covers <span className="text-blue-400 font-bold print:text-black">{reportInsights.dominantPct}%</span> of total area
-                  </p>
-                </div>
+                {/* Recharts Visualization, Building Intelligence, Transition Matrix & Advanced AI Cards */}
+                <DashboardCharts
+                  statistics={statistics}
+                  totalArea={totalAreaHa}
+                  buildingStats={buildingStats}
+                  aiQualityMetrics={aiQualityMetrics}
+                  transitionData={transitionData}
+                  superResData={superResData}
+                  waterDynamicsData={waterDynamicsData}
+                  canopyHeightData={canopyHeightData}
+                  loadingSuperRes={loadingSuperRes}
+                  loadingWaterDynamics={loadingWaterDynamics}
+                  loadingCanopyHeight={loadingCanopyHeight}
+                  onExtractBuildings={extractBuildingFootprints}
+                  extractingBuildings={extractingBuildings}
+                  onTriggerSuperRes={triggerSuperResolution}
+                  onTriggerWaterDynamics={triggerWaterDynamics}
+                  onTriggerCanopyHeight={triggerCanopyHeight}
+                />
 
-                {/* Natural Index vs Built Ratio */}
-                <div className="p-4 rounded-xl border border-slate-800 bg-slate-950/40 print:border-slate-400 print:text-black">
-                  <h4 className="text-[10px] uppercase tracking-wider font-bold text-slate-400 print:text-slate-600">Ecology Index</h4>
-                  <p className="text-2xl font-bold mt-2 text-slate-100 print:text-black">{reportInsights.naturalIndex}%</p>
-                  <p className="text-xs text-slate-400 mt-1 font-semibold print:text-slate-600">
-                    Natural land vs <span className="text-rose-400 font-bold print:text-black">{reportInsights.urbanPct}%</span> built-up
-                  </p>
-                </div>
+                {/* Ecological Guidelines */}
+                {reportInsights && (
+                  <div className="p-3.5 bg-[#22241E] border border-[#35372E] rounded space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[#EDE8DB]">Conservation notes</span>
+                      <span className="text-[10.5px] text-[#7FA35C] mono">{reportInsights.healthStatus}</span>
+                    </div>
+                    <ul className="list-disc list-inside space-y-1 text-xs text-[#8B8C7F] leading-relaxed">
+                      {reportInsights.recommendations.map((rec, i) => (
+                        <li key={i}><span className="text-[#C7C6BA]">{rec}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-
-              {/* Recommendations */}
-              <div className="bg-slate-950/50 border border-slate-800 p-4 rounded-xl space-y-2.5 print:bg-white print:border-slate-400 print:text-black">
-                <h4 className="text-xs uppercase tracking-wider font-bold text-slate-300 print:text-black">Conservation Guidelines</h4>
-                <ul className="list-disc list-inside space-y-1.5 text-xs text-slate-400 leading-relaxed print:text-slate-700">
-                  {reportInsights.recommendations.map((rec, index) => (
-                    <li key={index} className="pl-1">
-                      <span className="text-slate-300 font-medium print:text-black">{rec}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </section>
-          )}
+            )}
+          </div>
 
         </main>
 

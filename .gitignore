@@ -24,3 +24,7 @@ venv/
 frontend/land-cover-*.png
 *.tif
 *.tiff
+
+# Subprojects / Separate repos
+GeoMiner/
+
