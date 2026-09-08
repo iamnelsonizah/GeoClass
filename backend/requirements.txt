@@ -1,5 +1,5 @@
-fastapi>=0.100.0
-uvicorn>=0.22.0
+fastapi[standard]>=0.111.0
+uvicorn[standard]>=0.22.0
 earthengine-api>=0.1.350
 google-auth>=2.20.0
 numpy>=1.24.0
