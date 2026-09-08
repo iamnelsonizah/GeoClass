@@ -804,16 +804,173 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
 
-@media (max-width: 1024px) {
+/* ---------- Mobile & Tablet Responsive Styles ---------- */
+@media (max-width: 1023px) {
+  .geo-app {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    padding: 8px 14px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+
   .main-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
   }
+
   .rail {
-    max-height: 420px;
+    flex: 1;
+    height: 100%;
+    max-height: none;
     border-right: none;
-    border-bottom: 1px solid var(--border);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 0 24px;
   }
+
+  .map-area {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .map-canvas {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .status-strip {
+    padding: 6px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .status-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .status-item {
+    padding-right: 12px;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .analytics {
+    flex: 1;
+    height: 100%;
+    max-height: none;
+    border-top: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 14px 32px;
+  }
+
+  .toolstrip {
+    top: 10px;
+  }
+
+  .toolstrip .t {
+    width: 40px;
+    height: 40px;
+  }
+
+  .coord-readout {
+    bottom: 8px;
+    left: 8px;
+    font-size: 9.5px;
+    padding: 4px 8px;
+  }
+
+  .scale-readout {
+    bottom: 8px;
+    right: 8px;
+    font-size: 9.5px;
+  }
+}
+
+/* Mobile Bottom Navigation Bar */
+.mobile-bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #141611;
+  border-top: 1px solid var(--border);
+  padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
+  flex-shrink: 0;
+}
+
+.mobile-tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  color: var(--ink-dim);
+  font-size: 11px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: all 150ms ease;
+  min-width: 64px;
+}
+
+.mobile-tab-btn.active {
+  color: var(--paper);
+  background: rgba(127, 163, 92, 0.15);
+}
+
+.mobile-tab-btn.active svg {
+  color: var(--moss);
+}
+
+.tab-pill {
+  font-size: 8.5px;
+  font-family: 'IBM Plex Mono', monospace;
+  background: rgba(200, 131, 76, 0.2);
+  color: var(--clay);
+  border: 1px solid rgba(200, 131, 76, 0.35);
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+.tab-badge {
+  font-size: 8.5px;
+  font-family: 'IBM Plex Mono', monospace;
+  background: rgba(127, 163, 92, 0.25);
+  color: var(--moss);
+  border: 1px solid rgba(127, 163, 92, 0.4);
+  padding: 0 4px;
+  border-radius: 999px;
+}
+
+.tab-indicator {
+  position: absolute;
+  top: 4px;
+  right: 14px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--moss);
 }
 

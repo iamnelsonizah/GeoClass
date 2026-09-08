@@ -451,6 +451,7 @@ export default function Home() {
   const [showConfig, setShowConfig] = useState(false);
   const [activeInfoTab, setActiveInfoTab] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified'>('none');
   const [processingTime, setProcessingTime] = useState<number | null>(null);
+  const [mobileTab, setMobileTab] = useState<'map' | 'config' | 'analytics'>('map');
 
   // Backend API Base URL (auto-normalizes protocol to prevent relative path 404s)
   const rawApiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000').trim();
@@ -1473,7 +1474,7 @@ export default function Home() {
       
       {/* ---------- Top bar ---------- */}
       <header className="topbar">
-        <div className="flex items-center gap-0">
+        <div className="flex items-center gap-2">
           <div className="brand">
             <div className="brand-mark">
               <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
@@ -1484,12 +1485,13 @@ export default function Home() {
             </div>
             <div className="brand-text">
               <div className="name">GeoClass</div>
-              <div className="sub">Land cover operations</div>
+              <div className="sub hidden sm:block">Land cover operations</div>
             </div>
           </div>
         </div>
 
-        <div className="steps-nav">
+        {/* Desktop Steps Nav */}
+        <div className="steps-nav hidden md:flex">
           <div className={`step ${workflowStep >= 1 ? 'active' : ''}`}>Select AOI</div>
           <span className="sep">/</span>
           <div className={`step ${workflowStep >= 2 ? 'active' : ''}`}>Fetch imagery</div>
@@ -1499,15 +1501,25 @@ export default function Home() {
           <div className={`step ${workflowStep >= 4 ? 'active' : ''}`}>Analyze</div>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Mobile Step Badge */}
+        <div className="md:hidden flex items-center gap-1.5 text-[11px] mono text-[#EDE8DB] bg-[#22241E] border border-[#35372E] px-2 py-0.5 rounded">
+          <span className="text-[#7FA35C] font-semibold">Step {workflowStep}/4</span>
+          <span className="text-[#8B8C7F]">•</span>
+          <span className="truncate max-w-[85px]">
+            {workflowStep === 1 ? 'AOI' : workflowStep === 2 ? 'Imagery' : workflowStep === 3 ? 'Classify' : 'Analyze'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-4">
           {processingTime && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#22241E] border border-[#35372E] text-[#8B8C7F] text-[11px] mono">
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#22241E] border border-[#35372E] text-[#8B8C7F] text-[11px] mono">
               <Clock className="w-3 h-3 text-[#7FA35C]" /> {processingTime}s
             </div>
           )}
           <div className="gee-status">
             <span className={`dot ${geeConnected === false ? 'offline' : ''}`}></span>
-            <span>{geeConnected === null ? 'Connecting...' : geeConnected ? 'Earth Engine connected' : 'Earth Engine offline'}</span>
+            <span className="hidden sm:inline">{geeConnected === null ? 'Connecting...' : geeConnected ? 'Earth Engine connected' : 'Earth Engine offline'}</span>
+            <span className="sm:hidden text-[11px]">{geeConnected ? 'GEE Online' : 'Offline'}</span>
           </div>
         </div>
       </header>
@@ -1516,7 +1528,7 @@ export default function Home() {
       <div className="main-grid">
         
         {/* ---------- Left rail (Timeline & Controls) ---------- */}
-        <aside className="rail" aria-label="Workflow controls">
+        <aside className={`rail ${mobileTab !== 'config' ? 'hidden lg:block' : ''}`} aria-label="Workflow controls">
           <div className="rail-track">
 
             {/* Notification messages */}
@@ -1939,7 +1951,7 @@ export default function Home() {
         </aside>
 
         {/* ---------- Map area ---------- */}
-        <main className="map-area">
+        <main className={`map-area ${mobileTab === 'config' ? 'hidden lg:flex' : ''}`}>
           
           {/* Status strip */}
           <div className="status-strip">
@@ -1991,7 +2003,7 @@ export default function Home() {
           </div>
 
           {/* Map canvas */}
-          <div className="map-canvas">
+          <div className={`map-canvas ${mobileTab === 'analytics' ? 'hidden lg:block' : ''}`}>
             
             {/* Custom Toolstrip */}
             <div className="toolstrip">
@@ -2290,6 +2302,50 @@ export default function Home() {
         </main>
 
       </div>
+
+      {/* ---------- Mobile Bottom Navigation Bar (Visible on <1024px) ---------- */}
+      <nav className="mobile-bottom-nav lg:hidden" aria-label="Mobile navigation">
+        <button
+          type="button"
+          onClick={() => setMobileTab('map')}
+          className={`mobile-tab-btn ${mobileTab === 'map' ? 'active' : ''}`}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+            <line x1="8" y1="2" x2="8" y2="18" />
+            <line x1="16" y1="6" x2="16" y2="22" />
+          </svg>
+          <span>Map</span>
+          {coords.length > 0 && <span className="tab-indicator" />}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileTab('config')}
+          className={`mobile-tab-btn ${mobileTab === 'config' ? 'active' : ''}`}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <span>Configure</span>
+          <span className="tab-pill">Step {workflowStep}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileTab('analytics')}
+          className={`mobile-tab-btn ${mobileTab === 'analytics' ? 'active' : ''}`}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          <span>Analytics</span>
+          {statistics && <span className="tab-badge">{Object.keys(statistics).length}</span>}
+        </button>
+      </nav>
     </div>
   );
 }
