@@ -452,8 +452,12 @@ export default function Home() {
   const [activeInfoTab, setActiveInfoTab] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified'>('none');
   const [processingTime, setProcessingTime] = useState<number | null>(null);
 
-  // Backend API Base URL
-  const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+  // Backend API Base URL (auto-normalizes protocol to prevent relative path 404s)
+  const rawApiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000').trim();
+  const normalizedApiBase = rawApiBase.startsWith('http://') || rawApiBase.startsWith('https://')
+    ? rawApiBase
+    : `https://${rawApiBase}`;
+  const API_BASE = normalizedApiBase.replace(/\/$/, '');
 
   // Compute workflow step
   const workflowStep = statistics ? 4 : (tileUrls.classified ? 4 : (tileUrls.trueColor ? 3 : (coords.length > 0 ? 2 : 1)));
