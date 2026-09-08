@@ -37,18 +37,23 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend API calls. Set FRONTEND_ORIGINS in production to
-# your exact Vercel URL, for example: https://your-app.vercel.app
-frontend_origins = parse_csv_env(
-    "FRONTEND_ORIGINS",
-    "http://localhost:3000,http://127.0.0.1:3000"
-)
-frontend_origin_regex = os.getenv("FRONTEND_ORIGIN_REGEX") or None
+# Enable CORS for frontend API calls.
+# By default allow all origins ('*') and all *.vercel.app domains so frontend deployments connect immediately.
+raw_origins = os.getenv("FRONTEND_ORIGINS", "*")
+if raw_origins.strip() == "*":
+    frontend_origins = ["*"]
+else:
+    frontend_origins = parse_csv_env(
+        "FRONTEND_ORIGINS",
+        "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001"
+    )
+
+frontend_origin_regex = os.getenv("FRONTEND_ORIGIN_REGEX") or r"https://.*\.vercel\.app"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=frontend_origins,
-    allow_origin_regex=frontend_origin_regex,
+    allow_origin_regex=frontend_origin_regex if frontend_origins != ["*"] else None,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
