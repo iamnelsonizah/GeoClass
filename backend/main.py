@@ -170,6 +170,21 @@ def coords_to_ee_geometry(coords: List[List[float]]) -> ee.Geometry:
             detail=f"Invalid coordinate format for polygon AOI: {e}"
         )
 
+@app.get("/")
+def read_root():
+    """
+    Root endpoint providing API information and service health.
+    """
+    gee_status = initialize_gee()
+    return {
+        "service": "GeoClass AI Backend API",
+        "version": "1.0.0",
+        "status": "online",
+        "gee_connected": gee_status,
+        "docs_url": "/docs",
+        "status_url": "/api/status"
+    }
+
 @app.get("/api/status")
 def get_status():
     """
