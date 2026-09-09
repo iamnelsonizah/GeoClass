@@ -413,6 +413,7 @@ export default function Home() {
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
   const [locationLoading, setLocationLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationSuggestion | null>(null);
+  const [dismissedInvite, setDismissedInvite] = useState(false);
   
   // Standard Configuration State
   const [startDate, setStartDate] = useState('2024-01-01');
@@ -598,6 +599,7 @@ export default function Home() {
     setMapCenter([location.lat, location.lng]);
     setMapZoom(getLocationZoom(location.type));
     setMobileTab('map');
+    setDismissedInvite(true);
     setSuccessMessage(`Navigated to ${location.shortLabel}. Dropped pin on target location.`);
   };
 
@@ -650,6 +652,7 @@ export default function Home() {
 
   // Handle Toolstrip clicks
   const triggerTool = (tool: 'rect' | 'poly' | 'pan' | 'measure' | 'notes' | 'smart' | 'clear') => {
+    setDismissedInvite(true);
     if (tool === 'rect') {
       setActiveTool('rect');
       setMeasurementMode(false);
@@ -870,6 +873,7 @@ export default function Home() {
       setMapCenter([midLat, midLng]);
       setMapZoom(12);
       setSuccessMessage(`AOI defined (${drawnCoords.length} vertices, ${area.toFixed(1)} ha). Ready to fetch imagery.`);
+      setDismissedInvite(true);
     } else {
       setAoiAreaHa(null);
     }
@@ -879,6 +883,7 @@ export default function Home() {
     const boxCoords = createBoundingBoxAOI(lat, lng, sizeKm);
     handleAOIDrawn(boxCoords);
     setMobileTab('map');
+    setDismissedInvite(true);
     setSuccessMessage(`Created ${sizeKm}km AOI boundary at [${lat.toFixed(4)}, ${lng.toFixed(4)}]. Ready to fetch imagery.`);
   }, [handleAOIDrawn]);
 
@@ -887,6 +892,7 @@ export default function Home() {
     setSelectedAreaId(area.id);
     setMapCenter(area.center);
     setMapZoom(area.zoom);
+    setDismissedInvite(true);
     setSuccessMessage(`${area.name} loaded.`);
   };
 
@@ -1679,6 +1685,7 @@ export default function Home() {
                       onChange={(e) => {
                         setLocationQuery(e.target.value);
                         setSelectedLocation(null);
+                        if (e.target.value.trim()) setDismissedInvite(true);
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -1687,7 +1694,7 @@ export default function Home() {
                         }
                       }}
                       placeholder="Search location or coordinates (lat, lng)..."
-                      className="ctl text-xs pr-14 pl-7"
+                      className="ctl geo-search-input text-xs"
                     />
                     <Search className="w-3.5 h-3.5 text-[#8B8C7F] absolute left-2.5 pointer-events-none" />
                     <div className="absolute right-2.5 flex items-center gap-1">
@@ -2224,8 +2231,16 @@ export default function Home() {
             </div>
 
             {/* AOI Invite (Empty state) */}
-            {coords.length === 0 && (
-              <div className="aoi-invite">
+            {coords.length === 0 && !dismissedInvite && !selectedLocation && !locationQuery.trim() && (
+              <div className="aoi-invite relative">
+                <button
+                  type="button"
+                  onClick={() => setDismissedInvite(true)}
+                  className="absolute top-2 right-2 text-[#8B8C7F] hover:text-[#EDE8DB] p-1 rounded transition cursor-pointer"
+                  title="Close guidance"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
                 <div className="headline">Draw or Smart-Select an AOI</div>
                 <div className="body">Use the rectangle, polygon, or SAM smart-select tool at left to mark the district area you want to fetch and classify.</div>
               </div>
