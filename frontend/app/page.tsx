@@ -237,8 +237,63 @@ const getSingleClassArea = (stats: Record<string, ClassData> | undefined, classN
   stats?.[className]?.area_ha || 0
 );
 
+const createBoundingBoxAOI = (lat: number, lng: number, sizeKm = 5): number[][] => {
+  const half = sizeKm / 2;
+  const dLat = half / 111.32;
+  const dLng = half / (111.32 * Math.cos((lat * Math.PI) / 180));
+  const minLat = Number((lat - dLat).toFixed(6));
+  const maxLat = Number((lat + dLat).toFixed(6));
+  const minLng = Number((lng - dLng).toFixed(6));
+  const maxLng = Number((lng + dLng).toFixed(6));
+  // Closed GeoJSON polygon: [lng, lat]
+  return [
+    [minLng, minLat],
+    [maxLng, minLat],
+    [maxLng, maxLat],
+    [minLng, maxLat],
+    [minLng, minLat],
+  ];
+};
+
+const parseCoordinateQuery = (query: string): { lat: number; lng: number } | null => {
+  const cleaned = query.replace(/[\[\]\(\)\{\}]/g, '').trim();
+  if (!cleaned) return null;
+
+  // Format 1: With N/S/E/W e.g., "9.0765 N, 7.3986 E" or "37.7749° N, 122.4194° W"
+  const dmsRegex = /^([+-]?\d+(?:\.\d+)?)\s*°?\s*([NS])?[\s,;]+([+-]?\d+(?:\.\d+)?)\s*°?\s*([EW])?$/i;
+  const match = cleaned.match(dmsRegex);
+  if (match) {
+    let lat = parseFloat(match[1]);
+    const latDir = match[2]?.toUpperCase();
+    let lng = parseFloat(match[3]);
+    const lngDir = match[4]?.toUpperCase();
+
+    if (latDir === 'S') lat = -Math.abs(lat);
+    if (latDir === 'N') lat = Math.abs(lat);
+    if (lngDir === 'W') lng = -Math.abs(lng);
+    if (lngDir === 'E') lng = Math.abs(lng);
+
+    if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return { lat, lng };
+    }
+  }
+
+  // Format 2: Standard lat, lng or lat lng (e.g. "9.0765, 7.3986" or "-33.8688, 151.2093")
+  const simpleMatch = cleaned.match(/^([+-]?\d+(?:\.\d+)?)[,\s]+([+-]?\d+(?:\.\d+)?)$/);
+  if (simpleMatch) {
+    const lat = parseFloat(simpleMatch[1]);
+    const lng = parseFloat(simpleMatch[2]);
+    if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return { lat, lng };
+    }
+  }
+
+  return null;
+};
+
 const getLocationZoom = (type?: string) => {
   if (!type) return 13;
+  if (['coordinate'].includes(type)) return 14;
   if (['country'].includes(type)) return 5;
   if (['state', 'province', 'region'].includes(type)) return 7;
   if (['county', 'administrative'].includes(type)) return 9;
@@ -542,7 +597,8 @@ export default function Home() {
     setLocationSuggestions([]);
     setMapCenter([location.lat, location.lng]);
     setMapZoom(getLocationZoom(location.type));
-    setSuccessMessage(`Centered on ${location.shortLabel}. Use the toolstrip to draw your AOI.`);
+    setMobileTab('map');
+    setSuccessMessage(`Navigated to ${location.shortLabel}. Dropped pin on target location.`);
   };
 
   const clearLocationSearch = () => {
@@ -551,34 +607,31 @@ export default function Home() {
     setSelectedLocation(null);
   };
 
-  const selectSavedArea = (area: SavedArea) => {
-    handleAOIDrawn(area.coords);
-    setSelectedAreaId(area.id);
-    setMapCenter(area.center);
-    setMapZoom(area.zoom);
-    setSuccessMessage(`${area.name} loaded.`);
-  };
+  const handleSearchSubmit = () => {
+    const query = locationQuery.trim();
+    if (!query) return;
 
-  const saveCurrentArea = () => {
-    if (coords.length === 0) {
-      setErrorMessage("Select or draw an AOI before saving it.");
+    // Check if directly entered coordinates
+    const coordMatch = parseCoordinateQuery(query);
+    if (coordMatch) {
+      selectLocation({
+        id: `coord-${coordMatch.lat}-${coordMatch.lng}`,
+        label: `Coordinates: ${coordMatch.lat.toFixed(5)}°, ${coordMatch.lng.toFixed(5)}°`,
+        shortLabel: `${coordMatch.lat.toFixed(4)}°, ${coordMatch.lng.toFixed(4)}°`,
+        lat: coordMatch.lat,
+        lng: coordMatch.lng,
+        type: 'coordinate',
+      });
       return;
     }
 
-    const id = `custom-${Date.now()}`;
-    const customArea: SavedArea = {
-      id,
-      name: `AOI ${savedAreas.length + 1}`,
-      type: 'User saved boundary',
-      center: mapCenter,
-      zoom: mapZoom,
-      coords,
-    };
-
-    setSavedAreas(prev => [customArea, ...prev]);
-    setSelectedAreaId(id);
-    setSuccessMessage(`${customArea.name} saved to the district library.`);
+    // If suggestions already loaded, select first suggestion
+    if (locationSuggestions.length > 0) {
+      selectLocation(locationSuggestions[0]);
+    }
   };
+
+
 
   const handleMapNoteAdd = useCallback((lat: number, lng: number) => {
     const nextIndex = mapNotes.length + 1;
@@ -646,8 +699,33 @@ export default function Home() {
 
   useEffect(() => {
     const query = locationQuery.trim();
-    if (query.length < 3 || (selectedLocation && query === selectedLocation.label)) {
+    if (!query || (selectedLocation && query === selectedLocation.label)) {
       setLocationSuggestions([]);
+      setLocationLoading(false);
+      return;
+    }
+
+    const coordMatch = parseCoordinateQuery(query);
+    const coordSuggestion: LocationSuggestion | null = coordMatch
+      ? {
+          id: `coord-${coordMatch.lat}-${coordMatch.lng}`,
+          label: `Coordinates: ${coordMatch.lat.toFixed(5)}°, ${coordMatch.lng.toFixed(5)}°`,
+          shortLabel: `📍 ${coordMatch.lat.toFixed(4)}°, ${coordMatch.lng.toFixed(4)}°`,
+          lat: coordMatch.lat,
+          lng: coordMatch.lng,
+          type: 'coordinate',
+        }
+      : null;
+
+    if (query.length < 3 && !coordMatch) {
+      setLocationSuggestions([]);
+      setLocationLoading(false);
+      return;
+    }
+
+    // If query is directly coordinates (numbers, commas, signs), show coordinate suggestion immediately
+    if (coordMatch && /^[-+0-9.,\s°NSEWnsew\[\]\(\)]+$/.test(query)) {
+      setLocationSuggestions([coordSuggestion!]);
       setLocationLoading(false);
       return;
     }
@@ -701,12 +779,20 @@ export default function Home() {
           })
           .filter(Boolean);
 
-        setLocationSuggestions(suggestions);
+        if (coordSuggestion) {
+          setLocationSuggestions([coordSuggestion, ...suggestions]);
+        } else {
+          setLocationSuggestions(suggestions);
+        }
         setErrorMessage(null);
       } catch (error: any) {
         if (error.name !== 'AbortError') {
-          setLocationSuggestions([]);
-          setErrorMessage('Could not load location suggestions. Check connection and try again.');
+          if (coordSuggestion) {
+            setLocationSuggestions([coordSuggestion]);
+          } else {
+            setLocationSuggestions([]);
+            setErrorMessage('Could not load location suggestions. Check connection and try again.');
+          }
         }
       } finally {
         if (!controller.signal.aborted) setLocationLoading(false);
@@ -788,6 +874,42 @@ export default function Home() {
       setAoiAreaHa(null);
     }
   }, []);
+
+  const handleCreateAOIAtPoint = useCallback((lat: number, lng: number, sizeKm = 5) => {
+    const boxCoords = createBoundingBoxAOI(lat, lng, sizeKm);
+    handleAOIDrawn(boxCoords);
+    setMobileTab('map');
+    setSuccessMessage(`Created ${sizeKm}km AOI boundary at [${lat.toFixed(4)}, ${lng.toFixed(4)}]. Ready to fetch imagery.`);
+  }, [handleAOIDrawn]);
+
+  const selectSavedArea = (area: SavedArea) => {
+    handleAOIDrawn(area.coords);
+    setSelectedAreaId(area.id);
+    setMapCenter(area.center);
+    setMapZoom(area.zoom);
+    setSuccessMessage(`${area.name} loaded.`);
+  };
+
+  const saveCurrentArea = () => {
+    if (coords.length === 0) {
+      setErrorMessage("Select or draw an AOI before saving it.");
+      return;
+    }
+
+    const id = `custom-${Date.now()}`;
+    const customArea: SavedArea = {
+      id,
+      name: `AOI ${savedAreas.length + 1}`,
+      type: 'User saved boundary',
+      center: mapCenter,
+      zoom: mapZoom,
+      coords,
+    };
+
+    setSavedAreas(prev => [customArea, ...prev]);
+    setSelectedAreaId(id);
+    setSuccessMessage(`${customArea.name} saved to the district library.`);
+  };
 
   // Handle Smart Select (SAM) Click
   const handleSmartSelectClick = async (lat: number, lng: number) => {
@@ -1550,32 +1672,59 @@ export default function Home() {
               <div className="phase-body space-y-2.5">
                 {/* Location search */}
                 <div className="relative">
-                  <input
-                    type="search"
-                    value={locationQuery}
-                    onChange={(e) => {
-                      setLocationQuery(e.target.value);
-                      setSelectedLocation(null);
-                    }}
-                    placeholder="Search location (city, district)..."
-                    className="ctl text-xs"
-                  />
-                  {locationLoading && (
-                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7FA35C]" />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={locationQuery}
+                      onChange={(e) => {
+                        setLocationQuery(e.target.value);
+                        setSelectedLocation(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSearchSubmit();
+                        }
+                      }}
+                      placeholder="Search location or coordinates (lat, lng)..."
+                      className="ctl text-xs pr-14 pl-7"
+                    />
+                    <Search className="w-3.5 h-3.5 text-[#8B8C7F] absolute left-2.5 pointer-events-none" />
+                    <div className="absolute right-2.5 flex items-center gap-1">
+                      {locationLoading && (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7FA35C]" />
+                      )}
+                      {locationQuery && !locationLoading && (
+                        <button
+                          type="button"
+                          onClick={clearLocationSearch}
+                          className="text-[#8B8C7F] hover:text-[#EDE8DB] cursor-pointer p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
                     </div>
-                  )}
+                  </div>
+
                   {locationSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#22241E] border border-[#35372E] rounded shadow-2xl overflow-hidden">
+                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#22241E] border border-[#35372E] rounded shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
                       {locationSuggestions.map((loc) => (
                         <button
                           key={loc.id}
                           type="button"
                           onClick={() => selectLocation(loc)}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-[#2A2C24] border-b border-[#35372E] last:border-b-0 cursor-pointer"
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-[#2A2C24] border-b border-[#35372E] last:border-b-0 cursor-pointer flex items-start gap-2 group transition"
                         >
-                          <span className="block font-medium text-[#EDE8DB]">{loc.shortLabel}</span>
-                          <span className="block text-[10px] text-[#8B8C7F] truncate">{loc.label}</span>
+                          <MapPin className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${loc.type === 'coordinate' ? 'text-[#C8834C]' : 'text-[#7FA35C]'}`} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="font-medium text-[#EDE8DB] group-hover:text-white truncate">{loc.shortLabel}</span>
+                              {loc.type === 'coordinate' && (
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-[#C8834C]/20 text-[#C8834C] border border-[#C8834C]/40 mono shrink-0">GPS</span>
+                              )}
+                            </div>
+                            <span className="block text-[10px] text-[#8B8C7F] truncate">{loc.label}</span>
+                          </div>
                         </button>
                       ))}
                     </div>
@@ -2125,6 +2274,7 @@ export default function Home() {
               onSmartSelectClick={handleSmartSelectClick}
               buildingFootprintsGeoJSON={buildingFootprints}
               showBuildings={showBuildingLayer}
+              onSetAOIAtPoint={handleCreateAOIAtPoint}
             />
 
             {/* Temporal period swapper (in compare mode) */}

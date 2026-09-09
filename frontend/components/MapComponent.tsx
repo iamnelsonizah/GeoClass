@@ -84,6 +84,7 @@ interface MapComponentProps {
   mapCenter: [number, number];
   mapZoom: number;
   searchLocation?: SearchLocation | null;
+  onSetAOIAtPoint?: (lat: number, lng: number) => void;
   confidenceVisible?: boolean;
   confidenceThreshold?: number;
   measurementMode?: boolean;
@@ -908,7 +909,13 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
   return null;
 }
 
-function SearchLocationMarker({ location }: { location?: SearchLocation | null }) {
+function SearchLocationMarker({
+  location,
+  onSetAOI,
+}: {
+  location?: SearchLocation | null;
+  onSetAOI?: (lat: number, lng: number) => void;
+}) {
   const map = useMap();
   const markerRef = useRef<L.Marker | null>(null);
 
@@ -920,27 +927,81 @@ function SearchLocationMarker({ location }: { location?: SearchLocation | null }
 
     if (!location) return;
 
-    const icon = L.divIcon({
-      className: 'geo-search-location-marker',
-      html: '<span></span>',
-      iconSize: [34, 34],
-      iconAnchor: [17, 17],
+    // Fly to location smoothly
+    const targetZoom = Math.max(map.getZoom(), 14);
+    map.flyTo([location.lat, location.lng], targetZoom, {
+      duration: 1.5,
+      easeLinearity: 0.25,
     });
 
+    // Custom glowing teardrop pin with animated radar pulse
+    const icon = L.divIcon({
+      className: 'geo-search-pin-wrapper',
+      html: `
+        <div class="geo-search-pin-container">
+          <div class="geo-search-pin-pulse"></div>
+          <div class="geo-search-pin-icon">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#E45858" stroke="#FFFFFF" stroke-width="1.5" />
+              <circle cx="12" cy="9" r="3.5" fill="#FFFFFF" />
+            </svg>
+          </div>
+        </div>
+      `,
+      iconSize: [36, 46],
+      iconAnchor: [18, 44],
+      popupAnchor: [0, -44],
+    });
+
+    const popupNode = document.createElement('div');
+    popupNode.className = 'p-3 space-y-2 text-[#EDE8DB]';
+    popupNode.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: #7FA35C; text-transform: uppercase; letter-spacing: 0.05em;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>Location Target</span>
+      </div>
+      <div>
+        <div style="font-weight: 600; font-size: 12px; color: #EDE8DB; line-height: 1.2;">${location.shortLabel || 'Selected Point'}</div>
+        <div style="font-size: 10px; color: #8B8C7F; margin-top: 2px; max-height: 36px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${location.label}</div>
+      </div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: #1A1C16; padding: 4px 8px; border-radius: 4px; border: 1px solid #35372E; color: #A6C97B;">
+        ${location.lat.toFixed(5)}°, ${location.lng.toFixed(5)}°
+      </div>
+      ${onSetAOI ? `
+        <button id="geo-btn-create-aoi-popup" style="width: 100%; margin-top: 6px; padding: 6px 10px; background: #4E6A3D; color: #EDE8DB; font-size: 11px; font-weight: 500; border-radius: 4px; border: 1px solid rgba(127, 163, 92, 0.4); display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: background 150ms;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+          <span>Create 5km AOI Box</span>
+        </button>
+      ` : ''}
+    `;
+
+    if (onSetAOI) {
+      const aoiBtn = popupNode.querySelector('#geo-btn-create-aoi-popup');
+      if (aoiBtn) {
+        aoiBtn.addEventListener('click', () => {
+          onSetAOI(location.lat, location.lng);
+        });
+      }
+    }
+
     const marker = L.marker([location.lat, location.lng], { icon, keyboard: false })
-      .bindTooltip(`<strong>${location.shortLabel}</strong><br/>${location.label}`, {
-        direction: 'top',
-        opacity: 0.95,
-        className: 'geo-note-tooltip',
+      .bindPopup(popupNode, {
+        className: 'geo-custom-popup',
+        maxWidth: 260,
       })
       .addTo(map);
 
+    const openTimer = setTimeout(() => {
+      marker.openPopup();
+    }, 500);
+
     markerRef.current = marker;
     return () => {
+      clearTimeout(openTimer);
       map.removeLayer(marker);
       if (markerRef.current === marker) markerRef.current = null;
     };
-  }, [location, map]);
+  }, [location, map, onSetAOI]);
 
   return null;
 }
@@ -1060,6 +1121,7 @@ export default function MapComponent({
   mapCenter,
   mapZoom,
   searchLocation,
+  onSetAOIAtPoint,
   confidenceVisible = false,
   confidenceThreshold = 72,
   measurementMode = false,
@@ -1269,7 +1331,7 @@ export default function MapComponent({
         {/* Smart Select (SAM) interactive click handler */}
         <SmartSelectHandler enabled={smartSelectMode} onSmartSelectClick={onSmartSelectClick} />
 
-        <SearchLocationMarker location={searchLocation} />
+        <SearchLocationMarker location={searchLocation} onSetAOI={onSetAOIAtPoint} />
 
         <ConfidenceOverlay
           coords={aoiCoords}
