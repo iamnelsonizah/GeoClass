@@ -980,7 +980,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   background: var(--moss);
 }
 
-/* Animated Search Location Marker & Pulsing Beacon */
+/* Animated Search Location Marker & Precision Pointer */
 .geo-search-pin-wrapper {
   background: transparent !important;
   border: none !important;
@@ -988,25 +988,71 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .geo-search-pin-container {
   position: relative;
-  width: 36px;
-  height: 46px;
+  width: 140px;
+  height: 64px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
+  pointer-events: auto;
 }
 
-.geo-search-pin-pulse {
+.geo-search-target-ring {
   position: absolute;
   bottom: 0px;
   left: 50%;
   transform: translateX(-50%);
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: rgba(228, 88, 88, 0.35);
   border: 2px solid #E45858;
   animation: geo-pin-pulse-anim 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
   pointer-events: none;
+}
+
+.geo-search-target-dot {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1.5px solid #E45858;
+  box-shadow: 0 0 8px #E45858;
+  z-index: 1;
+}
+
+.geo-search-pin-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  animation: geo-pin-drop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.geo-search-pin-badge {
+  background: rgba(27, 29, 25, 0.92);
+  border: 1px solid #7FA35C;
+  color: #EDE8DB;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+  margin-bottom: 2px;
+  letter-spacing: 0.02em;
+}
+
+.geo-search-pin-icon-wrap {
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
 }
 
 @keyframes geo-pin-pulse-anim {
@@ -1015,31 +1061,22 @@ input[type="range"]::-webkit-slider-thumb:hover {
     opacity: 1;
   }
   70% {
-    transform: translateX(-50%) scale(2.4);
+    transform: translateX(-50%) scale(2.5);
     opacity: 0.15;
   }
   100% {
-    transform: translateX(-50%) scale(3.2);
+    transform: translateX(-50%) scale(3.4);
     opacity: 0;
   }
-}
-
-.geo-search-pin-icon {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7));
-  animation: geo-pin-drop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes geo-pin-drop {
   0% {
-    transform: translate(-50%, -28px) scale(0.5);
+    transform: translateY(-24px) scale(0.6);
     opacity: 0;
   }
   100% {
-    transform: translate(-50%, 0) scale(1);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }

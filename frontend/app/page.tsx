@@ -609,11 +609,11 @@ export default function Home() {
     setSelectedLocation(null);
   };
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = async () => {
     const query = locationQuery.trim();
     if (!query) return;
 
-    // Check if directly entered coordinates
+    // 1. Check if directly entered coordinates
     const coordMatch = parseCoordinateQuery(query);
     if (coordMatch) {
       selectLocation({
@@ -627,9 +627,50 @@ export default function Home() {
       return;
     }
 
-    // If suggestions already loaded, select first suggestion
+    // 2. If suggestions already loaded, select first suggestion
     if (locationSuggestions.length > 0) {
       selectLocation(locationSuggestions[0]);
+      return;
+    }
+
+    // 3. Instant on-demand fetch if user hits Enter immediately
+    setLocationLoading(true);
+    try {
+      const params = new URLSearchParams({
+        q: query,
+        format: 'jsonv2',
+        addressdetails: '1',
+        limit: '1',
+      });
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (response.ok) {
+        const results = await response.json();
+        if (results && results.length > 0) {
+          const item = results[0];
+          const lat = Number(item.lat);
+          const lng = Number(item.lon);
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            const address = item.address || {};
+            const shortLabel = address.city || address.town || address.village || address.suburb || address.county || address.state || item.display_name?.split(',')[0] || query;
+            selectLocation({
+              id: String(item.place_id || `${lat}-${lng}`),
+              label: item.display_name || query,
+              shortLabel,
+              lat,
+              lng,
+              type: item.type,
+            });
+          }
+        } else {
+          setErrorMessage(`No location found for "${query}". Try coordinates or a nearby city.`);
+        }
+      }
+    } catch (err) {
+      console.error("Direct search lookup error:", err);
+    } finally {
+      setLocationLoading(false);
     }
   };
 
@@ -1684,7 +1725,6 @@ export default function Home() {
                       value={locationQuery}
                       onChange={(e) => {
                         setLocationQuery(e.target.value);
-                        setSelectedLocation(null);
                         if (e.target.value.trim()) setDismissedInvite(true);
                       }}
                       onKeyDown={(e) => {
@@ -1696,7 +1736,14 @@ export default function Home() {
                       placeholder="Search location or coordinates (lat, lng)..."
                       className="ctl geo-search-input text-xs"
                     />
-                    <Search className="w-3.5 h-3.5 text-[#8B8C7F] absolute left-2.5 pointer-events-none" />
+                    <button
+                      type="button"
+                      onClick={handleSearchSubmit}
+                      className="absolute left-2.5 text-[#8B8C7F] hover:text-[#7FA35C] p-0.5 cursor-pointer flex items-center justify-center transition"
+                      title="Search location or coordinates (Enter)"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                    </button>
                     <div className="absolute right-2.5 flex items-center gap-1">
                       {locationLoading && (
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7FA35C]" />

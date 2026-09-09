@@ -925,32 +925,39 @@ function SearchLocationMarker({
       markerRef.current = null;
     }
 
-    if (!location) return;
+    if (!location || !Number.isFinite(location.lat) || !Number.isFinite(location.lng)) return;
 
-    // Fly to location smoothly
-    const targetZoom = Math.max(map.getZoom(), 14);
+    // Smoothly fly to target location with close zoom (15) so user is immediately at the exact place
+    const targetZoom = Math.max(map.getZoom(), 15);
     map.flyTo([location.lat, location.lng], targetZoom, {
       duration: 1.5,
       easeLinearity: 0.25,
     });
 
-    // Custom glowing teardrop pin with animated radar pulse
+    const shortTitle = location.shortLabel || 'Target Point';
+
+    // Custom pointing arrow pin with ground beacon & title badge
     const icon = L.divIcon({
       className: 'geo-search-pin-wrapper',
       html: `
         <div class="geo-search-pin-container">
-          <div class="geo-search-pin-pulse"></div>
-          <div class="geo-search-pin-icon">
-            <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#E45858" stroke="#FFFFFF" stroke-width="1.5" />
-              <circle cx="12" cy="9" r="3.5" fill="#FFFFFF" />
-            </svg>
+          <div class="geo-search-target-ring"></div>
+          <div class="geo-search-target-dot"></div>
+          <div class="geo-search-pin-body">
+            <div class="geo-search-pin-badge">${shortTitle}</div>
+            <div class="geo-search-pin-icon-wrap">
+              <svg viewBox="0 0 32 42" width="32" height="42" fill="none">
+                <path d="M16 41 C16 41 2 24.5 2 15 C2 7.268 8.268 1 16 1 C23.732 1 30 7.268 30 15 C30 24.5 16 41 16 41 Z" fill="#E45858" stroke="#FFFFFF" stroke-width="2" />
+                <circle cx="16" cy="15" r="7.5" fill="#FFFFFF"/>
+                <circle cx="16" cy="15" r="4" fill="#C53030"/>
+              </svg>
+            </div>
           </div>
         </div>
       `,
-      iconSize: [36, 46],
-      iconAnchor: [18, 44],
-      popupAnchor: [0, -44],
+      iconSize: [140, 64],
+      iconAnchor: [70, 64],
+      popupAnchor: [0, -64],
     });
 
     const popupNode = document.createElement('div');
@@ -984,7 +991,11 @@ function SearchLocationMarker({
       }
     }
 
-    const marker = L.marker([location.lat, location.lng], { icon, keyboard: false })
+    const marker = L.marker([location.lat, location.lng], { 
+      icon, 
+      keyboard: false,
+      zIndexOffset: 1000 
+    })
       .bindPopup(popupNode, {
         className: 'geo-custom-popup',
         maxWidth: 260,
