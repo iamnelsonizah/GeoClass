@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { MapContainer, TileLayer, LayersControl, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, LayersControl, LayerGroup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import {
@@ -634,8 +634,8 @@ function Minimap() {
         zoomSnap: 0.5,
       }).setView(center, Math.max(map.getZoom() - 5, 1));
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 18,
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 16,
       }).addTo(minimap);
 
       minimapRef.current = minimap;
@@ -2550,12 +2550,21 @@ export default function MapComponent({
               maxZoom={19}
             />
           </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Night Streets">
-            <TileLayer
-              attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              maxZoom={20}
-            />
+          <LayersControl.BaseLayer name="Dark Streets">
+            <LayerGroup>
+              <TileLayer
+                attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={19}
+                maxNativeZoom={16}
+              />
+              <TileLayer
+                attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={19}
+                maxNativeZoom={16}
+              />
+            </LayerGroup>
           </LayersControl.BaseLayer>
           <LayersControl.BaseLayer name="Standard Streets">
             <TileLayer
