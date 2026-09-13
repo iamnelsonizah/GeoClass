@@ -3,18 +3,18 @@
 @import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
 
 :root {
-  /* Clean Modern Slate & Charcoal */
-  --graphite: #0B0F17;
-  --panel: #111827;
-  --panel-alt: #1E293B;
-  --panel-raised: #1F2937;
-  --canvas: #080C14;
+  /* Clean Modern Neutral Carbon & Charcoal (Zero blue cast) */
+  --graphite: #121316;
+  --panel: #18191D;
+  --panel-alt: #202227;
+  --panel-raised: #26282F;
+  --canvas: #0C0D0F;
 
   /* Typography & Readout Contrast */
-  --paper: #F8FAFC;
-  --ink: #E2E8F0;
-  --ink-dim: #94A3B8;
-  --ink-subtle: #64748B;
+  --paper: #F9FAFB;
+  --ink: #E5E7EB;
+  --ink-dim: #9CA3AF;
+  --ink-subtle: #6B7280;
 
   /* Earth Observation Olive & Semantic Accents (#99aa38) */
   --moss: #99aa38;
@@ -30,13 +30,13 @@
   --rose: #EF4444;
 
   /* Clean Structural Borders */
-  --border: #1E293B;
-  --border-strong: #334155;
+  --border: #272930;
+  --border-strong: #383B44;
   --danger: #EF4444;
 
   /* Theme tokens */
-  --background: #0B0F17;
-  --foreground: #F8FAFC;
+  --background: #121316;
+  --foreground: #F9FAFB;
   
   /* LULC Color Palette (Standard ESA/Copernicus Land Cover) */
   --color-lulc-water: #0EA5E9;
@@ -57,7 +57,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: #0B0F17;
+  background: #121316;
   color: var(--ink);
   font-family: var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -423,9 +423,9 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .run-btn:disabled {
-  background: #1E293B;
-  color: #64748B;
-  border-color: #334155;
+  background: #202227;
+  color: #6B7280;
+  border-color: #272930;
   box-shadow: none;
   cursor: not-allowed;
   opacity: 0.7;
@@ -538,26 +538,25 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .field-tools {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
   margin-top: 8px;
 }
 
 .tool-btn {
-  flex: 1;
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--ink);
-  font-size: 11.5px;
-  padding: 8px 0;
-  text-align: center;
-  border-radius: 4px;
+  font-size: 11px;
+  padding: 8px 10px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 150ms ease;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
+  width: 100%;
 }
 
 .tool-btn:hover {
@@ -567,9 +566,10 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .tool-btn.active {
-  background: var(--panel-raised);
+  background: var(--moss-subtle);
   border-color: var(--moss);
-  color: var(--moss);
+  color: var(--moss-light);
+  font-weight: 500;
 }
 
 /* ---------- Map area ---------- */
@@ -715,13 +715,13 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   left: calc(100% + 12px);
   top: 50%;
   transform: translateY(-50%) translateX(-4px);
-  background: #0F141C;
-  border: 1px solid #1E293B;
+  background: #121316;
+  border: 1px solid #272930;
   border-radius: 4px;
   padding: 8px 12px;
   width: max-content;
   max-width: 260px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(245, 158, 11, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(153, 170, 56, 0.15);
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -738,7 +738,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   transform: translateY(-50%);
   border-width: 5px;
   border-style: solid;
-  border-color: transparent #1E293B transparent transparent;
+  border-color: transparent #272930 transparent transparent;
 }
 
 .toolstrip .tool-tip::after {
@@ -749,7 +749,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   transform: translateY(-50%);
   border-width: 4px;
   border-style: solid;
-  border-color: transparent #0F141C transparent transparent;
+  border-color: transparent #121316 transparent transparent;
 }
 
 .toolstrip .t:hover .tool-tip {
@@ -1231,12 +1231,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-custom-popup .leaflet-popup-content-wrapper {
-  background: #0F141C !important;
-  border: 1px solid #1E293B !important;
+  background: #121316 !important;
+  border: 1px solid #272930 !important;
   border-radius: 8px !important;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65) !important;
   padding: 0 !important;
-  color: #F8FAFC !important;
+  color: #F9FAFB !important;
 }
 
 .geo-custom-popup .leaflet-popup-content {
@@ -1245,17 +1245,17 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-custom-popup .leaflet-popup-tip {
-  background: #0F141C !important;
-  border: 1px solid #1E293B !important;
+  background: #121316 !important;
+  border: 1px solid #272930 !important;
 }
 
 .geo-custom-popup .leaflet-popup-close-button {
-  color: #94A3B8 !important;
+  color: #9CA3AF !important;
   padding: 5px 7px !important;
 }
 
 .geo-custom-popup .leaflet-popup-close-button:hover {
-  color: #F8FAFC !important;
+  color: #F9FAFB !important;
 }
 
 /* ---------- Real-Time Live Measurement Tool ---------- */
@@ -1264,13 +1264,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-measure-control {
-  background: rgba(15, 20, 28, 0.95);
-  border: 1px solid #1E293B;
+  background: rgba(18, 19, 22, 0.95);
+  border: 1px solid #272930;
   border-radius: 6px;
   padding: 10px 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(245, 158, 11, 0.25);
-  color: #F8FAFC;
-  font-family: 'IBM Plex Sans', sans-serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(153, 170, 56, 0.25);
+  color: #F9FAFB;
+  font-family: var(--font-sans), Inter, sans-serif;
   min-width: 200px;
   backdrop-filter: blur(8px);
 }
@@ -1286,18 +1286,18 @@ input[type="range"]::-webkit-slider-thumb:hover {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #F59E0B;
+  color: #c0d45a;
   font-weight: 600;
 }
 
 .geo-measure-badge {
   font-size: 9px;
   font-family: 'IBM Plex Mono', monospace;
-  background: rgba(245, 158, 11, 0.15);
-  color: #F59E0B;
+  background: rgba(153, 170, 56, 0.15);
+  color: #c0d45a;
   padding: 1px 5px;
   border-radius: 3px;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(153, 170, 56, 0.3);
 }
 
 .geo-measure-value {
@@ -1312,7 +1312,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .geo-measure-subtext {
   font-size: 11px;
-  color: #94A3B8;
+  color: #9CA3AF;
   margin-bottom: 8px;
   line-height: 1.3;
 }
@@ -1324,45 +1324,45 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .geo-measure-actions button {
   flex: 1;
-  background: #141A24;
-  border: 1px solid #1E293B;
-  color: #F8FAFC;
+  background: #18191D;
+  border: 1px solid #272930;
+  color: #F9FAFB;
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
   transition: all 150ms ease;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-sans), Inter, sans-serif;
   font-weight: 500;
 }
 
 .geo-measure-actions button:hover {
-  background: #1E293B;
-  border-color: #334155;
+  background: #202227;
+  border-color: #383B44;
   color: #FFFFFF;
 }
 
 .geo-measure-actions .btn-finish {
-  background: #F59E0B !important;
-  color: #0A0D12 !important;
-  border-color: #F59E0B !important;
+  background: #99aa38 !important;
+  color: #FFFFFF !important;
+  border-color: #99aa38 !important;
   font-weight: 600 !important;
 }
 
 .geo-measure-actions .btn-finish:hover {
-  background: #FBBF24 !important;
-  color: #000000 !important;
+  background: #889731 !important;
+  color: #FFFFFF !important;
 }
 
 .geo-measure-actions .btn-resume {
-  border-color: #06B6D4 !important;
-  color: #06B6D4 !important;
+  border-color: #c0d45a !important;
+  color: #c0d45a !important;
 }
 
 .geo-measure-segment-pill {
-  background: rgba(15, 20, 28, 0.94);
-  border: 1px solid #F59E0B;
-  color: #FBBF24;
+  background: rgba(18, 19, 22, 0.94);
+  border: 1px solid #99aa38;
+  color: #c0d45a;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
   font-weight: 600;
@@ -1382,9 +1382,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-measure-cursor-tooltip {
-  background: rgba(18, 20, 15, 0.96) !important;
-  border: 1px solid #e9c947 !important;
-  color: #EDE8DB !important;
+  background: rgba(18, 19, 22, 0.96) !important;
+  border: 1px solid #99aa38 !important;
+  color: #F9FAFB !important;
   font-family: 'IBM Plex Mono', monospace !important;
   font-size: 11px !important;
   padding: 4px 9px !important;
@@ -1395,13 +1395,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-measure-cursor-tooltip::before {
-  border-right-color: #e9c947 !important;
+  border-right-color: #99aa38 !important;
 }
 
 .geo-measure-vertex-tooltip {
-  background: #0F141C !important;
-  border: 1px solid #1E293B !important;
-  color: #F8FAFC !important;
+  background: #121316 !important;
+  border: 1px solid #272930 !important;
+  color: #F9FAFB !important;
   font-family: 'IBM Plex Mono', monospace !important;
   font-size: 10px !important;
   padding: 2px 6px !important;

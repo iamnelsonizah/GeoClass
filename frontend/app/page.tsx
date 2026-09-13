@@ -2190,20 +2190,20 @@ export default function Home() {
         </div>
 
         {/* Mobile Step Badge */}
-        <div className="md:hidden flex items-center gap-1.5 text-xs text-slate-300 bg-[#111827] border border-[#1E293B] px-2.5 py-1 rounded">
+        <div className="md:hidden flex items-center gap-1.5 text-xs text-neutral-300 bg-[#18191D] border border-[#272930] px-2.5 py-1 rounded">
           <span className="text-[#c0d45a] font-medium">Step {workflowStep}/4</span>
-          <span className="text-slate-600">•</span>
+          <span className="text-neutral-600">•</span>
           <span className="truncate max-w-[85px]">
             {workflowStep === 1 ? 'AOI' : workflowStep === 2 ? 'Imagery' : workflowStep === 3 ? 'Classify' : 'Analyze'}
           </span>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-1 bg-[#111827] border border-[#1E293B] rounded p-0.5">
+          <div className="flex items-center gap-1 bg-[#18191D] border border-[#272930] rounded p-0.5">
             <button
               type="button"
               onClick={() => setLeftRailCollapsed(!leftRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!leftRailCollapsed ? 'bg-[#1E293B] text-[#c0d45a] border border-[#99aa38]/40' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!leftRailCollapsed ? 'bg-[#202227] text-[#c0d45a] border border-[#99aa38]/40' : 'text-neutral-400 hover:text-neutral-200'}`}
               title={leftRailCollapsed ? "Expand Workflow Controls" : "Collapse Workflow Controls"}
             >
               {leftRailCollapsed ? <PanelLeftOpen className="w-3.5 h-3.5" /> : <PanelLeftClose className="w-3.5 h-3.5" />}
@@ -2212,7 +2212,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!rightRailCollapsed ? 'bg-[#1E293B] text-[#c0d45a] border border-[#99aa38]/40' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!rightRailCollapsed ? 'bg-[#202227] text-[#c0d45a] border border-[#99aa38]/40' : 'text-neutral-400 hover:text-neutral-200'}`}
               title={rightRailCollapsed ? "Expand Layers & Tools" : "Collapse Layers & Tools"}
             >
               {rightRailCollapsed ? <PanelRightOpen className="w-3.5 h-3.5" /> : <PanelRightClose className="w-3.5 h-3.5" />}
@@ -2221,15 +2221,15 @@ export default function Home() {
           </div>
 
           {processingTime && (
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#111827] border border-[#1E293B] text-slate-300 text-xs">
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#18191D] border border-[#272930] text-neutral-300 text-xs">
               <Clock className="w-3.5 h-3.5 text-[#c0d45a]" /> {processingTime}s
             </div>
           )}
 
           <div className="gee-status text-xs">
             <span className={`dot ${geeConnected === false ? 'offline' : 'online'}`}></span>
-            <span className="hidden sm:inline text-slate-300 text-xs">{geeConnected === null ? 'Connecting...' : geeConnected ? 'Engine: Active' : 'Engine: Offline'}</span>
-            <span className="sm:hidden text-xs text-slate-300">{geeConnected ? 'Online' : 'Offline'}</span>
+            <span className="hidden sm:inline text-neutral-300 text-xs">{geeConnected === null ? 'Connecting...' : geeConnected ? 'Engine: Active' : 'Engine: Offline'}</span>
+            <span className="sm:hidden text-xs text-neutral-300">{geeConnected ? 'Online' : 'Offline'}</span>
           </div>
         </div>
       </header>
@@ -2322,13 +2322,13 @@ export default function Home() {
 
                   {/* Autocomplete dropdown suggestions */}
                   {locationSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#111827] border border-[#1E293B] rounded shadow-xl overflow-hidden text-xs">
+                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#18191D] border border-[#272930] rounded shadow-xl overflow-hidden text-xs">
                       {locationSuggestions.map((sug) => (
                         <button
                           key={sug.id}
                           type="button"
                           onClick={() => selectLocation(sug)}
-                          className="w-full text-left px-3 py-2 hover:bg-[#1E293B] text-slate-200 border-b border-[#1E293B]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
+                          className="w-full text-left px-3 py-2 hover:bg-[#202227] text-neutral-200 border-b border-[#272930]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
                         >
                           <span className="truncate pr-2 font-medium">{sug.label}</span>
                           <span className="text-[10px] mono text-[#c0d45a] shrink-0">
@@ -2352,7 +2352,7 @@ export default function Home() {
                         className={`text-center px-2 py-1.5 rounded text-[11px] border transition cursor-pointer ${
                           selectedAreaId === area.id 
                             ? 'bg-[#99aa38]/20 border-[#99aa38] text-[#c0d45a] font-semibold' 
-                            : 'bg-[#111827] hover:bg-[#1E293B] border-[#1E293B] text-slate-300'
+                            : 'bg-[#18191D] hover:bg-[#202227] border-[#272930] text-neutral-300'
                         }`}
                       >
                         <span className="truncate block font-medium">{area.name.replace(' Review', '').replace(' Greenbelt', '')}</span>
@@ -2362,14 +2362,14 @@ export default function Home() {
                 </div>
 
                 {/* GeoJSON File Ingestion */}
-                <label className="flex items-center justify-center gap-2 w-full py-2 px-3 border border-dashed border-[#334155] hover:border-[#99aa38]/60 rounded bg-[#111827]/60 hover:bg-[#111827] text-xs text-slate-300 hover:text-white transition cursor-pointer mt-1">
+                <label className="flex items-center justify-center gap-2 w-full py-2 px-3 border border-dashed border-[#383B44] hover:border-[#99aa38]/60 rounded bg-[#18191D]/60 hover:bg-[#18191D] text-xs text-neutral-300 hover:text-white transition cursor-pointer mt-1">
                   <Upload className="w-3.5 h-3.5 text-[#c0d45a]" />
                   <span>Import GeoJSON AOI</span>
                   <input type="file" accept=".geojson,.json" onChange={handleGeoJSONUpload} className="sr-only" />
                 </label>
 
                 {coords.length > 0 && (
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                  <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1">
                     <span>{aoiAreaHa ? `${aoiAreaHa.toFixed(1)} ha` : ''}</span>
                     <button
                       type="button"
@@ -2489,11 +2489,11 @@ export default function Home() {
                         onClick={() => triggerTool('swipe')}
                         className={`w-full py-1.5 px-2 rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition ${
                           swipeActive
-                            ? 'bg-[#F59E0B] text-[#0A0D12] font-bold shadow-md'
-                            : 'bg-[#141A24] hover:bg-[#1E293B] text-[#F8FAFC] border border-[#F59E0B]/50'
+                            ? 'bg-[#99aa38] text-neutral-900 font-bold shadow-md'
+                            : 'bg-[#18191D] hover:bg-[#202227] text-[#F9FAFB] border border-[#99aa38]/50'
                         }`}
                       >
-                        <Columns2 className="w-3.5 h-3.5 text-[#F59E0B]" />
+                        <Columns2 className="w-3.5 h-3.5 text-[#99aa38]" />
                         <span>{swipeActive ? "Exit Split-Screen Curtain" : "Launch Split-Screen Curtain"}</span>
                       </button>
                     </div>
@@ -2503,18 +2503,18 @@ export default function Home() {
                 {/* Feature 6: Atmospheric & Cloud Screening Controls */}
                 <div className="pt-1">
                   <div 
-                    className="flex items-center justify-between py-1 cursor-pointer select-none text-[11.5px] text-[#94A3B8] hover:text-[#F8FAFC] transition"
+                    className="flex items-center justify-between py-1 cursor-pointer select-none text-[11.5px] text-neutral-400 hover:text-white transition"
                     onClick={() => setShowAtmosphericConfig(!showAtmosphericConfig)}
                   >
                     <div className="flex items-center gap-1.5">
-                      <Cloud className="w-3.5 h-3.5 text-[#06B6D4]" />
+                      <Cloud className="w-3.5 h-3.5 text-[#c0d45a]" />
                       <span>Atmospheric & Cloud Controls</span>
                     </div>
-                    <span className="mono text-[#06B6D4] text-xs font-semibold">{showAtmosphericConfig ? '−' : '+'}</span>
+                    <span className="mono text-[#c0d45a] text-xs font-semibold">{showAtmosphericConfig ? '−' : '+'}</span>
                   </div>
 
                   {showAtmosphericConfig && (
-                    <div className="mt-2 pt-2 pb-1.5 px-2.5 bg-[#0F141C] border border-[#1E293B] rounded space-y-2.5">
+                    <div className="mt-2 pt-2 pb-1.5 px-2.5 bg-[#121316] border border-[#272930] rounded space-y-2.5">
                       <div>
                         <label className="field-label flex justify-between items-center">
                           <span>Cloud Mask Algorithm</span>
@@ -2699,7 +2699,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setLeftRailCollapsed(false)}
-              className="absolute left-3 top-3 z-[1001] px-3 py-1.5 bg-[#111827]/90 hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+              className="absolute left-3 top-3 z-[1001] px-3 py-1.5 bg-[#18191D]/90 hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
               title="Expand Workflow Controls"
             >
               <PanelLeftOpen className="w-3.5 h-3.5 text-[#c0d45a]" />
@@ -2710,7 +2710,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setRightRailCollapsed(false)}
-              className="absolute right-3 top-3 z-[1001] px-3 py-1.5 bg-[#111827]/90 hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+              className="absolute right-3 top-3 z-[1001] px-3 py-1.5 bg-[#18191D]/90 hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
               title="Expand Layers & Tools"
             >
               <PanelRightOpen className="w-3.5 h-3.5 text-[#c0d45a]" />
@@ -3017,11 +3017,11 @@ export default function Home() {
 
             {/* AOI Guidance Empty State */}
             {coords.length === 0 && !dismissedInvite && !selectedLocation && !locationQuery.trim() && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#111827]/95 backdrop-blur-md border border-[#1E293B] rounded-lg px-4 py-3 shadow-xl max-w-md w-[90vw] text-slate-200">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#18191D]/95 backdrop-blur-md border border-[#272930] rounded-lg px-4 py-3 shadow-xl max-w-md w-[90vw] text-neutral-200">
                 <button
                   type="button"
                   onClick={() => setDismissedInvite(true)}
-                  className="absolute top-2 right-2 text-slate-400 hover:text-white p-1 transition cursor-pointer"
+                  className="absolute top-2 right-2 text-neutral-400 hover:text-white p-1 transition cursor-pointer"
                   title="Dismiss guide"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -3030,30 +3030,30 @@ export default function Home() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#99aa38]"></span>
                   Define Area of Interest
                 </div>
-                <div className="text-xs text-slate-300 leading-relaxed">
+                <div className="text-xs text-neutral-300 leading-relaxed">
                   Use the rectangle or polygon tools on the left toolbar to draw your district boundary for Sentinel-2 satellite ingestion and classification.
                 </div>
               </div>
             )}
 
             {/* Unified Neatline Telemetry Footer Bar */}
-            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#111827]/95 backdrop-blur-md border-t border-[#1E293B] px-3 py-1.5 flex items-center justify-between text-xs text-slate-400 select-none">
+            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#18191D]/95 backdrop-blur-md border-t border-[#272930] px-3 py-1.5 flex items-center justify-between text-xs text-neutral-400 select-none">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500 font-medium">LAT</span>
-                  <span className="text-slate-200 font-mono">{mapCenter[0].toFixed(5)}°</span>
-                  <span className="text-slate-500 font-medium ml-1">LNG</span>
-                  <span className="text-slate-200 font-mono">{mapCenter[1].toFixed(5)}°</span>
+                  <span className="text-neutral-500 font-medium">LAT</span>
+                  <span className="text-neutral-200 font-mono">{mapCenter[0].toFixed(5)}°</span>
+                  <span className="text-neutral-500 font-medium ml-1">LNG</span>
+                  <span className="text-neutral-200 font-mono">{mapCenter[1].toFixed(5)}°</span>
                 </div>
-                <span className="text-[#334155]">|</span>
+                <span className="text-[#383B44]">|</span>
                 <div className="hidden sm:flex items-center gap-1">
-                  <span className="text-slate-500">GSD:</span>
+                  <span className="text-neutral-500">GSD:</span>
                   <span className="text-[#c0d45a] font-mono">10m / px</span>
                 </div>
-                <span className="text-[#334155] hidden md:inline">|</span>
+                <span className="text-[#383B44] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1">
-                  <span className="text-slate-500">Sensor:</span>
-                  <span className="text-slate-200">Sentinel-2 MSI</span>
+                  <span className="text-neutral-500">Sensor:</span>
+                  <span className="text-neutral-200">Sentinel-2 MSI</span>
                 </div>
               </div>
 
@@ -3154,13 +3154,13 @@ export default function Home() {
             {/* Temporal period swapper (in compare mode) */}
             {compareMode && !swipeActive && (tileUrls.classified || tileUrls.trueColor) && (
               <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 16 }} zIndex={1002}>
-                <div className="bg-[#0F141C]/95 backdrop-blur-md border border-[#1E293B] p-1 rounded shadow-2xl flex gap-1 cursor-grab active:cursor-grabbing">
+                <div className="bg-[#121316]/95 backdrop-blur-md border border-[#272930] p-1 rounded shadow-2xl flex gap-1 cursor-grab active:cursor-grabbing">
                   <button
                     onClick={() => setActiveTimePeriod('target')}
                     className={`px-3 py-1.5 rounded text-[11px] font-medium mono transition cursor-pointer ${
                       activeTimePeriod === 'target'
-                        ? 'bg-[#F59E0B]/20 text-[#F8FAFC] border border-[#F59E0B]'
-                        : 'text-[#94A3B8] hover:text-[#F8FAFC]'
+                        ? 'bg-[#99aa38]/20 text-[#F9FAFB] border border-[#99aa38]'
+                        : 'text-neutral-400 hover:text-[#F9FAFB]'
                     }`}
                   >
                     Target ({startDate.slice(0, 4)})
@@ -3218,9 +3218,9 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={printReport}
-                    className="px-2.5 py-1 bg-[#141A24] hover:bg-[#1E293B] border border-[#1E293B] text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center gap-1.5"
+                    className="px-2.5 py-1 bg-[#18191D] hover:bg-[#202227] border border-[#272930] text-[#F9FAFB] rounded text-xs cursor-pointer flex items-center gap-1.5"
                   >
-                    <Printer className="w-3.5 h-3.5 text-[#06B6D4]" /> Print report
+                    <Printer className="w-3.5 h-3.5 text-[#c0d45a]" /> Print report
                   </button>
                 </div>
               )}
@@ -3253,17 +3253,17 @@ export default function Home() {
                         {smartResultSummary.map((insight) => (
                           <div
                             key={insight.label}
-                            className="p-3 bg-[#141A24] border border-[#1E293B] rounded"
+                            className="p-3 bg-[#18191D] border border-[#272930] rounded"
                           >
-                            <div className="flex items-center justify-between text-[10px] uppercase font-semibold text-[#94A3B8]">
+                            <div className="flex items-center justify-between text-[10px] uppercase font-semibold text-neutral-400">
                               <span>{insight.label}</span>
                               {insight.tone === 'positive' && <CheckCircle className="w-3.5 h-3.5 text-[#10B981]" />}
                               {insight.tone === 'warning' && <AlertTriangle className="w-3.5 h-3.5 text-[#F59E0B]" />}
                               {insight.tone === 'critical' && <ShieldAlert className="w-3.5 h-3.5 text-[#F43F5E]" />}
-                              {insight.tone === 'neutral' && <Info className="w-3.5 h-3.5 text-[#06B6D4]" />}
+                              {insight.tone === 'neutral' && <Info className="w-3.5 h-3.5 text-[#c0d45a]" />}
                             </div>
-                            <p className="text-base font-bold text-[#F8FAFC] mt-1.5 mono">{insight.value}</p>
-                            <p className="text-[11px] text-[#94A3B8] mt-1 leading-normal">{insight.detail}</p>
+                            <p className="text-base font-bold text-[#F9FAFB] mt-1.5 mono">{insight.value}</p>
+                            <p className="text-[11px] text-neutral-400 mt-1 leading-normal">{insight.detail}</p>
                           </div>
                         ))}
                       </div>
@@ -3271,12 +3271,12 @@ export default function Home() {
 
                     {/* Temporal Change Detection Matrix */}
                     {compareMode && referenceStatistics && (
-                      <div className="p-3.5 bg-[#141A24] border border-[#1E293B] rounded space-y-3">
-                        <div className="flex justify-between items-center border-b border-[#1E293B] pb-2">
-                          <span className="text-xs font-semibold text-[#F8FAFC] flex items-center gap-1.5">
-                            <TrendingUp className="w-3.5 h-3.5 text-[#06B6D4]" /> Temporal Change Matrix
+                      <div className="p-3.5 bg-[#18191D] border border-[#272930] rounded space-y-3">
+                        <div className="flex justify-between items-center border-b border-[#272930] pb-2">
+                          <span className="text-xs font-semibold text-[#F9FAFB] flex items-center gap-1.5">
+                            <TrendingUp className="w-3.5 h-3.5 text-[#c0d45a]" /> Temporal Change Matrix
                           </span>
-                          <span className="text-[10px] mono text-[#94A3B8]">
+                          <span className="text-[10px] mono text-neutral-400">
                             {startDate.slice(0, 4)} vs {compareStartDate.slice(0, 4)}
                           </span>
                         </div>
@@ -3294,18 +3294,18 @@ export default function Home() {
                             return (
                               <div
                                 key={className}
-                                className={`p-2.5 rounded border bg-[#141A24] flex items-center justify-between ${changeTone.borderClass}`}
+                                className={`p-2.5 rounded border bg-[#18191D] flex items-center justify-between ${changeTone.borderClass}`}
                               >
                                 <div>
-                                  <span className="text-[10.5px] uppercase font-semibold text-[#94A3B8] block">{className}</span>
-                                  <span className="text-sm font-bold text-[#F8FAFC] mono mt-0.5 block">{valCurrent.area_ha.toFixed(1)} ha</span>
+                                  <span className="text-[10.5px] uppercase font-semibold text-neutral-400 block">{className}</span>
+                                  <span className="text-sm font-bold text-[#F9FAFB] mono mt-0.5 block">{valCurrent.area_ha.toFixed(1)} ha</span>
                                 </div>
                                 <div className={`text-right ${changeTone.textClass} mono text-xs font-semibold`}>
                                   <div className="flex items-center gap-1 justify-end">
                                     {areaChange < 0 ? <TrendingDown className="w-3.5 h-3.5" /> : areaChange > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : null}
                                     {areaChange > 0 ? '+' : ''}{areaChange.toFixed(1)} ha
                                   </div>
-                                  <div className="text-[10px] text-[#94A3B8]">
+                                  <div className="text-[10px] text-neutral-400">
                                     {pctChange > 0 ? '+' : ''}{pctChange.toFixed(1)}%
                                   </div>
                                 </div>
@@ -3345,14 +3345,14 @@ export default function Home() {
 
                     {/* Ecological Guidelines */}
                     {reportInsights && (
-                      <div className="p-3.5 bg-[#141A24] border border-[#1E293B] rounded space-y-2">
+                      <div className="p-3.5 bg-[#18191D] border border-[#272930] rounded space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-[#F8FAFC]">Conservation notes</span>
+                          <span className="text-xs font-semibold text-[#F9FAFB]">Conservation notes</span>
                           <span className="text-[10.5px] text-[#10B981] mono">{reportInsights.healthStatus}</span>
                         </div>
-                        <ul className="list-disc list-inside space-y-1 text-xs text-[#94A3B8] leading-relaxed">
+                        <ul className="list-disc list-inside space-y-1 text-xs text-neutral-400 leading-relaxed">
                           {reportInsights.recommendations.map((rec, i) => (
-                            <li key={i}><span className="text-[#CBD5E1]">{rec}</span></li>
+                            <li key={i}><span className="text-[#E5E7EB]">{rec}</span></li>
                           ))}
                         </ul>
                       </div>
@@ -3375,7 +3375,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setRightRailCollapsed(true)}
-              className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-[#1E293B] transition cursor-pointer"
+              className="p-1 rounded text-neutral-400 hover:text-neutral-200 hover:bg-[#202227] transition cursor-pointer"
               title="Collapse layers panel"
             >
               <PanelRightClose className="w-4 h-4" />
@@ -3465,19 +3465,19 @@ export default function Home() {
                       max="100"
                       value={opacity * 100}
                       onChange={(e) => setOpacity(Number(e.target.value) / 100)}
-                      className="w-full accent-[#99aa38] h-1 bg-[#1E293B] rounded-lg appearance-none cursor-pointer"
+                      className="w-full accent-[#99aa38] h-1 bg-[#272930] rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
                   {/* Confidence toggle */}
                   {confidenceReady && (
-                    <div className="pt-3 border-t border-[#1E293B] mt-3">
-                      <div className="flex items-center justify-between text-xs text-slate-400">
+                    <div className="pt-3 border-t border-[#272930] mt-3">
+                      <div className="flex items-center justify-between text-xs text-neutral-400">
                         <span>Confidence mask</span>
                         <button
                           type="button"
                           onClick={() => setConfidenceVisible(!confidenceVisible)}
-                          className={`text-[10px] px-2 py-0.5 rounded font-medium ${confidenceVisible ? 'bg-[#99aa38] text-white' : 'bg-[#111827] border border-[#1E293B] text-slate-400'}`}
+                          className={`text-[10px] px-2 py-0.5 rounded font-medium ${confidenceVisible ? 'bg-[#99aa38] text-white' : 'bg-[#18191D] border border-[#272930] text-neutral-400'}`}
                         >
                           {confidenceVisible ? 'ON' : 'OFF'}
                         </button>
@@ -3566,7 +3566,7 @@ export default function Home() {
                       type="button"
                       onClick={triggerAnalyzeTerrain}
                       disabled={loadingTerrain}
-                      className="w-full py-1.5 px-2 bg-[#111827] hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
+                      className="w-full py-1.5 px-2 bg-[#18191D] hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
                     >
                       {loadingTerrain ? (
                         <>
@@ -3588,7 +3588,7 @@ export default function Home() {
                       type="button"
                       onClick={triggerAnalyzeSpectral}
                       disabled={loadingSpectral}
-                      className="w-full py-1.5 px-2 bg-[#111827] hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
+                      className="w-full py-1.5 px-2 bg-[#18191D] hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
                     >
                       {loadingSpectral ? (
                         <>
@@ -3604,10 +3604,21 @@ export default function Home() {
                     </button>
                   </div>
 
-                  {/* Export actions */}
-                  {tileUrls.classified && (
-                    <div className="pt-3 mt-3 border-t border-[#1E293B] space-y-2">
-                      <div className="field-label">Export classification</div>
+                  {/* Export Deliverables Section: ALWAYS VISIBLE */}
+                  <div className="pt-3.5 mt-3.5 border-t border-[#272930] space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold tracking-wide text-neutral-300 uppercase">Export & Deliverables</span>
+                      {tileUrls.classified ? (
+                        <span className="text-[10px] text-[#c0d45a] font-medium px-1.5 py-0.5 rounded bg-[#99aa38]/15 border border-[#99aa38]/30">Ready</span>
+                      ) : coords.length > 0 ? (
+                        <span className="text-[10px] text-neutral-400 px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700">AOI Set</span>
+                      ) : (
+                        <span className="text-[10px] text-neutral-500">Draw AOI</span>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="field-label">Export classification & layers</div>
                       <div className="flex gap-2">
                         <select
                           value={downloadFormat}
@@ -3624,36 +3635,82 @@ export default function Home() {
                           type="button"
                           onClick={triggerDownload}
                           disabled={downloading}
-                          className="px-3 py-1.5 bg-[#111827] hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded text-xs cursor-pointer flex items-center gap-1.5"
+                          className="px-3 py-1.5 bg-[#18191D] hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded text-xs cursor-pointer flex items-center gap-1.5 transition hover:text-white"
+                          title="Export selected format"
                         >
                           <Download className="w-3.5 h-3.5 text-[#c0d45a]" />
                           {downloading ? '...' : 'Save'}
                         </button>
                       </div>
+                    </div>
 
-                      {/* Feature 5: Executive PDF Briefing Generator Button */}
-                      <div className="pt-2">
+                    {/* Quick GeoJSON AOI export shortcut */}
+                    {coords.length > 0 && (
+                      <div className="flex items-center justify-between pt-0.5">
                         <button
                           type="button"
-                          onClick={triggerPdfBriefing}
-                          disabled={generatingPdf || !statistics}
-                          className="w-full py-2 px-3 bg-[#99aa38] hover:bg-[#889731] text-white rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm"
+                          onClick={() => {
+                            const blob = new Blob([JSON.stringify({
+                              type: "FeatureCollection",
+                              features: [{
+                                type: "Feature",
+                                geometry: {
+                                  type: "Polygon",
+                                  coordinates: [coords[0][0] === coords[coords.length - 1][0] && coords[0][1] === coords[coords.length - 1][1] ? coords : [...coords, coords[0]]]
+                                },
+                                properties: {
+                                  name: "AOI_Boundary",
+                                  area_ha: aoiAreaHa || totalAreaHa || 0,
+                                  created: new Date().toISOString()
+                                }
+                              }]
+                            }, null, 2)], { type: 'application/geo+json' });
+                            const filename = `geoclass-aoi-${new Date().toISOString().split('T')[0]}.geojson`;
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            setSuccessMessage("AOI Boundary GeoJSON exported!");
+                          }}
+                          className="text-[11px] text-[#c0d45a] hover:underline flex items-center gap-1 cursor-pointer"
                         >
-                          {generatingPdf ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              <span>Generating Briefing PDF...</span>
-                            </>
-                          ) : (
-                            <>
-                              <FileText className="w-3.5 h-3.5" />
-                              <span>Generate Executive Briefing PDF</span>
-                            </>
-                          )}
+                          <Square className="w-3 h-3" /> Quick export AOI (GeoJSON)
                         </button>
+                        <span className="text-[10px] text-neutral-500">{coords.length} vertices</span>
                       </div>
+                    )}
+
+                    {/* Feature 5: Executive PDF Briefing Generator Button */}
+                    <div className="pt-1.5">
+                      <button
+                        type="button"
+                        onClick={triggerPdfBriefing}
+                        disabled={generatingPdf || !statistics}
+                        className={`w-full py-2 px-3 rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm ${
+                          statistics
+                            ? 'bg-[#99aa38] hover:bg-[#889731] text-white'
+                            : 'bg-[#18191D] border border-[#272930] text-neutral-400 cursor-not-allowed opacity-75'
+                        }`}
+                        title={statistics ? "Download executive PDF briefing report" : "Run classification first to generate full statistics for the PDF report"}
+                      >
+                        {generatingPdf ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Generating Briefing PDF...</span>
+                          </>
+                        ) : (
+                          <>
+                            <FileText className={`w-3.5 h-3.5 ${statistics ? 'text-white' : 'text-neutral-500'}`} />
+                            <span>{statistics ? "Generate Executive Briefing PDF" : "Executive Briefing PDF (Requires Analysis)"}</span>
+                          </>
+                        )}
+                      </button>
                     </div>
-                  )}
+                  </div>
                     </div>
                   </motion.div>
                 )}

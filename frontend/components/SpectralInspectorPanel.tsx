@@ -126,18 +126,18 @@ export function SpectralInspectorPanel({
   return (
     <DraggableContainer
       defaultPosition={{ x: 20, y: 80 }}
-      className="w-[490px] max-w-[calc(100vw-32px)] bg-[#0F141C]/95 backdrop-blur-md border border-[#1E293B] shadow-2xl rounded-lg overflow-hidden text-[#F8FAFC] z-[1200] select-none"
+      className="w-[490px] max-w-[calc(100vw-32px)] bg-[#121316]/95 backdrop-blur-md border border-[#272930] shadow-2xl rounded-lg overflow-hidden text-[#F9FAFB] z-[1200] select-none"
     >
       {/* Header / Drag handle */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#141A24] border-b border-[#1E293B] cursor-move">
+      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#18191D] border-b border-[#272930] cursor-move">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-[#1A2230] flex items-center justify-center border border-[#334155]">
-            <Activity className="w-3.5 h-3.5 text-[#06B6D4]" />
+          <div className="w-6 h-6 rounded bg-[#202227] flex items-center justify-center border border-[#383B44]">
+            <Activity className="w-3.5 h-3.5 text-[#c0d45a]" />
           </div>
           <div>
             <div className="text-xs font-semibold tracking-wide flex items-center gap-2">
               <span>Spectral Band Inspector</span>
-              <span className="text-[9.5px] px-1.5 py-0.5 rounded bg-[#1A2230] text-[#94A3B8] mono">
+              <span className="text-[9.5px] px-1.5 py-0.5 rounded bg-[#202227] text-neutral-400 mono">
                 Sentinel-2 SR
               </span>
             </div>
@@ -149,14 +149,14 @@ export function SpectralInspectorPanel({
             <button
               onClick={handleExportCSV}
               title="Export Spectral Curve as CSV"
-              className="p-1 hover:bg-[#1A2230] rounded text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+              className="p-1 hover:bg-[#202227] rounded text-neutral-400 hover:text-white transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
             </button>
           )}
           <button
             onClick={onClose}
-            className="p-1 hover:bg-[#1A2230] rounded text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+            className="p-1 hover:bg-[#202227] rounded text-neutral-400 hover:text-white transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -167,21 +167,21 @@ export function SpectralInspectorPanel({
       <div className="p-3.5 space-y-3">
         {loading && (
           <div className="flex flex-col items-center justify-center py-10 space-y-2">
-            <div className="w-6 h-6 border-2 border-[#06B6D4] border-t-transparent rounded-full animate-spin" />
-            <div className="text-xs text-[#94A3B8]">Sampling 10-band spectral profile...</div>
+            <div className="w-6 h-6 border-2 border-[#99aa38] border-t-transparent rounded-full animate-spin" />
+            <div className="text-xs text-neutral-400">Sampling 10-band spectral profile...</div>
           </div>
         )}
 
         {!loading && data && (
           <>
             {/* Coordinate & Signature Classification Bar */}
-            <div className="bg-[#141A24] border border-[#1E293B] p-2.5 rounded flex items-center justify-between">
+            <div className="bg-[#18191D] border border-[#272930] p-2.5 rounded flex items-center justify-between">
               <div className="space-y-0.5">
-                <div className="text-[9.5px] text-[#94A3B8] uppercase tracking-wider font-semibold flex items-center gap-1">
-                  <Crosshair className="w-3 h-3 text-[#06B6D4]" />
+                <div className="text-[9.5px] text-neutral-400 uppercase tracking-wider font-semibold flex items-center gap-1">
+                  <Crosshair className="w-3 h-3 text-[#c0d45a]" />
                   <span>Inspected Coordinate</span>
                 </div>
-                <div className="text-xs mono font-bold text-[#F8FAFC]">
+                <div className="text-xs mono font-bold text-[#F9FAFB]">
                   {data.coordinate.lat.toFixed(5)}° N, {data.coordinate.lng.toFixed(5)}° E
                 </div>
               </div>
@@ -208,18 +208,18 @@ export function SpectralInspectorPanel({
             </div>
 
             {/* Signature Description */}
-            <div className="text-[10.5px] text-[#CBD5E1] bg-[#141A24]/60 px-2.5 py-1.5 rounded border border-[#1E293B] leading-relaxed">
+            <div className="text-[10.5px] text-neutral-300 bg-[#18191D]/60 px-2.5 py-1.5 rounded border border-[#272930] leading-relaxed">
               {data.profile.description}
             </div>
 
             {/* Spectral Reflectance Curve Chart */}
-            <div className="bg-[#141A24] border border-[#1E293B] p-2.5 rounded">
+            <div className="bg-[#18191D] border border-[#272930] p-2.5 rounded">
               <div className="flex items-center justify-between mb-1.5">
-                <div className="text-[10.5px] font-semibold text-[#F8FAFC] flex items-center gap-1.5">
-                  <Layers className="w-3 h-3 text-[#06B6D4]" />
+                <div className="text-[10.5px] font-semibold text-[#F9FAFB] flex items-center gap-1.5">
+                  <Layers className="w-3 h-3 text-[#c0d45a]" />
                   <span>Spectral Reflectance Curve (B2 to B12)</span>
                 </div>
-                <div className="text-[9px] text-[#94A3B8] mono">λ: 490nm to 2190nm</div>
+                <div className="text-[9px] text-neutral-400 mono">λ: 490nm to 2190nm</div>
               </div>
 
               <div className="h-44 w-full">
@@ -228,17 +228,17 @@ export function SpectralInspectorPanel({
                     data={data.curve}
                     margin={{ top: 8, right: 12, left: -22, bottom: 4 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#272930" />
                     <XAxis
                       dataKey="center_nm"
-                      stroke="#475569"
-                      tick={{ fontSize: 9, fill: '#94A3B8' }}
+                      stroke="#383B44"
+                      tick={{ fontSize: 9, fill: '#9CA3AF' }}
                       tickFormatter={(v) => `${v}nm`}
                     />
                     <YAxis
-                      stroke="#475569"
+                      stroke="#383B44"
                       domain={[0, (dataMax: number) => Math.max(0.4, Math.ceil(dataMax * 12) / 10)]}
-                      tick={{ fontSize: 9, fill: '#94A3B8' }}
+                      tick={{ fontSize: 9, fill: '#9CA3AF' }}
                       tickFormatter={(v) => v.toFixed(2)}
                     />
                     <Tooltip
@@ -246,42 +246,42 @@ export function SpectralInspectorPanel({
                         if (active && payload && payload.length) {
                           const pt: SpectralBandPoint = payload[0].payload;
                           return (
-                            <div className="bg-[#0F141C] border border-[#1E293B] p-2 rounded shadow-lg text-xs space-y-1">
+                            <div className="bg-[#121316] border border-[#272930] p-2 rounded shadow-lg text-xs space-y-1">
                               <div className="font-bold flex items-center gap-1.5">
                                 <span
                                   className="w-2 h-2 rounded-full"
                                   style={{ backgroundColor: pt.color }}
                                 />
-                                <span className="text-[#F8FAFC]">
+                                <span className="text-[#F9FAFB]">
                                   {pt.band} ({pt.name}) • {pt.center_nm} nm
                                 </span>
                               </div>
-                              <div className="text-[#F8FAFC] mono">
+                              <div className="text-[#F9FAFB] mono">
                                 Reflectance: <span className="font-bold">{(pt.reflectance * 100).toFixed(2)}%</span> ({pt.reflectance.toFixed(4)})
                               </div>
-                              <div className="text-[10px] text-[#94A3B8] max-w-56">{pt.desc}</div>
+                              <div className="text-[10px] text-neutral-400 max-w-56">{pt.desc}</div>
                             </div>
                           );
                         }
                         return null;
                       }}
                     />
-                    <ReferenceLine y={0.0} stroke="#1E293B" />
+                    <ReferenceLine y={0.0} stroke="#272930" />
                     <Line
                       type="monotone"
                       dataKey="reflectance"
-                      stroke="#06B6D4"
+                      stroke="#99aa38"
                       strokeWidth={2.5}
                       dot={{
                         r: 3.5,
-                        fill: '#06B6D4',
-                        stroke: '#0F141C',
+                        fill: '#99aa38',
+                        stroke: '#121316',
                         strokeWidth: 1.5,
                       }}
                       activeDot={{
                         r: 5.5,
-                        fill: '#F8FAFC',
-                        stroke: '#06B6D4',
+                        fill: '#F9FAFB',
+                        stroke: '#c0d45a',
                         strokeWidth: 2,
                       }}
                     />
@@ -292,18 +292,18 @@ export function SpectralInspectorPanel({
 
             {/* 6 Diagnostic Indices Grid */}
             <div>
-              <div className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-1.5">
+              <div className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1.5">
                 On-The-Fly Diagnostic Multispectral Indices
               </div>
               <div className="grid grid-cols-3 gap-1.5">
                 {indexCards.map((c) => (
                   <div
                     key={c.key}
-                    className="bg-[#141A24] border border-[#1E293B] p-2 rounded hover:border-[#334155] transition-colors"
+                    className="bg-[#18191D] border border-[#272930] p-2 rounded hover:border-[#383B44] transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-[#F8FAFC]">{c.key}</span>
-                      <span className="text-[9px] text-[#94A3B8] mono">{c.note}</span>
+                      <span className="text-[10px] font-bold text-[#F9FAFB]">{c.key}</span>
+                      <span className="text-[9px] text-neutral-400 mono">{c.note}</span>
                     </div>
                     <div
                       className="text-sm font-bold mono mt-0.5 tabular-nums"
