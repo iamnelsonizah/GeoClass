@@ -1757,22 +1757,22 @@ function ElevationProfilePanel({
 
   return (
     <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 16, bottom: true }} zIndex={1005}>
-      <div className="w-[94vw] max-w-4xl bg-[#0F141C]/95 backdrop-blur-md border border-[#1E293B] rounded-md shadow-2xl p-4 text-[#F8FAFC] space-y-3 cursor-grab active:cursor-grabbing">
+      <div className="w-[94vw] max-w-4xl bg-[#111827]/95 backdrop-blur-md border border-[#1E293B] rounded-lg shadow-2xl p-4 text-[#F8FAFC] space-y-3 cursor-grab active:cursor-grabbing">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#06b6d4] animate-pulse"></span>
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#F8FAFC]">
-              Topography Elevation:
+            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span className="text-xs font-semibold tracking-tight text-white">
+              Topographic Elevation:
             </span>
             {routeTitle ? (
-              <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+              <span className="text-xs font-medium text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/30">
                 {routeTitle}
               </span>
             ) : (
-              <span className="text-xs font-mono font-semibold text-slate-300">Transect Profile</span>
+              <span className="text-xs font-medium text-slate-300">Transect Profile</span>
             )}
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 mono">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
               Copernicus 30m Global DEM
             </span>
           </div>
@@ -1781,7 +1781,7 @@ function ElevationProfilePanel({
             <button
               type="button"
               onClick={handleExportCSV}
-              className="text-[11px] px-2.5 py-1 bg-[#161D2A] hover:bg-[#1E293B] border border-[#1E293B] rounded text-amber-400 font-mono font-semibold cursor-pointer flex items-center gap-1 transition"
+              className="text-xs px-2.5 py-1 bg-[#1E293B] hover:bg-[#334155] border border-[#334155] rounded text-slate-200 hover:text-white font-medium cursor-pointer flex items-center gap-1 transition"
               title="Download CSV of elevation profile"
             >
               Export CSV
@@ -1799,56 +1799,56 @@ function ElevationProfilePanel({
 
         {/* Route Details Bar */}
         {(startLoc || endLoc || summary.start_point) && (
-          <div className="bg-[#0A0D12] border border-[#1E293B] rounded px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="bg-[#0B0F17] border border-[#1E293B] rounded px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
-              <span className="text-slate-400 text-[10.5px] font-mono uppercase tracking-wider font-semibold">Point A (Start):</span>
-              <span className="text-slate-100 font-semibold mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+              <span className="text-slate-400 text-xs font-medium">Point A (Start):</span>
+              <span className="text-slate-200 font-medium">
                 {startLoc || (summary.start_point ? `${summary.start_point.lat.toFixed(4)}°, ${summary.start_point.lng.toFixed(4)}°` : 'Start')}
               </span>
             </div>
 
-            <div className="text-amber-400 font-bold px-2 hidden sm:inline">→</div>
+            <div className="text-blue-400 font-bold px-2 hidden sm:inline">→</div>
 
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#EF4444] shrink-0"></span>
-              <span className="text-slate-400 text-[10.5px] font-mono uppercase tracking-wider font-semibold">Point B (End):</span>
-              <span className="text-slate-100 font-semibold mono">
+              <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+              <span className="text-slate-400 text-xs font-medium">Point B (End):</span>
+              <span className="text-slate-200 font-medium">
                 {endLoc || (summary.end_point ? `${summary.end_point.lat.toFixed(4)}°, ${summary.end_point.lng.toFixed(4)}°` : 'End')}
               </span>
             </div>
 
-            <div className="text-slate-400 text-[11px] mono ml-auto">
-              Distance: <strong className="text-amber-400">{summary.total_distance_km} km</strong>
+            <div className="text-slate-400 text-xs ml-auto">
+              Distance: <strong className="text-blue-400 font-semibold">{summary.total_distance_km} km</strong>
             </div>
           </div>
         )}
 
         {/* Summary Badges Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center text-xs">
-          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
-            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Total Distance</span>
-            <div className="font-bold text-[#F8FAFC] mono mt-0.5">{summary.total_distance_km} km</div>
+          <div className="bg-[#0B0F17] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[10px] text-slate-400 uppercase font-medium">Total Distance</span>
+            <div className="font-semibold text-slate-200 mt-0.5">{summary.total_distance_km} km</div>
           </div>
-          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
-            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Min Elevation</span>
-            <div className="font-bold text-[#10B981] mono mt-0.5">{summary.min_elevation_m} m</div>
+          <div className="bg-[#0B0F17] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[10px] text-slate-400 uppercase font-medium">Min Elevation</span>
+            <div className="font-semibold text-emerald-400 mt-0.5">{summary.min_elevation_m} m</div>
           </div>
-          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
-            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Max Elevation</span>
-            <div className="font-bold text-[#EF4444] mono mt-0.5">{summary.max_elevation_m} m</div>
+          <div className="bg-[#0B0F17] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[10px] text-slate-400 uppercase font-medium">Max Elevation</span>
+            <div className="font-semibold text-rose-400 mt-0.5">{summary.max_elevation_m} m</div>
           </div>
-          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
-            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Relief (Δ)</span>
-            <div className="font-bold text-[#22D3EE] mono mt-0.5">{summary.elevation_relief_m} m</div>
+          <div className="bg-[#0B0F17] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[10px] text-slate-400 uppercase font-medium">Relief (Δ)</span>
+            <div className="font-semibold text-blue-400 mt-0.5">{summary.elevation_relief_m} m</div>
           </div>
-          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
-            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Gain / Loss</span>
-            <div className="font-bold text-[#F8FAFC] mono mt-0.5">+{summary.elevation_gain_m}m / -{summary.elevation_loss_m}m</div>
+          <div className="bg-[#0B0F17] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[10px] text-slate-400 uppercase font-medium">Gain / Loss</span>
+            <div className="font-semibold text-slate-200 mt-0.5">+{summary.elevation_gain_m}m / -{summary.elevation_loss_m}m</div>
           </div>
-          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
-            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Max Grade</span>
-            <div className="font-bold text-amber-400 mono mt-0.5">{summary.max_grade_pct}%</div>
+          <div className="bg-[#0B0F17] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[10px] text-slate-400 uppercase font-medium">Max Grade</span>
+            <div className="font-semibold text-blue-400 mt-0.5">{summary.max_grade_pct}%</div>
           </div>
         </div>
 
@@ -2981,8 +2981,8 @@ export default function MapComponent({
                   {/* AOI indicator when boundary is active */}
                   {aoiCoords.length > 2 && (
                     <div className="flex items-center gap-2 pt-1 border-t border-slate-800/60">
-                      <span className="w-4 h-0 border-t-2 border-dashed border-amber-400 flex-shrink-0" />
-                      <span className="text-[10px] text-slate-500 font-medium">AOI Boundary</span>
+                      <span className="w-4 h-0 border-t-2 border-dashed border-blue-400 flex-shrink-0" />
+                      <span className="text-[10px] text-slate-400 font-medium">AOI Boundary</span>
                     </div>
                   )}
                 </div>

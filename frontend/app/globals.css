@@ -3,39 +3,35 @@
 @import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
 
 :root {
-  /* Deep Space / Orbital Obsidian & Slate */
-  --graphite: #0A0D12;
-  --panel: #0F141C;
-  --panel-alt: #141A24;
-  --panel-raised: #1A2230;
-  --canvas: #07090D;
+  /* Clean Modern Slate & Charcoal */
+  --graphite: #0B0F17;
+  --panel: #111827;
+  --panel-alt: #1E293B;
+  --panel-raised: #1F2937;
+  --canvas: #080C14;
 
   /* Typography & Readout Contrast */
   --paper: #F8FAFC;
-  --ink: #CBD5E1;
+  --ink: #E2E8F0;
   --ink-dim: #94A3B8;
   --ink-subtle: #64748B;
 
-  /* Confident Sensor Telemetry Palette */
+  /* Professional Geospatial Blue & Semantic Accents */
+  --blue: #2563EB;
+  --blue-hover: #1D4ED8;
+  --blue-subtle: rgba(37, 99, 235, 0.12);
+  --cyan: #0284C7;
+  --emerald: #10B981;
   --amber: #F59E0B;
-  --amber-dim: #78350F;
-  --amber-glow: rgba(245, 158, 11, 0.4);
-  --cyan: #06B6D4;
-  --cyan-dim: #164E63;
-  --rose: #F43F5E;
-  --rose-dim: #881337;
-  --moss: #10B981; /* Strictly for vegetation / biomass */
-  --moss-dim: #064E3B;
-  --clay: #D97706;
-  --slate: #94A3B8;
+  --rose: #EF4444;
 
-  /* Crisp Scientific Borders */
+  /* Clean Structural Borders */
   --border: #1E293B;
   --border-strong: #334155;
   --danger: #EF4444;
 
   /* Theme tokens */
-  --background: #0A0D12;
+  --background: #0B0F17;
   --foreground: #F8FAFC;
   
   /* LULC Color Palette (Standard ESA/Copernicus Land Cover) */
@@ -57,15 +53,15 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: #0e0f0c;
+  background: #0B0F17;
   color: var(--ink);
-  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .mono {
-  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 nextjs-portal {
@@ -299,26 +295,26 @@ nextjs-portal {
 }
 
 .phase.done .node {
-  background: var(--amber-dim);
-  border-color: var(--amber);
+  background: var(--blue);
+  border-color: var(--blue);
 }
 
 .phase.active .node {
-  background: var(--amber);
-  border-color: var(--amber);
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+  background: var(--blue);
+  border-color: #60A5FA;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
 }
 
 .phase-title {
-  font-size: 12.5px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-family: inherit;
   font-weight: 600;
   color: var(--ink-dim);
   display: flex;
   align-items: center;
   justify-content: space-between;
   user-select: none;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .phase.active .phase-title,
@@ -327,11 +323,11 @@ nextjs-portal {
 }
 
 .phase-title .tag {
-  font-size: 9.5px;
-  color: var(--amber);
-  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #60A5FA;
+  font-family: inherit;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .phase-body {
@@ -340,15 +336,16 @@ nextjs-portal {
 
 .phase.active .phase-body {
   background: var(--panel-raised);
-  border-left: 2px solid var(--amber);
+  border-left: 2px solid var(--blue);
   padding: 14px 14px 16px;
   margin-left: -13px;
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border-radius: 0 6px 6px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .field-label {
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 500;
   color: var(--ink-dim);
   margin-bottom: 6px;
   display: block;
@@ -358,17 +355,18 @@ select.ctl, input.ctl, .ctl {
   width: 100%;
   background: var(--panel);
   border: 1px solid var(--border);
-  color: var(--ink);
+  color: var(--paper);
   font-size: 12.5px;
   padding: 8px 10px;
-  font-family: 'IBM Plex Sans', sans-serif;
-  border-radius: 4px;
+  font-family: inherit;
+  border-radius: 6px;
   outline: none;
-  transition: border-color 150ms ease;
+  transition: all 150ms ease;
 }
 
 select.ctl:focus, input.ctl:focus, .ctl:focus {
-  border-color: var(--moss);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .hp-toggle {
@@ -378,7 +376,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   font-size: 11.5px;
   color: var(--ink-dim);
   padding: 9px 2px;
-  border-bottom: 1px dashed var(--border);
+  border-bottom: 1px solid var(--border);
   margin-top: 10px;
   cursor: pointer;
   user-select: none;
@@ -391,39 +389,42 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 .run-btn {
   margin-top: 14px;
   width: 100%;
-  background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
-  color: #0A0D12;
-  border: 1px solid #FCD34D;
-  padding: 11px 16px;
-  font-size: 12.5px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  background: #2563EB;
+  color: #FFFFFF;
+  border: 1px solid #3B82F6;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: all 180ms ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(37, 99, 235, 0.2);
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .run-btn:hover:not(:disabled) {
-  background: linear-gradient(180deg, #FBBF24 0%, #F59E0B 100%);
-  border-color: #FEF08A;
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transform: translateY(-1px);
+  background: #1D4ED8;
+  border-color: #60A5FA;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  transform: translateY(-0.5px);
+}
+
+.run-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .run-btn:disabled {
-  background: #161D2A;
+  background: #1E293B;
   color: #64748B;
-  border-color: #243042;
+  border-color: #334155;
   box-shadow: none;
   cursor: not-allowed;
-  opacity: 0.65;
+  opacity: 0.7;
 }
 
 .run-btn .tri {
@@ -431,7 +432,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   height: 0;
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
-  border-left: 6px solid #0A0D12;
+  border-left: 6px solid #FFFFFF;
 }
 
 .layer-row {
@@ -473,9 +474,8 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .swatch.on {
-  background: var(--amber);
-  border: 1px solid #FCD34D;
-  box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+  background: var(--blue);
+  border: 1px solid #60A5FA;
 }
 
 .swatch.off {
@@ -484,7 +484,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .layer-name {
-  color: var(--ink);
+  color: var(--paper);
   font-weight: 500;
 }
 
@@ -493,40 +493,35 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .layer-sub {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--ink-dim);
   margin-top: 1px;
 }
 
 .layer-state {
-  font-size: 9.5px;
-  font-family: 'IBM Plex Mono', monospace;
-  text-transform: uppercase;
+  font-size: 10px;
+  font-family: inherit;
+  font-weight: 500;
   padding: 2px 6px;
-  border-radius: 3px;
-  letter-spacing: 0.04em;
+  border-radius: 4px;
 }
 
 .layer-state.visible {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  color: #34D399;
-  font-weight: 600;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10B981;
 }
 
 .layer-state.ready {
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  color: #38BDF8;
-  font-weight: 600;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  color: #60A5FA;
 }
 
 .layer-state.waiting {
   background: rgba(30, 41, 59, 0.5);
-  border: 1px dashed rgba(100, 116, 139, 0.4);
-  color: #64748B;
-  font-weight: 500;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  color: #94A3B8;
 }
 
 .opacity-row {
@@ -694,9 +689,9 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .toolstrip .t.active {
-  color: #F59E0B;
-  background: rgba(245, 158, 11, 0.12);
-  border-left: 2px solid #F59E0B;
+  color: #60A5FA;
+  background: rgba(37, 99, 235, 0.15);
+  border-left: 2px solid #2563EB;
 }
 
 .toolstrip .divider {
@@ -1430,47 +1425,44 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .status-badge-standby {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px dashed rgba(100, 116, 139, 0.5);
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(100, 116, 139, 0.3);
   color: #94A3B8;
 }
 
 .status-badge-ready {
-  background: rgba(120, 53, 15, 0.35);
-  border: 1px solid rgba(245, 158, 11, 0.5);
-  color: #FBBF24;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(37, 99, 235, 0.4);
+  color: #60A5FA;
 }
 
 .status-badge-computing {
-  background: rgba(22, 78, 99, 0.4);
-  border: 1px solid rgba(6, 182, 212, 0.6);
-  color: #22D3EE;
+  background: rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  color: #93C5FD;
 }
 
 .status-badge-active {
-  background: rgba(6, 78, 59, 0.35);
-  border: 1px solid rgba(16, 185, 129, 0.5);
-  color: #34D399;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #10B981;
 }
 
 .status-badge-alert {
-  background: rgba(136, 19, 55, 0.4);
-  border: 1px solid rgba(244, 63, 94, 0.6);
-  color: #FB7185;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #F87171;
 }
 
 .telemetry-module-head {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: #94A3B8;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 12px;
-  background: rgba(20, 26, 36, 0.85);
+  padding: 8px 12px;
+  background: rgba(17, 24, 39, 0.85);
   border-bottom: 1px solid var(--border);
 }
 

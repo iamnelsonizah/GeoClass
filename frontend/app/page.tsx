@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Loader2, 
   BarChart3, 
@@ -41,7 +42,14 @@ import {
   PanelRightClose,
   PanelRightOpen,
   Layers,
-  Sliders
+  Sliders,
+  Square,
+  Pentagon,
+  Edit3,
+  Wand2,
+  Hand,
+  Trash2,
+  Sparkles
 } from 'lucide-react';
 import DashboardCharts, { SpectralData } from '../components/DashboardCharts';
 import { DraggableContainer } from '../components/DraggableContainer';
@@ -178,23 +186,29 @@ function Notification({
   }, [type, onDismiss]);
 
   const styles = type === 'error' 
-    ? 'bg-[#C56A5A]/15 border-[#C56A5A]/40 text-[#EDE8DB]' 
-    : 'bg-[#7FA35C]/15 border-[#7FA35C]/40 text-[#EDE8DB]';
+    ? 'bg-rose-950/40 border-rose-800/40 text-rose-200' 
+    : 'bg-emerald-950/40 border-emerald-800/40 text-emerald-200';
 
-  const Icon = type === 'error' ? ShieldAlert : CheckCircle;
+  const Icon = type === 'error' ? AlertTriangle : CheckCircle;
 
   return (
-    <div className={`flex items-center gap-2.5 px-3.5 py-2.5 border rounded ${styles} text-xs print:hidden shadow-lg`}>
-      <Icon className="w-4 h-4 flex-shrink-0 text-[#EDE8DB]" />
+    <motion.div
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.2 }}
+      className={`flex items-center gap-2.5 px-3.5 py-2.5 border rounded-lg ${styles} text-xs print:hidden shadow-sm`}
+    >
+      <Icon className="w-4 h-4 flex-shrink-0" />
       <div className="font-medium flex-1">{message}</div>
       <button 
         onClick={onDismiss} 
-        className="p-1 hover:bg-white/10 rounded transition flex-shrink-0 cursor-pointer"
+        className="p-1 hover:bg-white/10 rounded transition flex-shrink-0 cursor-pointer text-slate-400 hover:text-white"
         aria-label="Dismiss notification"
       >
         <X className="w-3.5 h-3.5" />
       </button>
-    </div>
+    </motion.div>
   );
 }
 
@@ -2152,79 +2166,70 @@ export default function Home() {
       <header className="topbar">
         <div className="flex items-center gap-2">
           <div className="brand">
-            <div className="brand-mark bg-[#0F141C] border border-[#1E293B]">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="12" cy="12" r="9" stroke="#334155" />
-                <circle cx="12" cy="12" r="4" stroke="#F59E0B" />
-                <line x1="12" y1="2" x2="12" y2="6" stroke="#06B6D4" />
-                <line x1="12" y1="18" x2="12" y2="22" stroke="#06B6D4" />
-                <line x1="2" y1="12" x2="6" y2="12" stroke="#06B6D4" />
-                <line x1="18" y1="12" x2="22" y2="12" stroke="#06B6D4" />
-                <circle cx="12" cy="12" r="1.5" fill="#F59E0B" />
-              </svg>
+            <div className="brand-mark bg-blue-600/10 border border-blue-500/20 text-blue-500 flex items-center justify-center rounded-lg p-1.5">
+              <Layers className="w-4 h-4 text-blue-500" />
             </div>
             <div className="brand-text">
-              <div className="name font-mono text-[13.5px] tracking-wide text-slate-100 flex items-center gap-2">
-                <span>GEOCLASS</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 uppercase font-mono font-semibold">EO WORKSTATION</span>
+              <div className="name font-sans text-sm font-semibold tracking-tight text-white flex items-center gap-2">
+                <span>GeoClass</span>
               </div>
-              <div className="sub text-[10px] text-slate-400 font-mono hidden sm:block">Sentinel-2 MSI · Copernicus 30m GLO-30</div>
+              <div className="sub text-[11px] text-slate-400 font-sans hidden sm:block">Earth Observation & Land Cover Analysis</div>
             </div>
           </div>
         </div>
 
         {/* Desktop Steps Nav */}
-        <div className="steps-nav hidden md:flex font-mono text-xs">
-          <div className={`step ${workflowStep >= 1 ? 'active' : ''}`}>[01. AOI BOUNDARY]</div>
-          <span className="sep text-slate-600">/</span>
-          <div className={`step ${workflowStep >= 2 ? 'active' : ''}`}>[02. SENSOR SPECTRUM]</div>
-          <span className="sep text-slate-600">/</span>
-          <div className={`step ${workflowStep >= 3 ? 'active' : ''}`}>[03. CLASSIFY LULC]</div>
-          <span className="sep text-slate-600">/</span>
-          <div className={`step ${workflowStep >= 4 ? 'active' : ''}`}>[04. ANALYTICS & DEM]</div>
+        <div className="steps-nav hidden md:flex text-xs font-medium text-slate-400">
+          <div className={`step ${workflowStep >= 1 ? 'active text-blue-400 font-semibold' : ''}`}>1. Area</div>
+          <span className="sep text-slate-600">›</span>
+          <div className={`step ${workflowStep >= 2 ? 'active text-blue-400 font-semibold' : ''}`}>2. Imagery</div>
+          <span className="sep text-slate-600">›</span>
+          <div className={`step ${workflowStep >= 3 ? 'active text-blue-400 font-semibold' : ''}`}>3. Classification</div>
+          <span className="sep text-slate-600">›</span>
+          <div className={`step ${workflowStep >= 4 ? 'active text-blue-400 font-semibold' : ''}`}>4. Analytics</div>
         </div>
 
         {/* Mobile Step Badge */}
-        <div className="md:hidden flex items-center gap-1.5 text-[11px] mono text-[#F8FAFC] bg-[#0F141C] border border-[#1E293B] px-2 py-0.5 rounded">
-          <span className="text-amber-400 font-semibold">Step {workflowStep}/4</span>
-          <span className="text-slate-500">•</span>
+        <div className="md:hidden flex items-center gap-1.5 text-xs text-slate-300 bg-[#111827] border border-[#1E293B] px-2.5 py-1 rounded">
+          <span className="text-blue-400 font-medium">Step {workflowStep}/4</span>
+          <span className="text-slate-600">•</span>
           <span className="truncate max-w-[85px]">
             {workflowStep === 1 ? 'AOI' : workflowStep === 2 ? 'Imagery' : workflowStep === 3 ? 'Classify' : 'Analyze'}
           </span>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-1 bg-[#0F141C] border border-[#1E293B] rounded p-0.5">
+          <div className="flex items-center gap-1 bg-[#111827] border border-[#1E293B] rounded p-0.5">
             <button
               type="button"
               onClick={() => setLeftRailCollapsed(!leftRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-mono ${!leftRailCollapsed ? 'bg-[#1A2230] text-amber-400 border border-amber-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!leftRailCollapsed ? 'bg-[#1E293B] text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
               title={leftRailCollapsed ? "Expand Workflow Controls" : "Collapse Workflow Controls"}
             >
               {leftRailCollapsed ? <PanelLeftOpen className="w-3.5 h-3.5" /> : <PanelLeftClose className="w-3.5 h-3.5" />}
-              <span className="text-[10px] uppercase tracking-wider">Mission Scope</span>
+              <span className="text-xs">Workflow</span>
             </button>
             <button
               type="button"
               onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-mono ${!rightRailCollapsed ? 'bg-[#1A2230] text-cyan-400 border border-cyan-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
-              title={rightRailCollapsed ? "Expand Layers & Analytics" : "Collapse Layers & Analytics"}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!rightRailCollapsed ? 'bg-[#1E293B] text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+              title={rightRailCollapsed ? "Expand Layers & Tools" : "Collapse Layers & Tools"}
             >
               {rightRailCollapsed ? <PanelRightOpen className="w-3.5 h-3.5" /> : <PanelRightClose className="w-3.5 h-3.5" />}
-              <span className="text-[10px] uppercase tracking-wider">Spectral HUD</span>
+              <span className="text-xs">Layers</span>
             </button>
           </div>
 
           {processingTime && (
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#0F141C] border border-[#1E293B] text-slate-300 text-[11px] mono">
-              <Clock className="w-3 h-3 text-amber-400" /> {processingTime}s
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#111827] border border-[#1E293B] text-slate-300 text-xs">
+              <Clock className="w-3.5 h-3.5 text-blue-400" /> {processingTime}s
             </div>
           )}
 
-          <div className="gee-status font-mono text-xs">
+          <div className="gee-status text-xs">
             <span className={`dot ${geeConnected === false ? 'offline' : 'online'}`}></span>
-            <span className="hidden sm:inline text-slate-300 text-[11px]">{geeConnected === null ? 'CONNECTING...' : geeConnected ? 'GEE ENGINE: ACTIVE' : 'GEE: OFFLINE'}</span>
-            <span className="sm:hidden text-[10px] text-slate-300">{geeConnected ? 'ONLINE' : 'OFFLINE'}</span>
+            <span className="hidden sm:inline text-slate-300 text-xs">{geeConnected === null ? 'Connecting...' : geeConnected ? 'Engine: Active' : 'Engine: Offline'}</span>
+            <span className="sm:hidden text-xs text-slate-300">{geeConnected ? 'Online' : 'Offline'}</span>
           </div>
         </div>
       </header>
@@ -2235,9 +2240,9 @@ export default function Home() {
         {/* ---------- Left rail (Workflow & Pipeline) ---------- */}
         <aside className={`rail rail-left ${leftRailCollapsed ? 'collapsed' : ''}`} aria-label="Workflow controls">
           <div className="rail-header">
-            <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#F8FAFC]">
-              <Sliders className="w-3.5 h-3.5 text-amber-400" />
-              <span>[01. MISSION SCOPE & PIPELINE]</span>
+            <div className="flex items-center gap-2 text-xs font-semibold text-white">
+              <Sliders className="w-3.5 h-3.5 text-blue-400" />
+              <span>Workflow Controls</span>
             </div>
             <button
               type="button"
@@ -2275,8 +2280,16 @@ export default function Home() {
                 </span>
               </div>
 
-              {phase1Open && (
-                <div className="phase-body space-y-2.5">
+              <AnimatePresence initial={false}>
+                {phase1Open && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="phase-body space-y-2.5">
                 {/* Location search */}
                 <div className="relative">
                   <div className="relative flex items-center">
@@ -2293,97 +2306,87 @@ export default function Home() {
                           handleSearchSubmit();
                         }
                       }}
-                      placeholder="Search location or coordinates (lat, lng)..."
-                      className="ctl geo-search-input text-xs"
+                      placeholder="Search city, district, coordinates..."
+                      className="ctl pr-8 text-xs"
+                      aria-label="Search geographic location"
                     />
-                    <button
-                      type="button"
-                      onClick={handleSearchSubmit}
-                      className="absolute left-2.5 text-[#8B8C7F] hover:text-[#7FA35C] p-0.5 cursor-pointer flex items-center justify-center transition"
-                      title="Search location or coordinates (Enter)"
-                    >
-                      <Search className="w-3.5 h-3.5" />
-                    </button>
-                    <div className="absolute right-2.5 flex items-center gap-1">
-                      {locationLoading && (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7FA35C]" />
-                      )}
-                      {locationQuery && !locationLoading && (
-                        <button
-                          type="button"
-                          onClick={clearLocationSearch}
-                          className="text-[#8B8C7F] hover:text-[#EDE8DB] cursor-pointer p-0.5"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
+                    {locationLoading ? (
+                      <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin absolute right-2.5 pointer-events-none" />
+                    ) : (
+                      <Search 
+                        className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 cursor-pointer hover:text-white transition"
+                        onClick={handleSearchSubmit}
+                      />
+                    )}
                   </div>
 
+                  {/* Autocomplete dropdown suggestions */}
                   {locationSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#141A24] border border-[#1E293B] rounded shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
-                      {locationSuggestions.map((loc) => (
+                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#111827] border border-[#1E293B] rounded shadow-xl overflow-hidden text-xs">
+                      {locationSuggestions.map((sug) => (
                         <button
-                          key={loc.id}
+                          key={sug.id}
                           type="button"
-                          onClick={() => selectLocation(loc)}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-[#1E293B] border-b border-[#1E293B] last:border-b-0 cursor-pointer flex items-start gap-2 group transition"
+                          onClick={() => selectLocation(sug)}
+                          className="w-full text-left px-3 py-2 hover:bg-[#1E293B] text-slate-200 border-b border-[#1E293B]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
                         >
-                          <MapPin className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${loc.type === 'coordinate' ? 'text-[#F59E0B]' : 'text-[#06B6D4]'}`} />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-1">
-                              <span className="font-medium text-[#F8FAFC] group-hover:text-white truncate">{loc.shortLabel}</span>
-                              {loc.type === 'coordinate' && (
-                                <span className="text-[9px] px-1 py-0.2 rounded bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40 mono shrink-0">GPS</span>
-                              )}
-                            </div>
-                            <span className="block text-[10px] text-[#94A3B8] truncate">{loc.label}</span>
-                          </div>
+                          <span className="truncate pr-2 font-medium">{sug.label}</span>
+                          <span className="text-[10px] mono text-blue-400 shrink-0">
+                            {sug.type || 'region'}
+                          </span>
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
 
-                {/* Saved district presets */}
-                <div className="grid grid-cols-3 gap-1.5 pt-1">
-                  {SAVED_AREAS.map((area) => (
-                    <button
-                      key={area.id}
-                      type="button"
-                      onClick={() => selectSavedArea(area)}
-                      className={`text-[11px] py-1.5 px-2 rounded border transition text-center cursor-pointer ${
-                        selectedAreaId === area.id
-                          ? 'bg-[#F59E0B]/20 border-[#F59E0B] text-[#F8FAFC]'
-                          : 'bg-[#141A24] border-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC] hover:border-[#334155]'
-                      }`}
-                    >
-                      {area.name.replace(' Review', '').replace(' Greenbelt', '')}
-                    </button>
-                  ))}
+                {/* Preset saved locations */}
+                <div>
+                  <div className="field-label flex items-center justify-between">
+                    <span>Quick presets</span>
+                    <Bookmark className="w-3 h-3 text-slate-500" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5 pt-1">
+                    {SAVED_AREAS.map((area) => (
+                      <button
+                        key={area.id}
+                        type="button"
+                        onClick={() => selectSavedArea(area)}
+                        className={`text-center px-2 py-1.5 rounded text-[11px] border transition cursor-pointer ${
+                          selectedAreaId === area.id 
+                            ? 'bg-blue-600/20 border-blue-500/40 text-blue-300 font-semibold' 
+                            : 'bg-[#111827] hover:bg-[#1E293B] border-[#1E293B] text-slate-300'
+                        }`}
+                      >
+                        <span className="truncate block font-medium">{area.name.replace(' Review', '').replace(' Greenbelt', '')}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Upload boundary */}
-                <label className="flex items-center justify-center gap-2 p-2 bg-[#141A24] border border-[#1E293B] hover:border-[#334155] rounded cursor-pointer transition text-[11px] text-[#94A3B8] hover:text-[#F8FAFC]">
-                  <Upload className="w-3.5 h-3.5 text-[#06B6D4]" />
-                  <span>Upload GeoJSON boundary</span>
+                {/* GeoJSON File Ingestion */}
+                <label className="flex items-center justify-center gap-2 w-full py-2 px-3 border border-dashed border-[#334155] hover:border-blue-500/60 rounded bg-[#111827]/60 hover:bg-[#111827] text-xs text-slate-300 hover:text-white transition cursor-pointer mt-1">
+                  <Upload className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Import GeoJSON AOI</span>
                   <input type="file" accept=".geojson,.json" onChange={handleGeoJSONUpload} className="sr-only" />
                 </label>
 
                 {coords.length > 0 && (
-                  <div className="flex items-center justify-between text-[11px] text-[#94A3B8] pt-1">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
                     <span>{aoiAreaHa ? `${aoiAreaHa.toFixed(1)} ha` : ''}</span>
                     <button
                       type="button"
                       onClick={saveCurrentArea}
-                      className="text-[#F59E0B] hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-blue-400 hover:text-blue-300 hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <Save className="w-3 h-3" /> Save AOI
                     </button>
                   </div>
                 )}
-              </div>
-              )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Phase 2: Fetch satellite imagery */}
@@ -2402,8 +2405,16 @@ export default function Home() {
                 </span>
               </div>
 
-              {phase2Open && (
-                <div className="phase-body space-y-3">
+              <AnimatePresence initial={false}>
+                {phase2Open && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="phase-body space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="field-label">Start date</label>
@@ -2537,7 +2548,7 @@ export default function Home() {
                       <div>
                         <label className="field-label flex justify-between items-center">
                           <span>Seasonal Composite Window</span>
-                          <span className="text-[10px] text-[#06B6D4] font-mono lowercase">{seasonalFilter}</span>
+                          <span className="text-[10px] text-blue-400 font-mono lowercase">{seasonalFilter}</span>
                         </label>
                         <select
                           value={seasonalFilter}
@@ -2554,13 +2565,14 @@ export default function Home() {
                 </div>
 
                 <button
+                  type="button"
                   onClick={fetchSatelliteImagery}
                   disabled={loadingMapId || coords.length === 0}
                   className="run-btn"
                 >
                   {loadingMapId ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Fetching Sentinel-2...
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Fetching imagery...
                     </>
                   ) : (
                     <>
@@ -2568,8 +2580,10 @@ export default function Home() {
                     </>
                   )}
                 </button>
-              </div>
-              )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Phase 3: Classification */}
@@ -2583,13 +2597,21 @@ export default function Home() {
                   <span>Classification</span>
                   <span className="tag mono">03</span>
                 </div>
-                <span className="text-[#8B8C7F] hover:text-[#EDE8DB] transition">
+                <span className="text-slate-400 hover:text-white transition">
                   {phase3Open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </span>
               </div>
 
-              {phase3Open && (
-                <div className="phase-body">
+              <AnimatePresence initial={false}>
+                {phase3Open && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="phase-body">
                 <div className="field-label">Model</div>
                 <select
                   value={modelType}
@@ -2614,9 +2636,9 @@ export default function Home() {
                     {showConfig && (
                       <div className="pt-3 space-y-2.5">
                         <div>
-                          <div className="flex justify-between text-[11px] text-[#8B8C7F] mb-1">
+                          <div className="flex justify-between text-[11px] text-slate-400 mb-1">
                             <span>Decision trees</span>
-                            <span className="mono text-[#EDE8DB]">{numTrees}</span>
+                            <span className="mono text-slate-200">{numTrees}</span>
                           </div>
                           <input
                             type="range"
@@ -2625,14 +2647,14 @@ export default function Home() {
                             step="10"
                             value={numTrees}
                             onChange={(e) => setNumTrees(parseInt(e.target.value))}
-                            className="w-full"
+                            className="w-full accent-blue-600 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
                           />
                         </div>
 
                         <div>
-                          <div className="flex justify-between text-[11px] text-[#8B8C7F] mb-1">
+                          <div className="flex justify-between text-[11px] text-slate-400 mb-1">
                             <span>Samples per class</span>
-                            <span className="mono text-[#EDE8DB]">{samplePoints} px</span>
+                            <span className="mono text-slate-200">{samplePoints} px</span>
                           </div>
                           <input
                             type="range"
@@ -2641,7 +2663,7 @@ export default function Home() {
                             step="25"
                             value={samplePoints}
                             onChange={(e) => setSamplePoints(parseInt(e.target.value))}
-                            className="w-full"
+                            className="w-full accent-blue-600 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
                           />
                         </div>
                       </div>
@@ -2664,8 +2686,10 @@ export default function Home() {
                     </>
                   )}
                 </button>
-              </div>
-              )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
           </div>
@@ -2678,84 +2702,84 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setLeftRailCollapsed(false)}
-              className="absolute left-2.5 top-2.5 z-[1001] px-2.5 py-1.5 bg-[#0F141C]/95 hover:bg-[#161D2A] border border-amber-500/40 text-amber-400 rounded-sm shadow-2xl backdrop-blur-md transition flex items-center gap-1.5 text-xs font-mono font-semibold cursor-pointer"
-              title="Expand Mission Scope Panel"
+              className="absolute left-3 top-3 z-[1001] px-3 py-1.5 bg-[#111827]/90 hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+              title="Expand Workflow Controls"
             >
-              <PanelLeftOpen className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[10px] tracking-wider uppercase text-slate-200">[SCOPE]</span>
+              <PanelLeftOpen className="w-3.5 h-3.5 text-blue-400" />
+              <span>Workflow</span>
             </button>
           )}
           {rightRailCollapsed && (
             <button
               type="button"
               onClick={() => setRightRailCollapsed(false)}
-              className="absolute right-2.5 top-2.5 z-[1001] px-2.5 py-1.5 bg-[#0F141C]/95 hover:bg-[#161D2A] border border-cyan-500/40 text-cyan-400 rounded-sm shadow-2xl backdrop-blur-md transition flex items-center gap-1.5 text-xs font-mono font-semibold cursor-pointer"
-              title="Expand Spectral HUD Panel"
+              className="absolute right-3 top-3 z-[1001] px-3 py-1.5 bg-[#111827]/90 hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+              title="Expand Layers & Tools"
             >
-              <PanelRightOpen className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[10px] tracking-wider uppercase text-slate-200">[LAYERS]</span>
+              <PanelRightOpen className="w-3.5 h-3.5 text-blue-400" />
+              <span>Layers</span>
             </button>
           )}
           
-          {/* Scientific Mission Telemetry Strip */}
+          {/* Status Telemetry Strip */}
           <div className="status-strip">
             <div className="status-item">
-              <div className="k">MISSION STATUS</div>
+              <div className="k">Status</div>
               <div className="v">
                 {loadingMapId ? (
-                  <span className="status-badge status-badge-computing"><Loader2 className="w-3 h-3 animate-spin mr-1" />FETCHING SCENE</span>
+                  <span className="status-badge status-badge-computing"><Loader2 className="w-3 h-3 animate-spin mr-1" />Fetching Scene...</span>
                 ) : loadingClassify ? (
-                  <span className="status-badge status-badge-computing"><Loader2 className="w-3 h-3 animate-spin mr-1" />CLASSIFYING GEE</span>
+                  <span className="status-badge status-badge-computing"><Loader2 className="w-3 h-3 animate-spin mr-1" />Classifying...</span>
                 ) : tileUrls.classified ? (
-                  <span className="status-badge status-badge-active">SURFACE CLASSIFIED</span>
+                  <span className="status-badge status-badge-active">Classified</span>
                 ) : tileUrls.trueColor ? (
-                  <span className="status-badge status-badge-ready">OPTICAL LOCKED</span>
+                  <span className="status-badge status-badge-ready">Imagery Ready</span>
                 ) : (
-                  <span className="status-badge status-badge-standby">AWAITING AOI</span>
+                  <span className="status-badge status-badge-standby">Ready for AOI</span>
                 )}
               </div>
             </div>
             <div className="status-item">
-              <div className="k">TARGET AOI</div>
-              <div className="v font-mono">
+              <div className="k">AOI Area</div>
+              <div className="v font-medium text-slate-200">
                 {aoiAreaHa ? (
-                  <span className="text-amber-400 font-bold">{aoiAreaHa.toFixed(1)} ha</span>
+                  <span className="text-blue-400 font-semibold">{aoiAreaHa.toFixed(1)} ha</span>
                 ) : (
-                  <span className="text-slate-500">UNBOUND</span>
+                  <span className="text-slate-500">None selected</span>
                 )}
               </div>
             </div>
             <div className="status-item">
-              <div className="k">TEMPORAL WINDOW</div>
-              <div className="v font-mono text-slate-200">{startDate.slice(0, 4)} Season</div>
+              <div className="k">Date Window</div>
+              <div className="v font-medium text-slate-200">{startDate.slice(0, 4)} Season</div>
             </div>
             <div className="status-item">
-              <div className="k">CLOUD MASK</div>
-              <div className="v font-mono text-slate-200">{cloudCover}% Max</div>
+              <div className="k">Cloud Mask</div>
+              <div className="v font-medium text-slate-200">{cloudCover}% Max</div>
             </div>
             <div className="status-item">
-              <div className="k">SPECTRAL LAYERS</div>
-              <div className="v font-mono text-cyan-400">{readyLayersCount} / {layerStack.length} Ready</div>
+              <div className="k">Active Layers</div>
+              <div className="v font-medium text-blue-400">{readyLayersCount} / {layerStack.length} ready</div>
             </div>
             {aiQualityMetrics && (
               <div className="status-item">
-                <div className="k">AI CLARITY</div>
-                <div className="v flex items-center gap-1 text-emerald-400 font-mono">
+                <div className="k">Quality Score</div>
+                <div className="v flex items-center gap-1 text-emerald-400 font-medium">
                   <span>{aiQualityMetrics.overall_quality_score}%</span>
-                  <span className="text-[10px] text-slate-500">({aiQualityMetrics.rating})</span>
+                  <span className="text-[10px] text-slate-400">({aiQualityMetrics.rating})</span>
                 </div>
               </div>
             )}
             {buildingStats && (
               <div className="status-item">
-                <div className="k">FOOTPRINTS</div>
-                <div className="v font-mono text-amber-400">{buildingStats.building_count} bldg</div>
+                <div className="k">Footprints</div>
+                <div className="v font-medium text-slate-200">{buildingStats.building_count} bldg</div>
               </div>
             )}
             {processingTime && (
               <div className="status-item">
-                <div className="k">GEE PIPELINE</div>
-                <div className="v font-mono text-cyan-300">{processingTime}s</div>
+                <div className="k">Processing</div>
+                <div className="v font-medium text-slate-300">{processingTime}s</div>
               </div>
             )}
           </div>
@@ -2769,10 +2793,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('rect')}
                 className={`t ${activeTool === 'rect' ? 'active' : ''}`}
+                title="Draw Rectangle"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                  <rect x="2.5" y="3.5" width="11" height="9" strokeDasharray="2.4 2"/>
-                </svg>
+                <Square className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Draw Rectangle</span>
@@ -2786,13 +2809,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('poly')}
                 className={`t ${activeTool === 'poly' ? 'active' : ''}`}
+                title="Draw Polygon"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                  <path d="M8,2.5 L14,6.5 L11.5,13.5 L4.5,13.5 L2,6.5 Z"/>
-                  <circle cx="8" cy="2.5" r="1" fill="currentColor" stroke="none"/>
-                  <circle cx="14" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-                  <circle cx="2" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-                </svg>
+                <Pentagon className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Draw Polygon</span>
@@ -2806,11 +2825,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('edit')}
                 className={`t ${activeTool === 'edit' ? 'active' : ''}`}
+                title="Edit Vertices"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
+                <Edit3 className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Edit Vertices</span>
@@ -2824,8 +2841,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('drag')}
                 className={`t ${activeTool === 'drag' ? 'active' : ''}`}
+                title="Move Boundary"
               >
-                <Move className="w-3.5 h-3.5" />
+                <Move className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Move Boundary</span>
@@ -2839,8 +2857,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('rotate')}
                 className={`t ${activeTool === 'rotate' ? 'active' : ''}`}
+                title="Rotate Boundary"
               >
-                <RotateCw className="w-3.5 h-3.5" />
+                <RotateCw className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Rotate Boundary</span>
@@ -2854,12 +2873,13 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('text')}
                 className={`t ${activeTool === 'text' ? 'active' : ''}`}
+                title="Text Annotation"
               >
                 <Type className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Text Annotation</span>
-                    <span className="tool-tip-badge">COMMENT</span>
+                    <span className="tool-tip-badge">NOTE</span>
                   </div>
                   <div className="tool-tip-desc">Click anywhere on the map to type and place custom notes or field labels.</div>
                 </div>
@@ -2871,11 +2891,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('smart')}
                 className={`t ${activeTool === 'smart' ? 'active' : ''}`}
+                title="Smart Select"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="9" strokeDasharray="3 3"/>
-                  <path d="M12 7v10M7 12h10"/>
-                </svg>
+                <Wand2 className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>SAM Smart Select</span>
@@ -2889,10 +2907,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('pan')}
                 className={`t ${activeTool === 'pan' ? 'active' : ''}`}
+                title="Pan Map"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                  <path d="M8,2 L8,14 M2,8 L14,8 M8,2 L6,4.2 M8,2 L10,4.2 M8,14 L6,11.8 M8,14 L10,11.8 M2,8 L4.2,6 M2,8 L4.2,10 M14,8 L11.8,6 M14,8 L11.8,10"/>
-                </svg>
+                <Hand className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Pan Map</span>
@@ -2906,11 +2923,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('measure')}
                 className={`t ${measurementMode ? 'active' : ''}`}
+                title="Measure Distance"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                  <circle cx="8" cy="8" r="5.5"/>
-                  <path d="M8,3 v2.4 M8,10.6 v2.4 M3,8 h2.4 M10.6,8 h2.4"/>
-                </svg>
+                <Ruler className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Measure Distance</span>
@@ -2924,12 +2939,13 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('transect')}
                 className={`t ${transectMode ? 'active' : ''}`}
+                title="Elevation Profile"
               >
                 <Mountain className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Elevation Transect</span>
-                    <span className="tool-tip-badge">3D DEM</span>
+                    <span className="tool-tip-badge">DEM</span>
                   </div>
                   <div className="tool-tip-desc">Draw a cross-sectional line across terrain to slice a 3D elevation profile.</div>
                 </div>
@@ -2939,8 +2955,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('spectral')}
                 className={`t ${spectralInspectorMode ? 'active' : ''}`}
+                title="Spectral Inspector"
               >
-                <Activity className="w-4 h-4 text-[#4A90E2]" />
+                <Activity className="w-4 h-4 text-blue-400" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Spectral Inspector</span>
@@ -2954,8 +2971,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('timeline')}
                 className={`t ${timelineMode ? 'active' : ''}`}
+                title="Pixel Timeline"
               >
-                <History className="w-4 h-4 text-[#3498DB]" />
+                <History className="w-4 h-4 text-blue-400" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Pixel Timeline</span>
@@ -2969,8 +2987,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('swipe')}
                 className={`t ${swipeActive ? 'active' : ''}`}
+                title="Split Wipe"
               >
-                <Columns2 className="w-4 h-4 text-[#7FA35C]" />
+                <Columns2 className="w-4 h-4 text-emerald-400" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Split-Screen Wipe</span>
@@ -2986,10 +3005,9 @@ export default function Home() {
                 type="button"
                 onClick={() => triggerTool('clear')}
                 className="t"
+                title="Clear Boundary"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                  <path d="M4,4 L12,12 M12,4 L4,12"/>
-                </svg>
+                <Trash2 className="w-4 h-4" />
                 <div className="tool-tip">
                   <div className="tool-tip-title">
                     <span>Clear Boundary</span>
@@ -3002,7 +3020,7 @@ export default function Home() {
 
             {/* AOI Guidance Empty State */}
             {coords.length === 0 && !dismissedInvite && !selectedLocation && !locationQuery.trim() && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#0A0D12]/95 backdrop-blur-md border border-amber-500/40 rounded px-4 py-3 shadow-2xl max-w-md w-[90vw] text-slate-200">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#111827]/95 backdrop-blur-md border border-[#1E293B] rounded-lg px-4 py-3 shadow-xl max-w-md w-[90vw] text-slate-200">
                 <button
                   type="button"
                   onClick={() => setDismissedInvite(true)}
@@ -3011,52 +3029,52 @@ export default function Home() {
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
-                <div className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                  Define Mission Area of Interest
+                <div className="text-xs font-semibold text-blue-400 flex items-center gap-1.5 mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                  Define Area of Interest
                 </div>
-                <div className="text-[11px] text-slate-300 font-sans leading-relaxed">
-                  Use the rectangle or polygon spatial vector tools on the left toolbar to lock your district boundary for Sentinel-2 satellite ingestion and land classification.
+                <div className="text-xs text-slate-300 leading-relaxed">
+                  Use the rectangle or polygon tools on the left toolbar to draw your district boundary for Sentinel-2 satellite ingestion and classification.
                 </div>
               </div>
             )}
 
             {/* Unified Neatline Telemetry Footer Bar */}
-            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#0A0D12]/95 backdrop-blur-md border-t border-[#1E293B] px-3 py-1.5 flex items-center justify-between text-[11px] font-mono text-[#94A3B8] select-none">
+            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#111827]/95 backdrop-blur-md border-t border-[#1E293B] px-3 py-1.5 flex items-center justify-between text-xs text-slate-400 select-none">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-amber-400 font-bold">LAT</span>
-                  <span className="text-slate-100 font-semibold">{mapCenter[0].toFixed(5)}°</span>
-                  <span className="text-amber-400 font-bold ml-1">LNG</span>
-                  <span className="text-slate-100 font-semibold">{mapCenter[1].toFixed(5)}°</span>
+                  <span className="text-slate-500 font-medium">LAT</span>
+                  <span className="text-slate-200 font-mono">{mapCenter[0].toFixed(5)}°</span>
+                  <span className="text-slate-500 font-medium ml-1">LNG</span>
+                  <span className="text-slate-200 font-mono">{mapCenter[1].toFixed(5)}°</span>
                 </div>
                 <span className="text-[#334155]">|</span>
                 <div className="hidden sm:flex items-center gap-1">
                   <span className="text-slate-500">GSD:</span>
-                  <span className="text-[#22D3EE] font-semibold">10m / px</span>
+                  <span className="text-blue-400 font-mono">10m / px</span>
                 </div>
                 <span className="text-[#334155] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1">
-                  <span className="text-slate-500">PLATFORM:</span>
-                  <span className="text-slate-200">S2-MSI · GLO-30</span>
+                  <span className="text-slate-500">Sensor:</span>
+                  <span className="text-slate-200">Sentinel-2 MSI</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 {aoiAreaHa ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                    <span className="text-amber-400 font-semibold">{aoiAreaHa.toFixed(1)} ha AOI</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                    <span className="text-blue-400 font-medium">{aoiAreaHa.toFixed(1)} ha AOI</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 text-slate-500">
                     <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
-                    <span>NO AOI LOCKED</span>
+                    <span>No AOI</span>
                   </div>
                 )}
                 <span className="text-[#334155] hidden lg:inline">|</span>
                 <div className="text-[10px] text-slate-500 hidden lg:block">
-                  GEE &middot; COPERNICUS &middot; ESA &middot; OSM
+                  GEE &middot; Copernicus &middot; ESA &middot; OSM
                 </div>
               </div>
             </div>
@@ -3353,15 +3371,15 @@ export default function Home() {
         {/* ---------- Right rail (Layers, Tools & Export) ---------- */}
         <aside className={`rail rail-right ${rightRailCollapsed ? 'collapsed' : ''}`} aria-label="Layers and analysis controls">
           <div className="rail-header">
-            <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#F8FAFC]">
-              <Layers className="w-3.5 h-3.5 text-cyan-400" />
-              <span>[02. SPECTRAL OVERLAYS & HUD]</span>
+            <div className="flex items-center gap-2 text-xs font-semibold text-white">
+              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              <span>Layers & Tools</span>
             </div>
             <button
               type="button"
               onClick={() => setRightRailCollapsed(true)}
-              className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-[#1A2230] transition cursor-pointer"
-              title="Collapse spectral HUD"
+              className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-[#1E293B] transition cursor-pointer"
+              title="Collapse layers panel"
             >
               <PanelRightClose className="w-4 h-4" />
             </button>
@@ -3372,22 +3390,30 @@ export default function Home() {
             <div className="phase">
               <div className="node"></div>
               <div 
-                className="phase-title cursor-pointer select-none flex items-center justify-between font-mono"
+                className="phase-title cursor-pointer select-none flex items-center justify-between"
                 onClick={() => setPhase4Open(!phase4Open)}
               >
                 <div className="flex items-center gap-2">
-                  <span>[01. SATELLITE SURFACE LAYERS]</span>
-                  <span className="tag mono text-cyan-400 font-semibold">
+                  <span>Satellite Layers</span>
+                  <span className="tag mono text-blue-400 font-semibold">
                     {readyLayersCount}/{layerStack.length}
                   </span>
                 </div>
-                <span className="text-[#8B8C7F] hover:text-[#EDE8DB] transition">
+                <span className="text-slate-400 hover:text-white transition">
                   {phase4Open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </span>
               </div>
 
-              {phase4Open && (
-                <div className="phase-body">
+              <AnimatePresence initial={false}>
+                {phase4Open && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="phase-body">
                   {/* Base map row */}
                   <div 
                     className={`layer-row ${activeLayer === 'none' ? 'bg-white/[0.04]' : ''}`}
@@ -3449,20 +3475,22 @@ export default function Home() {
                   {/* Confidence toggle */}
                   {confidenceReady && (
                     <div className="pt-3 border-t border-[#1E293B] mt-3">
-                      <div className="flex items-center justify-between text-[11.5px] text-[#94A3B8]">
+                      <div className="flex items-center justify-between text-xs text-slate-400">
                         <span>Confidence mask</span>
                         <button
                           type="button"
                           onClick={() => setConfidenceVisible(!confidenceVisible)}
-                          className={`text-[10px] px-2 py-0.5 rounded mono ${confidenceVisible ? 'bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40' : 'bg-[#141A24] border border-[#1E293B] text-[#94A3B8]'}`}
+                          className={`text-[10px] px-2 py-0.5 rounded font-medium ${confidenceVisible ? 'bg-blue-600 text-white' : 'bg-[#111827] border border-[#1E293B] text-slate-400'}`}
                         >
                           {confidenceVisible ? 'ON' : 'OFF'}
                         </button>
                       </div>
                     </div>
                   )}
-                </div>
-              )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Phase 5: Field tools & Export */}
@@ -3475,13 +3503,21 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <span>Field tools & Export</span>
                 </div>
-                <span className="text-[#94A3B8] hover:text-[#F8FAFC] transition">
+                <span className="text-slate-400 hover:text-white transition">
                   {phase5Open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </span>
               </div>
 
-              {phase5Open && (
-                <div className="phase-body">
+              <AnimatePresence initial={false}>
+                {phase5Open && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="phase-body">
                   <div className="field-tools">
                     <button
                       type="button"
@@ -3502,21 +3538,21 @@ export default function Home() {
                       onClick={() => triggerTool('spectral')}
                       className={`tool-btn ${spectralInspectorMode ? 'active' : ''}`}
                     >
-                      <Activity className="w-3.5 h-3.5 text-[#06B6D4]" /> Spectral
+                      <Activity className="w-3.5 h-3.5 text-blue-400" /> Spectral
                     </button>
                     <button
                       type="button"
                       onClick={() => triggerTool('timeline')}
                       className={`tool-btn ${timelineMode ? 'active' : ''}`}
                     >
-                      <History className="w-3.5 h-3.5 text-[#06B6D4]" /> Timeline
+                      <History className="w-3.5 h-3.5 text-blue-400" /> Timeline
                     </button>
                     <button
                       type="button"
                       onClick={() => triggerTool('swipe')}
                       className={`tool-btn ${swipeActive ? 'active' : ''}`}
                     >
-                      <Columns2 className="w-3.5 h-3.5 text-[#F59E0B]" /> Swipe
+                      <Columns2 className="w-3.5 h-3.5 text-emerald-400" /> Swipe
                     </button>
                     <button
                       type="button"
@@ -3533,16 +3569,16 @@ export default function Home() {
                       type="button"
                       onClick={triggerAnalyzeTerrain}
                       disabled={loadingTerrain}
-                      className="w-full py-1.5 px-2 bg-[#141A24] hover:bg-[#1E293B] border border-[#F59E0B]/40 text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
+                      className="w-full py-1.5 px-2 bg-[#111827] hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
                     >
                       {loadingTerrain ? (
                         <>
-                          <span className="w-3 h-3 rounded-full border border-t-[#F59E0B] animate-spin"></span>
+                          <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
                           <span>Analyzing DEM...</span>
                         </>
                       ) : (
                         <>
-                          <Mountain className="w-3.5 h-3.5 text-[#F59E0B]" />
+                          <Mountain className="w-3.5 h-3.5 text-blue-400" />
                           <span>{terrainData ? "Refresh Terrain & Slope" : "Analyze Terrain & Slope"}</span>
                         </>
                       )}
@@ -3555,16 +3591,16 @@ export default function Home() {
                       type="button"
                       onClick={triggerAnalyzeSpectral}
                       disabled={loadingSpectral}
-                      className="w-full py-1.5 px-2 bg-[#141A24] hover:bg-[#1E293B] border border-[#06B6D4]/40 text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
+                      className="w-full py-1.5 px-2 bg-[#111827] hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
                     >
                       {loadingSpectral ? (
                         <>
-                          <span className="w-3 h-3 rounded-full border border-t-[#06B6D4] animate-spin"></span>
+                          <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
                           <span>Computing Band Math...</span>
                         </>
                       ) : (
                         <>
-                          <Activity className="w-3.5 h-3.5 text-[#06B6D4]" />
+                          <Activity className="w-3.5 h-3.5 text-blue-400" />
                           <span>{spectralData ? "Refresh Spectral Indices" : "Analyze Spectral Indices"}</span>
                         </>
                       )}
@@ -3591,9 +3627,9 @@ export default function Home() {
                           type="button"
                           onClick={triggerDownload}
                           disabled={downloading}
-                          className="px-3 py-1.5 bg-[#141A24] hover:bg-[#1E293B] border border-[#1E293B] text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center gap-1.5"
+                          className="px-3 py-1.5 bg-[#111827] hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded text-xs cursor-pointer flex items-center gap-1.5"
                         >
-                          <Download className="w-3.5 h-3.5 text-[#06B6D4]" />
+                          <Download className="w-3.5 h-3.5 text-blue-400" />
                           {downloading ? '...' : 'Save'}
                         </button>
                       </div>
@@ -3604,16 +3640,16 @@ export default function Home() {
                           type="button"
                           onClick={triggerPdfBriefing}
                           disabled={generatingPdf || !statistics}
-                          className="w-full py-2 px-3 bg-[#F59E0B]/20 hover:bg-[#F59E0B]/30 border border-[#F59E0B]/60 text-[#F8FAFC] rounded text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm"
+                          className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm"
                         >
                           {generatingPdf ? (
                             <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#F59E0B]" />
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
                               <span>Generating Briefing PDF...</span>
                             </>
                           ) : (
                             <>
-                              <FileText className="w-3.5 h-3.5 text-[#F59E0B]" />
+                              <FileText className="w-3.5 h-3.5" />
                               <span>Generate Executive Briefing PDF</span>
                             </>
                           )}
@@ -3621,8 +3657,10 @@ export default function Home() {
                       </div>
                     </div>
                   )}
-                </div>
-              )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
           </div>
