@@ -2166,8 +2166,8 @@ export default function Home() {
       <header className="topbar">
         <div className="flex items-center gap-2">
           <div className="brand">
-            <div className="brand-mark bg-blue-600/10 border border-blue-500/20 text-blue-500 flex items-center justify-center rounded-lg p-1.5">
-              <Layers className="w-4 h-4 text-blue-500" />
+            <div className="brand-mark bg-[#99aa38]/15 border border-[#99aa38]/30 text-[#c0d45a] flex items-center justify-center rounded-lg p-1.5">
+              <Layers className="w-4 h-4 text-[#c0d45a]" />
             </div>
             <div className="brand-text">
               <div className="name font-sans text-sm font-semibold tracking-tight text-white flex items-center gap-2">
@@ -2180,18 +2180,18 @@ export default function Home() {
 
         {/* Desktop Steps Nav */}
         <div className="steps-nav hidden md:flex text-xs font-medium text-slate-400">
-          <div className={`step ${workflowStep >= 1 ? 'active text-blue-400 font-semibold' : ''}`}>1. Area</div>
+          <div className={`step ${workflowStep >= 1 ? 'active text-[#c0d45a] font-semibold' : ''}`}>1. Area</div>
           <span className="sep text-slate-600">›</span>
-          <div className={`step ${workflowStep >= 2 ? 'active text-blue-400 font-semibold' : ''}`}>2. Imagery</div>
+          <div className={`step ${workflowStep >= 2 ? 'active text-[#c0d45a] font-semibold' : ''}`}>2. Imagery</div>
           <span className="sep text-slate-600">›</span>
-          <div className={`step ${workflowStep >= 3 ? 'active text-blue-400 font-semibold' : ''}`}>3. Classification</div>
+          <div className={`step ${workflowStep >= 3 ? 'active text-[#c0d45a] font-semibold' : ''}`}>3. Classification</div>
           <span className="sep text-slate-600">›</span>
-          <div className={`step ${workflowStep >= 4 ? 'active text-blue-400 font-semibold' : ''}`}>4. Analytics</div>
+          <div className={`step ${workflowStep >= 4 ? 'active text-[#c0d45a] font-semibold' : ''}`}>4. Analytics</div>
         </div>
 
         {/* Mobile Step Badge */}
         <div className="md:hidden flex items-center gap-1.5 text-xs text-slate-300 bg-[#111827] border border-[#1E293B] px-2.5 py-1 rounded">
-          <span className="text-blue-400 font-medium">Step {workflowStep}/4</span>
+          <span className="text-[#c0d45a] font-medium">Step {workflowStep}/4</span>
           <span className="text-slate-600">•</span>
           <span className="truncate max-w-[85px]">
             {workflowStep === 1 ? 'AOI' : workflowStep === 2 ? 'Imagery' : workflowStep === 3 ? 'Classify' : 'Analyze'}
@@ -2203,7 +2203,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setLeftRailCollapsed(!leftRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!leftRailCollapsed ? 'bg-[#1E293B] text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!leftRailCollapsed ? 'bg-[#1E293B] text-[#c0d45a] border border-[#99aa38]/40' : 'text-slate-400 hover:text-slate-200'}`}
               title={leftRailCollapsed ? "Expand Workflow Controls" : "Collapse Workflow Controls"}
             >
               {leftRailCollapsed ? <PanelLeftOpen className="w-3.5 h-3.5" /> : <PanelLeftClose className="w-3.5 h-3.5" />}
@@ -2212,7 +2212,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!rightRailCollapsed ? 'bg-[#1E293B] text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!rightRailCollapsed ? 'bg-[#1E293B] text-[#c0d45a] border border-[#99aa38]/40' : 'text-slate-400 hover:text-slate-200'}`}
               title={rightRailCollapsed ? "Expand Layers & Tools" : "Collapse Layers & Tools"}
             >
               {rightRailCollapsed ? <PanelRightOpen className="w-3.5 h-3.5" /> : <PanelRightClose className="w-3.5 h-3.5" />}
@@ -2222,7 +2222,7 @@ export default function Home() {
 
           {processingTime && (
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#111827] border border-[#1E293B] text-slate-300 text-xs">
-              <Clock className="w-3.5 h-3.5 text-blue-400" /> {processingTime}s
+              <Clock className="w-3.5 h-3.5 text-[#c0d45a]" /> {processingTime}s
             </div>
           )}
 
@@ -2241,7 +2241,7 @@ export default function Home() {
         <aside className={`rail rail-left ${leftRailCollapsed ? 'collapsed' : ''}`} aria-label="Workflow controls">
           <div className="rail-header">
             <div className="flex items-center gap-2 text-xs font-semibold text-white">
-              <Sliders className="w-3.5 h-3.5 text-blue-400" />
+              <Sliders className="w-3.5 h-3.5 text-[#99aa38]" />
               <span>Workflow Controls</span>
             </div>
             <button
@@ -2311,7 +2311,7 @@ export default function Home() {
                       aria-label="Search geographic location"
                     />
                     {locationLoading ? (
-                      <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin absolute right-2.5 pointer-events-none" />
+                      <Loader2 className="w-3.5 h-3.5 text-[#c0d45a] animate-spin absolute right-2.5 pointer-events-none" />
                     ) : (
                       <Search 
                         className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 cursor-pointer hover:text-white transition"
@@ -2331,7 +2331,7 @@ export default function Home() {
                           className="w-full text-left px-3 py-2 hover:bg-[#1E293B] text-slate-200 border-b border-[#1E293B]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
                         >
                           <span className="truncate pr-2 font-medium">{sug.label}</span>
-                          <span className="text-[10px] mono text-blue-400 shrink-0">
+                          <span className="text-[10px] mono text-[#c0d45a] shrink-0">
                             {sug.type || 'region'}
                           </span>
                         </button>
@@ -2342,10 +2342,7 @@ export default function Home() {
 
                 {/* Preset saved locations */}
                 <div>
-                  <div className="field-label flex items-center justify-between">
-                    <span>Quick presets</span>
-                    <Bookmark className="w-3 h-3 text-slate-500" />
-                  </div>
+                  <div className="field-label">Quick presets</div>
                   <div className="grid grid-cols-3 gap-1.5 pt-1">
                     {SAVED_AREAS.map((area) => (
                       <button
@@ -2354,7 +2351,7 @@ export default function Home() {
                         onClick={() => selectSavedArea(area)}
                         className={`text-center px-2 py-1.5 rounded text-[11px] border transition cursor-pointer ${
                           selectedAreaId === area.id 
-                            ? 'bg-blue-600/20 border-blue-500/40 text-blue-300 font-semibold' 
+                            ? 'bg-[#99aa38]/20 border-[#99aa38] text-[#c0d45a] font-semibold' 
                             : 'bg-[#111827] hover:bg-[#1E293B] border-[#1E293B] text-slate-300'
                         }`}
                       >
@@ -2365,8 +2362,8 @@ export default function Home() {
                 </div>
 
                 {/* GeoJSON File Ingestion */}
-                <label className="flex items-center justify-center gap-2 w-full py-2 px-3 border border-dashed border-[#334155] hover:border-blue-500/60 rounded bg-[#111827]/60 hover:bg-[#111827] text-xs text-slate-300 hover:text-white transition cursor-pointer mt-1">
-                  <Upload className="w-3.5 h-3.5 text-blue-400" />
+                <label className="flex items-center justify-center gap-2 w-full py-2 px-3 border border-dashed border-[#334155] hover:border-[#99aa38]/60 rounded bg-[#111827]/60 hover:bg-[#111827] text-xs text-slate-300 hover:text-white transition cursor-pointer mt-1">
+                  <Upload className="w-3.5 h-3.5 text-[#c0d45a]" />
                   <span>Import GeoJSON AOI</span>
                   <input type="file" accept=".geojson,.json" onChange={handleGeoJSONUpload} className="sr-only" />
                 </label>
@@ -2377,7 +2374,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={saveCurrentArea}
-                      className="text-blue-400 hover:text-blue-300 hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-[#c0d45a] hover:text-[#d3e868] hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <Save className="w-3 h-3" /> Save AOI
                     </button>
@@ -2548,7 +2545,7 @@ export default function Home() {
                       <div>
                         <label className="field-label flex justify-between items-center">
                           <span>Seasonal Composite Window</span>
-                          <span className="text-[10px] text-blue-400 font-mono lowercase">{seasonalFilter}</span>
+                          <span className="text-[10px] text-[#c0d45a] font-mono lowercase">{seasonalFilter}</span>
                         </label>
                         <select
                           value={seasonalFilter}
@@ -2647,7 +2644,7 @@ export default function Home() {
                             step="10"
                             value={numTrees}
                             onChange={(e) => setNumTrees(parseInt(e.target.value))}
-                            className="w-full accent-blue-600 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                            className="w-full accent-[#99aa38] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
                           />
                         </div>
 
@@ -2663,7 +2660,7 @@ export default function Home() {
                             step="25"
                             value={samplePoints}
                             onChange={(e) => setSamplePoints(parseInt(e.target.value))}
-                            className="w-full accent-blue-600 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                            className="w-full accent-[#99aa38] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
                           />
                         </div>
                       </div>
@@ -2705,7 +2702,7 @@ export default function Home() {
               className="absolute left-3 top-3 z-[1001] px-3 py-1.5 bg-[#111827]/90 hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
               title="Expand Workflow Controls"
             >
-              <PanelLeftOpen className="w-3.5 h-3.5 text-blue-400" />
+              <PanelLeftOpen className="w-3.5 h-3.5 text-[#c0d45a]" />
               <span>Workflow</span>
             </button>
           )}
@@ -2716,7 +2713,7 @@ export default function Home() {
               className="absolute right-3 top-3 z-[1001] px-3 py-1.5 bg-[#111827]/90 hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
               title="Expand Layers & Tools"
             >
-              <PanelRightOpen className="w-3.5 h-3.5 text-blue-400" />
+              <PanelRightOpen className="w-3.5 h-3.5 text-[#c0d45a]" />
               <span>Layers</span>
             </button>
           )}
@@ -2743,7 +2740,7 @@ export default function Home() {
               <div className="k">AOI Area</div>
               <div className="v font-medium text-slate-200">
                 {aoiAreaHa ? (
-                  <span className="text-blue-400 font-semibold">{aoiAreaHa.toFixed(1)} ha</span>
+                  <span className="text-[#c0d45a] font-semibold">{aoiAreaHa.toFixed(1)} ha</span>
                 ) : (
                   <span className="text-slate-500">None selected</span>
                 )}
@@ -2759,7 +2756,7 @@ export default function Home() {
             </div>
             <div className="status-item">
               <div className="k">Active Layers</div>
-              <div className="v font-medium text-blue-400">{readyLayersCount} / {layerStack.length} ready</div>
+              <div className="v font-medium text-[#c0d45a]">{readyLayersCount} / {layerStack.length} ready</div>
             </div>
             {aiQualityMetrics && (
               <div className="status-item">
@@ -3029,8 +3026,8 @@ export default function Home() {
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
-                <div className="text-xs font-semibold text-blue-400 flex items-center gap-1.5 mb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                <div className="text-xs font-semibold text-[#c0d45a] flex items-center gap-1.5 mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#99aa38]"></span>
                   Define Area of Interest
                 </div>
                 <div className="text-xs text-slate-300 leading-relaxed">
@@ -3051,7 +3048,7 @@ export default function Home() {
                 <span className="text-[#334155]">|</span>
                 <div className="hidden sm:flex items-center gap-1">
                   <span className="text-slate-500">GSD:</span>
-                  <span className="text-blue-400 font-mono">10m / px</span>
+                  <span className="text-[#c0d45a] font-mono">10m / px</span>
                 </div>
                 <span className="text-[#334155] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1">
@@ -3063,8 +3060,8 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 {aoiAreaHa ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                    <span className="text-blue-400 font-medium">{aoiAreaHa.toFixed(1)} ha AOI</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#99aa38]"></span>
+                    <span className="text-[#c0d45a] font-medium">{aoiAreaHa.toFixed(1)} ha AOI</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 text-slate-500">
@@ -3372,7 +3369,7 @@ export default function Home() {
         <aside className={`rail rail-right ${rightRailCollapsed ? 'collapsed' : ''}`} aria-label="Layers and analysis controls">
           <div className="rail-header">
             <div className="flex items-center gap-2 text-xs font-semibold text-white">
-              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              <Layers className="w-3.5 h-3.5 text-[#99aa38]" />
               <span>Layers & Tools</span>
             </div>
             <button
@@ -3395,7 +3392,7 @@ export default function Home() {
               >
                 <div className="flex items-center gap-2">
                   <span>Satellite Layers</span>
-                  <span className="tag mono text-blue-400 font-semibold">
+                  <span className="tag mono text-[#c0d45a] font-semibold">
                     {readyLayersCount}/{layerStack.length}
                   </span>
                 </div>
@@ -3468,7 +3465,7 @@ export default function Home() {
                       max="100"
                       value={opacity * 100}
                       onChange={(e) => setOpacity(Number(e.target.value) / 100)}
-                      className="w-full accent-[#F59E0B] h-1 bg-[#1E293B] rounded-lg appearance-none cursor-pointer"
+                      className="w-full accent-[#99aa38] h-1 bg-[#1E293B] rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
@@ -3480,7 +3477,7 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => setConfidenceVisible(!confidenceVisible)}
-                          className={`text-[10px] px-2 py-0.5 rounded font-medium ${confidenceVisible ? 'bg-blue-600 text-white' : 'bg-[#111827] border border-[#1E293B] text-slate-400'}`}
+                          className={`text-[10px] px-2 py-0.5 rounded font-medium ${confidenceVisible ? 'bg-[#99aa38] text-white' : 'bg-[#111827] border border-[#1E293B] text-slate-400'}`}
                         >
                           {confidenceVisible ? 'ON' : 'OFF'}
                         </button>
@@ -3538,14 +3535,14 @@ export default function Home() {
                       onClick={() => triggerTool('spectral')}
                       className={`tool-btn ${spectralInspectorMode ? 'active' : ''}`}
                     >
-                      <Activity className="w-3.5 h-3.5 text-blue-400" /> Spectral
+                      <Activity className="w-3.5 h-3.5 text-[#c0d45a]" /> Spectral
                     </button>
                     <button
                       type="button"
                       onClick={() => triggerTool('timeline')}
                       className={`tool-btn ${timelineMode ? 'active' : ''}`}
                     >
-                      <History className="w-3.5 h-3.5 text-blue-400" /> Timeline
+                      <History className="w-3.5 h-3.5 text-[#c0d45a]" /> Timeline
                     </button>
                     <button
                       type="button"
@@ -3573,12 +3570,12 @@ export default function Home() {
                     >
                       {loadingTerrain ? (
                         <>
-                          <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
+                          <Loader2 className="w-3 h-3 text-[#c0d45a] animate-spin" />
                           <span>Analyzing DEM...</span>
                         </>
                       ) : (
                         <>
-                          <Mountain className="w-3.5 h-3.5 text-blue-400" />
+                          <Mountain className="w-3.5 h-3.5 text-[#c0d45a]" />
                           <span>{terrainData ? "Refresh Terrain & Slope" : "Analyze Terrain & Slope"}</span>
                         </>
                       )}
@@ -3595,12 +3592,12 @@ export default function Home() {
                     >
                       {loadingSpectral ? (
                         <>
-                          <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
+                          <Loader2 className="w-3 h-3 text-[#c0d45a] animate-spin" />
                           <span>Computing Band Math...</span>
                         </>
                       ) : (
                         <>
-                          <Activity className="w-3.5 h-3.5 text-blue-400" />
+                          <Activity className="w-3.5 h-3.5 text-[#c0d45a]" />
                           <span>{spectralData ? "Refresh Spectral Indices" : "Analyze Spectral Indices"}</span>
                         </>
                       )}
@@ -3629,7 +3626,7 @@ export default function Home() {
                           disabled={downloading}
                           className="px-3 py-1.5 bg-[#111827] hover:bg-[#1E293B] border border-[#1E293B] text-slate-200 rounded text-xs cursor-pointer flex items-center gap-1.5"
                         >
-                          <Download className="w-3.5 h-3.5 text-blue-400" />
+                          <Download className="w-3.5 h-3.5 text-[#c0d45a]" />
                           {downloading ? '...' : 'Save'}
                         </button>
                       </div>
@@ -3640,7 +3637,7 @@ export default function Home() {
                           type="button"
                           onClick={triggerPdfBriefing}
                           disabled={generatingPdf || !statistics}
-                          className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm"
+                          className="w-full py-2 px-3 bg-[#99aa38] hover:bg-[#889731] text-white rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm"
                         >
                           {generatingPdf ? (
                             <>

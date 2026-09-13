@@ -1761,12 +1761,12 @@ function ElevationProfilePanel({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span className="w-2 h-2 rounded-full bg-[#99aa38]"></span>
             <span className="text-xs font-semibold tracking-tight text-white">
               Topographic Elevation:
             </span>
             {routeTitle ? (
-              <span className="text-xs font-medium text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/30">
+              <span className="text-xs font-medium text-[#c0d45a] bg-[#99aa38]/15 px-2 py-0.5 rounded border border-[#99aa38]/30">
                 {routeTitle}
               </span>
             ) : (
@@ -1808,7 +1808,7 @@ function ElevationProfilePanel({
               </span>
             </div>
 
-            <div className="text-blue-400 font-bold px-2 hidden sm:inline">→</div>
+            <div className="text-[#c0d45a] font-bold px-2 hidden sm:inline">→</div>
 
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
@@ -1819,7 +1819,7 @@ function ElevationProfilePanel({
             </div>
 
             <div className="text-slate-400 text-xs ml-auto">
-              Distance: <strong className="text-blue-400 font-semibold">{summary.total_distance_km} km</strong>
+              Distance: <strong className="text-[#c0d45a] font-semibold">{summary.total_distance_km} km</strong>
             </div>
           </div>
         )}
@@ -1840,7 +1840,7 @@ function ElevationProfilePanel({
           </div>
           <div className="bg-[#0B0F17] border border-[#1E293B] p-1.5 rounded">
             <span className="text-[10px] text-slate-400 uppercase font-medium">Relief (Δ)</span>
-            <div className="font-semibold text-blue-400 mt-0.5">{summary.elevation_relief_m} m</div>
+            <div className="font-semibold text-[#c0d45a] mt-0.5">{summary.elevation_relief_m} m</div>
           </div>
           <div className="bg-[#0B0F17] border border-[#1E293B] p-1.5 rounded">
             <span className="text-[10px] text-slate-400 uppercase font-medium">Gain / Loss</span>
@@ -1848,7 +1848,7 @@ function ElevationProfilePanel({
           </div>
           <div className="bg-[#0B0F17] border border-[#1E293B] p-1.5 rounded">
             <span className="text-[10px] text-slate-400 uppercase font-medium">Max Grade</span>
-            <div className="font-semibold text-blue-400 mt-0.5">{summary.max_grade_pct}%</div>
+            <div className="font-semibold text-[#c0d45a] mt-0.5">{summary.max_grade_pct}%</div>
           </div>
         </div>
 
