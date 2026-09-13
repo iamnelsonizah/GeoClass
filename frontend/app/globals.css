@@ -3,36 +3,51 @@
 @import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
 
 :root {
-  --graphite: #1B1D19;
-  --panel: #22241E;
-  --panel-alt: #2A2C24;
-  --panel-raised: #272921;
-  --paper: #EDE8DB;
-  --ink: #C7C6BA;
-  --ink-dim: #8B8C7F;
-  --moss: #7FA35C;
-  --moss-dim: #4E6A3D;
-  --clay: #C8834C;
-  --slate: #8CA0AA;
-  --border: #35372E;
-  --border-strong: #454737;
-  --danger: #C56A5A;
-  --canvas: #12140F;
+  /* Deep Space / Orbital Obsidian & Slate */
+  --graphite: #0A0D12;
+  --panel: #0F141C;
+  --panel-alt: #141A24;
+  --panel-raised: #1A2230;
+  --canvas: #07090D;
+
+  /* Typography & Readout Contrast */
+  --paper: #F8FAFC;
+  --ink: #CBD5E1;
+  --ink-dim: #94A3B8;
+  --ink-subtle: #64748B;
+
+  /* Confident Sensor Telemetry Palette */
+  --amber: #F59E0B;
+  --amber-dim: #78350F;
+  --amber-glow: rgba(245, 158, 11, 0.4);
+  --cyan: #06B6D4;
+  --cyan-dim: #164E63;
+  --rose: #F43F5E;
+  --rose-dim: #881337;
+  --moss: #10B981; /* Strictly for vegetation / biomass */
+  --moss-dim: #064E3B;
+  --clay: #D97706;
+  --slate: #94A3B8;
+
+  /* Crisp Scientific Borders */
+  --border: #1E293B;
+  --border-strong: #334155;
+  --danger: #EF4444;
 
   /* Theme tokens */
-  --background: #1B1D19;
-  --foreground: #EDE8DB;
+  --background: #0A0D12;
+  --foreground: #F8FAFC;
   
-  /* LULC Color Palette */
-  --color-lulc-water: #419BDF;
-  --color-lulc-forest: #397D49;
-  --color-lulc-grass: #88B053;
-  --color-lulc-wetland: #7A87C6;
-  --color-lulc-agriculture: #E49635;
-  --color-lulc-shrub: #DFC35A;
-  --color-lulc-urban: #C4281B;
-  --color-lulc-bare: #A59B8F;
-  --color-lulc-snow: #B39FE1;
+  /* LULC Color Palette (Standard ESA/Copernicus Land Cover) */
+  --color-lulc-water: #0EA5E9;
+  --color-lulc-forest: #15803D;
+  --color-lulc-grass: #84CC16;
+  --color-lulc-wetland: #6366F1;
+  --color-lulc-agriculture: #EAB308;
+  --color-lulc-shrub: #CA8A04;
+  --color-lulc-urban: #DC2626;
+  --color-lulc-bare: #94A3B8;
+  --color-lulc-snow: #C084FC;
 }
 
 * {
@@ -143,8 +158,8 @@ nextjs-portal {
 
 .steps-nav .step.active {
   color: var(--paper);
-  border-bottom: 2px solid var(--moss);
-  font-weight: 500;
+  border-bottom: 2px solid var(--amber);
+  font-weight: 600;
 }
 
 .steps-nav .step.done {
@@ -162,6 +177,7 @@ nextjs-portal {
   align-items: center;
   gap: 7px;
   font-size: 11.5px;
+  font-family: 'IBM Plex Mono', monospace;
   color: var(--ink-dim);
 }
 
@@ -169,13 +185,13 @@ nextjs-portal {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--moss);
-  box-shadow: 0 0 8px rgba(127, 163, 92, 0.6);
+  background: #10B981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
 }
 
 .gee-status .dot.offline {
   background: var(--danger);
-  box-shadow: 0 0 8px rgba(197, 106, 90, 0.6);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
 }
 
 /* ---------- Main grid: Dual-Sidebar 3-Column Grid Layout ---------- */
@@ -283,24 +299,26 @@ nextjs-portal {
 }
 
 .phase.done .node {
-  background: var(--moss-dim);
-  border-color: var(--moss);
+  background: var(--amber-dim);
+  border-color: var(--amber);
 }
 
 .phase.active .node {
-  background: var(--moss);
-  border-color: var(--moss);
-  box-shadow: 0 0 6px rgba(127, 163, 92, 0.5);
+  background: var(--amber);
+  border-color: var(--amber);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
 }
 
 .phase-title {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
   color: var(--ink-dim);
   display: flex;
   align-items: center;
   justify-content: space-between;
   user-select: none;
+  letter-spacing: 0.02em;
 }
 
 .phase.active .phase-title,
@@ -309,10 +327,11 @@ nextjs-portal {
 }
 
 .phase-title .tag {
-  font-size: 10px;
-  color: var(--moss);
+  font-size: 9.5px;
+  color: var(--amber);
   font-family: 'IBM Plex Mono', monospace;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 .phase-body {
@@ -321,10 +340,11 @@ nextjs-portal {
 
 .phase.active .phase-body {
   background: var(--panel-raised);
-  border-left: 2px solid var(--moss);
+  border-left: 2px solid var(--amber);
   padding: 14px 14px 16px;
   margin-left: -13px;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .field-label {
@@ -371,31 +391,39 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 .run-btn {
   margin-top: 14px;
   width: 100%;
-  background: var(--moss-dim);
-  color: var(--paper);
-  border: 1px solid var(--moss);
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 500;
+  background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+  color: #0A0D12;
+  border: 1px solid #FCD34D;
+  padding: 11px 16px;
+  font-size: 12.5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  letter-spacing: 0.2px;
   border-radius: 4px;
   cursor: pointer;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: all 180ms ease;
 }
 
 .run-btn:hover:not(:disabled) {
-  background: #5d7d49;
-  border-color: #8fb866;
-  box-shadow: 0 4px 12px rgba(127, 163, 92, 0.25);
+  background: linear-gradient(180deg, #FBBF24 0%, #F59E0B 100%);
+  border-color: #FEF08A;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 .run-btn:disabled {
-  opacity: 0.45;
+  background: #161D2A;
+  color: #64748B;
+  border-color: #243042;
+  box-shadow: none;
   cursor: not-allowed;
+  opacity: 0.65;
 }
 
 .run-btn .tri {
@@ -403,7 +431,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   height: 0;
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
-  border-left: 6px solid var(--paper);
+  border-left: 6px solid #0A0D12;
 }
 
 .layer-row {
@@ -445,8 +473,9 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .swatch.on {
-  background: var(--moss);
-  border: 1px solid var(--moss);
+  background: var(--amber);
+  border: 1px solid #FCD34D;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
 }
 
 .swatch.off {
@@ -470,22 +499,34 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .layer-state {
-  font-size: 10px;
+  font-size: 9.5px;
   font-family: 'IBM Plex Mono', monospace;
   text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
 }
 
 .layer-state.visible {
-  color: var(--moss);
-  font-weight: 500;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34D399;
+  font-weight: 600;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
 }
 
 .layer-state.ready {
-  color: var(--slate);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38BDF8;
+  font-weight: 600;
 }
 
 .layer-state.waiting {
-  color: var(--ink-dim);
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px dashed rgba(100, 116, 139, 0.4);
+  color: #64748B;
+  font-weight: 500;
 }
 
 .opacity-row {
@@ -548,18 +589,20 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 .status-strip {
   display: flex;
   align-items: center;
-  padding: 10px 20px;
+  padding: 6px 16px;
   border-bottom: 1px solid var(--border);
-  background: var(--graphite);
+  background: rgba(10, 13, 18, 0.95);
+  backdrop-filter: blur(8px);
   overflow-x: auto;
   flex-shrink: 0;
+  gap: 0;
 }
 
 .status-item {
-  padding-right: 20px;
-  margin-right: 20px;
+  padding-right: 16px;
+  margin-right: 16px;
   border-right: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 11.5px;
   white-space: nowrap;
 }
 
@@ -568,31 +611,38 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .status-item .k {
-  color: var(--ink-dim);
-  font-size: 10px;
+  color: #64748B;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.08em;
   margin-bottom: 2px;
 }
 
 .status-item .v {
-  color: var(--paper);
+  color: #F8FAFC;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 12.5px;
+  font-size: 11.5px;
+  font-weight: 500;
 }
 
 .status-item.primary .v {
-  color: var(--clay);
-  font-weight: 500;
+  color: #F59E0B;
+  font-weight: 600;
 }
 
 .status-item.active .v {
-  color: var(--moss);
-  font-weight: 500;
+  color: #34D399;
+  font-weight: 600;
+}
+
+.status-item.cyan .v {
+  color: #22D3EE;
+  font-weight: 600;
 }
 
 .status-item.muted .v {
-  color: var(--ink-dim);
+  color: #94A3B8;
   font-weight: 400;
 }
 
@@ -602,7 +652,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   min-height: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(127,163,92,0.03), transparent 40%), #12140F;
+  background: radial-gradient(circle at center, rgba(14, 165, 233, 0.03) 0%, transparent 70%), #06080B;
 }
 
 /* Toolstrip floating on map */
@@ -612,12 +662,13 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   top: 16px;
   display: flex;
   flex-direction: column;
-  background: var(--graphite);
+  background: rgba(15, 20, 28, 0.95);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-left: none;
   z-index: 1000;
   border-radius: 0 4px 4px 0;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 .toolstrip .t {
@@ -626,7 +677,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ink-dim);
+  color: #94A3B8;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: all 150ms ease;
@@ -638,13 +689,14 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .toolstrip .t:hover {
-  color: var(--paper);
-  background: var(--panel-alt);
+  color: #F8FAFC;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .toolstrip .t.active {
-  color: var(--moss);
-  background: var(--panel-alt);
+  color: #F59E0B;
+  background: rgba(245, 158, 11, 0.12);
+  border-left: 2px solid #F59E0B;
 }
 
 .toolstrip .divider {
@@ -664,13 +716,13 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   left: calc(100% + 12px);
   top: 50%;
   transform: translateY(-50%) translateX(-4px);
-  background: #171913;
-  border: 1px solid #35372E;
-  border-radius: 6px;
+  background: #0F141C;
+  border: 1px solid #1E293B;
+  border-radius: 4px;
   padding: 8px 12px;
   width: max-content;
-  max-width: 250px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(127, 163, 92, 0.12);
+  max-width: 260px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(245, 158, 11, 0.15);
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -687,7 +739,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   transform: translateY(-50%);
   border-width: 5px;
   border-style: solid;
-  border-color: transparent #35372E transparent transparent;
+  border-color: transparent #1E293B transparent transparent;
 }
 
 .toolstrip .tool-tip::after {
@@ -698,7 +750,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   transform: translateY(-50%);
   border-width: 4px;
   border-style: solid;
-  border-color: transparent #171913 transparent transparent;
+  border-color: transparent #0F141C transparent transparent;
 }
 
 .toolstrip .t:hover .tool-tip {
@@ -710,7 +762,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 .tool-tip-title {
   font-size: 12px;
   font-weight: 600;
-  color: #EDE8DB;
+  color: #F8FAFC;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -722,19 +774,19 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 .tool-tip-badge {
   font-size: 9px;
   font-family: 'IBM Plex Mono', monospace;
-  background: rgba(127, 163, 92, 0.15);
-  color: #7FA35C;
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: 2px;
   font-weight: 600;
-  border: 1px solid rgba(127, 163, 92, 0.3);
+  border: 1px solid rgba(245, 158, 11, 0.4);
   text-transform: uppercase;
 }
 
 .tool-tip-desc {
   font-size: 11px;
   line-height: 1.4;
-  color: #A0A195;
+  color: #94A3B8;
   font-weight: 400;
   white-space: normal;
 }
@@ -1135,9 +1187,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-search-pin-badge {
-  background: rgba(27, 29, 25, 0.92);
-  border: 1px solid #7FA35C;
-  color: #EDE8DB;
+  background: rgba(15, 20, 28, 0.92);
+  border: 1px solid #06B6D4;
+  color: #F8FAFC;
   font-size: 10.5px;
   font-weight: 600;
   padding: 2px 8px;
@@ -1151,28 +1203,26 @@ input[type="range"]::-webkit-slider-thumb:hover {
   letter-spacing: 0.02em;
 }
 
-.geo-search-pin-icon-wrap {
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+.geo-search-pin-icon {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
 }
 
-@keyframes geo-pin-pulse-anim {
-  0% {
-    transform: translateX(-50%) scale(0.3);
-    opacity: 1;
-  }
-  70% {
-    transform: translateX(-50%) scale(2.5);
-    opacity: 0.15;
-  }
-  100% {
-    transform: translateX(-50%) scale(3.4);
-    opacity: 0;
-  }
+.geo-search-pin-pulse {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(6, 182, 212, 0.45);
+  animation: geo-pin-pulse 2s infinite ease-out;
+  z-index: 1;
 }
 
 @keyframes geo-pin-drop {
   0% {
-    transform: translateY(-24px) scale(0.6);
+    transform: translateY(-24px) scale(0.85);
     opacity: 0;
   }
   100% {
@@ -1182,12 +1232,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-custom-popup .leaflet-popup-content-wrapper {
-  background: #22241E !important;
-  border: 1px solid #35372E !important;
+  background: #0F141C !important;
+  border: 1px solid #1E293B !important;
   border-radius: 8px !important;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65) !important;
   padding: 0 !important;
-  color: #EDE8DB !important;
+  color: #F8FAFC !important;
 }
 
 .geo-custom-popup .leaflet-popup-content {
@@ -1196,17 +1246,17 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-custom-popup .leaflet-popup-tip {
-  background: #22241E !important;
-  border: 1px solid #35372E !important;
+  background: #0F141C !important;
+  border: 1px solid #1E293B !important;
 }
 
 .geo-custom-popup .leaflet-popup-close-button {
-  color: #8B8C7F !important;
+  color: #94A3B8 !important;
   padding: 5px 7px !important;
 }
 
 .geo-custom-popup .leaflet-popup-close-button:hover {
-  color: #EDE8DB !important;
+  color: #F8FAFC !important;
 }
 
 /* ---------- Real-Time Live Measurement Tool ---------- */
@@ -1215,12 +1265,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-measure-control {
-  background: rgba(23, 25, 19, 0.95);
-  border: 1px solid #35372E;
+  background: rgba(15, 20, 28, 0.95);
+  border: 1px solid #1E293B;
   border-radius: 6px;
   padding: 10px 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(233, 201, 71, 0.25);
-  color: #EDE8DB;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(245, 158, 11, 0.25);
+  color: #F8FAFC;
   font-family: 'IBM Plex Sans', sans-serif;
   min-width: 200px;
   backdrop-filter: blur(8px);
@@ -1237,18 +1287,18 @@ input[type="range"]::-webkit-slider-thumb:hover {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #e9c947;
+  color: #F59E0B;
   font-weight: 600;
 }
 
 .geo-measure-badge {
   font-size: 9px;
   font-family: 'IBM Plex Mono', monospace;
-  background: rgba(233, 201, 71, 0.15);
-  color: #e9c947;
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
   padding: 1px 5px;
   border-radius: 3px;
-  border: 1px solid rgba(233, 201, 71, 0.3);
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .geo-measure-value {
@@ -1263,7 +1313,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .geo-measure-subtext {
   font-size: 11px;
-  color: #8B8C7F;
+  color: #94A3B8;
   margin-bottom: 8px;
   line-height: 1.3;
 }
@@ -1275,9 +1325,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .geo-measure-actions button {
   flex: 1;
-  background: #2A2C24;
-  border: 1px solid #35372E;
-  color: #EDE8DB;
+  background: #141A24;
+  border: 1px solid #1E293B;
+  color: #F8FAFC;
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 4px;
@@ -1288,32 +1338,32 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-measure-actions button:hover {
-  background: #35372E;
-  border-color: #e9c947;
+  background: #1E293B;
+  border-color: #334155;
   color: #FFFFFF;
 }
 
 .geo-measure-actions .btn-finish {
-  background: #e9c947 !important;
-  color: #12140F !important;
-  border-color: #e9c947 !important;
+  background: #F59E0B !important;
+  color: #0A0D12 !important;
+  border-color: #F59E0B !important;
   font-weight: 600 !important;
 }
 
 .geo-measure-actions .btn-finish:hover {
-  background: #f7df72 !important;
+  background: #FBBF24 !important;
   color: #000000 !important;
 }
 
 .geo-measure-actions .btn-resume {
-  border-color: #7FA35C !important;
-  color: #7FA35C !important;
+  border-color: #06B6D4 !important;
+  color: #06B6D4 !important;
 }
 
 .geo-measure-segment-pill {
-  background: rgba(20, 22, 17, 0.94);
-  border: 1px solid #e9c947;
-  color: #f7df72;
+  background: rgba(15, 20, 28, 0.94);
+  border: 1px solid #F59E0B;
+  color: #FBBF24;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
   font-weight: 600;
@@ -1350,13 +1400,78 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-measure-vertex-tooltip {
-  background: #1B1D19 !important;
-  border: 1px solid #35372E !important;
-  color: #EDE8DB !important;
+  background: #0F141C !important;
+  border: 1px solid #1E293B !important;
+  color: #F8FAFC !important;
   font-family: 'IBM Plex Mono', monospace !important;
   font-size: 10px !important;
   padding: 2px 6px !important;
-  border-radius: 4px !important;
+  border-radius: 3px !important;
+}
+
+/* ── Scientific Earth Observation Workstation Classes ── */
+.gis-neatline {
+  border: 1px solid var(--border);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.status-badge-standby {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px dashed rgba(100, 116, 139, 0.5);
+  color: #94A3B8;
+}
+
+.status-badge-ready {
+  background: rgba(120, 53, 15, 0.35);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #FBBF24;
+}
+
+.status-badge-computing {
+  background: rgba(22, 78, 99, 0.4);
+  border: 1px solid rgba(6, 182, 212, 0.6);
+  color: #22D3EE;
+}
+
+.status-badge-active {
+  background: rgba(6, 78, 59, 0.35);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  color: #34D399;
+}
+
+.status-badge-alert {
+  background: rgba(136, 19, 55, 0.4);
+  border: 1px solid rgba(244, 63, 94, 0.6);
+  color: #FB7185;
+}
+
+.telemetry-module-head {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(20, 26, 36, 0.85);
+  border-bottom: 1px solid var(--border);
 }
 
 

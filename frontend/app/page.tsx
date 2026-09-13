@@ -2152,71 +2152,79 @@ export default function Home() {
       <header className="topbar">
         <div className="flex items-center gap-2">
           <div className="brand">
-            <div className="brand-mark">
-              <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
-                <path d="M2,17 Q8,13 13,16 T24,14" stroke="#4E6A3D" strokeWidth="1.4" fill="none"/>
-                <path d="M2,12 Q9,7 13,11 T24,9" stroke="#7FA35C" strokeWidth="1.4" fill="none"/>
-                <circle cx="17" cy="10.5" r="1.6" fill="#C8834C"/>
+            <div className="brand-mark bg-[#0F141C] border border-[#1E293B]">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="9" stroke="#334155" />
+                <circle cx="12" cy="12" r="4" stroke="#F59E0B" />
+                <line x1="12" y1="2" x2="12" y2="6" stroke="#06B6D4" />
+                <line x1="12" y1="18" x2="12" y2="22" stroke="#06B6D4" />
+                <line x1="2" y1="12" x2="6" y2="12" stroke="#06B6D4" />
+                <line x1="18" y1="12" x2="22" y2="12" stroke="#06B6D4" />
+                <circle cx="12" cy="12" r="1.5" fill="#F59E0B" />
               </svg>
             </div>
             <div className="brand-text">
-              <div className="name">GeoClass</div>
-              <div className="sub hidden sm:block">Land cover operations</div>
+              <div className="name font-mono text-[13.5px] tracking-wide text-slate-100 flex items-center gap-2">
+                <span>GEOCLASS</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 uppercase font-mono font-semibold">EO WORKSTATION</span>
+              </div>
+              <div className="sub text-[10px] text-slate-400 font-mono hidden sm:block">Sentinel-2 MSI · Copernicus 30m GLO-30</div>
             </div>
           </div>
         </div>
 
         {/* Desktop Steps Nav */}
-        <div className="steps-nav hidden md:flex">
-          <div className={`step ${workflowStep >= 1 ? 'active' : ''}`}>Select AOI</div>
-          <span className="sep">/</span>
-          <div className={`step ${workflowStep >= 2 ? 'active' : ''}`}>Fetch imagery</div>
-          <span className="sep">/</span>
-          <div className={`step ${workflowStep >= 3 ? 'active' : ''}`}>Classify</div>
-          <span className="sep">/</span>
-          <div className={`step ${workflowStep >= 4 ? 'active' : ''}`}>Analyze</div>
+        <div className="steps-nav hidden md:flex font-mono text-xs">
+          <div className={`step ${workflowStep >= 1 ? 'active' : ''}`}>[01. AOI BOUNDARY]</div>
+          <span className="sep text-slate-600">/</span>
+          <div className={`step ${workflowStep >= 2 ? 'active' : ''}`}>[02. SENSOR SPECTRUM]</div>
+          <span className="sep text-slate-600">/</span>
+          <div className={`step ${workflowStep >= 3 ? 'active' : ''}`}>[03. CLASSIFY LULC]</div>
+          <span className="sep text-slate-600">/</span>
+          <div className={`step ${workflowStep >= 4 ? 'active' : ''}`}>[04. ANALYTICS & DEM]</div>
         </div>
 
         {/* Mobile Step Badge */}
-        <div className="md:hidden flex items-center gap-1.5 text-[11px] mono text-[#EDE8DB] bg-[#22241E] border border-[#35372E] px-2 py-0.5 rounded">
-          <span className="text-[#7FA35C] font-semibold">Step {workflowStep}/4</span>
-          <span className="text-[#8B8C7F]">•</span>
+        <div className="md:hidden flex items-center gap-1.5 text-[11px] mono text-[#F8FAFC] bg-[#0F141C] border border-[#1E293B] px-2 py-0.5 rounded">
+          <span className="text-amber-400 font-semibold">Step {workflowStep}/4</span>
+          <span className="text-slate-500">•</span>
           <span className="truncate max-w-[85px]">
             {workflowStep === 1 ? 'AOI' : workflowStep === 2 ? 'Imagery' : workflowStep === 3 ? 'Classify' : 'Analyze'}
           </span>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
-          <div className="hidden lg:flex items-center gap-1 bg-[#1B1D19] border border-[#35372E] rounded p-0.5">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 bg-[#0F141C] border border-[#1E293B] rounded p-0.5">
             <button
               type="button"
               onClick={() => setLeftRailCollapsed(!leftRailCollapsed)}
-              className={`px-2 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer ${!leftRailCollapsed ? 'bg-[#22241E] text-[#7FA35C] font-medium shadow-sm' : 'text-[#8B8C7F] hover:text-[#EDE8DB]'}`}
-              title={leftRailCollapsed ? "Expand Workflow Pipeline" : "Collapse Workflow Pipeline"}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-mono ${!leftRailCollapsed ? 'bg-[#1A2230] text-amber-400 border border-amber-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
+              title={leftRailCollapsed ? "Expand Workflow Controls" : "Collapse Workflow Controls"}
             >
               {leftRailCollapsed ? <PanelLeftOpen className="w-3.5 h-3.5" /> : <PanelLeftClose className="w-3.5 h-3.5" />}
-              <span className="text-[11px]">Workflow</span>
+              <span className="text-[10px] uppercase tracking-wider">Mission Scope</span>
             </button>
             <button
               type="button"
               onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
-              className={`px-2 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer ${!rightRailCollapsed ? 'bg-[#22241E] text-[#7FA35C] font-medium shadow-sm' : 'text-[#8B8C7F] hover:text-[#EDE8DB]'}`}
-              title={rightRailCollapsed ? "Expand Layers & Tools" : "Collapse Layers & Tools"}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-mono ${!rightRailCollapsed ? 'bg-[#1A2230] text-cyan-400 border border-cyan-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
+              title={rightRailCollapsed ? "Expand Layers & Analytics" : "Collapse Layers & Analytics"}
             >
               {rightRailCollapsed ? <PanelRightOpen className="w-3.5 h-3.5" /> : <PanelRightClose className="w-3.5 h-3.5" />}
-              <span className="text-[11px]">Layers</span>
+              <span className="text-[10px] uppercase tracking-wider">Spectral HUD</span>
             </button>
           </div>
 
           {processingTime && (
-            <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#22241E] border border-[#35372E] text-[#8B8C7F] text-[11px] mono">
-              <Clock className="w-3 h-3 text-[#7FA35C]" /> {processingTime}s
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#0F141C] border border-[#1E293B] text-slate-300 text-[11px] mono">
+              <Clock className="w-3 h-3 text-amber-400" /> {processingTime}s
             </div>
           )}
-          <div className="gee-status">
-            <span className={`dot ${geeConnected === false ? 'offline' : ''}`}></span>
-            <span className="hidden sm:inline">{geeConnected === null ? 'Connecting...' : geeConnected ? 'Earth Engine connected' : 'Earth Engine offline'}</span>
-            <span className="sm:hidden text-[11px]">{geeConnected ? 'GEE Online' : 'Offline'}</span>
+
+          <div className="gee-status font-mono text-xs">
+            <span className={`dot ${geeConnected === false ? 'offline' : 'online'}`}></span>
+            <span className="hidden sm:inline text-slate-300 text-[11px]">{geeConnected === null ? 'CONNECTING...' : geeConnected ? 'GEE ENGINE: ACTIVE' : 'GEE: OFFLINE'}</span>
+            <span className="sm:hidden text-[10px] text-slate-300">{geeConnected ? 'ONLINE' : 'OFFLINE'}</span>
           </div>
         </div>
       </header>
@@ -2227,9 +2235,9 @@ export default function Home() {
         {/* ---------- Left rail (Workflow & Pipeline) ---------- */}
         <aside className={`rail rail-left ${leftRailCollapsed ? 'collapsed' : ''}`} aria-label="Workflow controls">
           <div className="rail-header">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#EDE8DB]">
-              <Sliders className="w-3.5 h-3.5 text-[#7FA35C]" />
-              <span>Workflow Pipeline</span>
+            <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#F8FAFC]">
+              <Sliders className="w-3.5 h-3.5 text-amber-400" />
+              <span>[01. MISSION SCOPE & PIPELINE]</span>
             </div>
             <button
               type="button"
@@ -2313,23 +2321,23 @@ export default function Home() {
                   </div>
 
                   {locationSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#22241E] border border-[#35372E] rounded shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
+                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#141A24] border border-[#1E293B] rounded shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
                       {locationSuggestions.map((loc) => (
                         <button
                           key={loc.id}
                           type="button"
                           onClick={() => selectLocation(loc)}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-[#2A2C24] border-b border-[#35372E] last:border-b-0 cursor-pointer flex items-start gap-2 group transition"
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-[#1E293B] border-b border-[#1E293B] last:border-b-0 cursor-pointer flex items-start gap-2 group transition"
                         >
-                          <MapPin className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${loc.type === 'coordinate' ? 'text-[#C8834C]' : 'text-[#7FA35C]'}`} />
+                          <MapPin className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${loc.type === 'coordinate' ? 'text-[#F59E0B]' : 'text-[#06B6D4]'}`} />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-1">
-                              <span className="font-medium text-[#EDE8DB] group-hover:text-white truncate">{loc.shortLabel}</span>
+                              <span className="font-medium text-[#F8FAFC] group-hover:text-white truncate">{loc.shortLabel}</span>
                               {loc.type === 'coordinate' && (
-                                <span className="text-[9px] px-1 py-0.2 rounded bg-[#C8834C]/20 text-[#C8834C] border border-[#C8834C]/40 mono shrink-0">GPS</span>
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40 mono shrink-0">GPS</span>
                               )}
                             </div>
-                            <span className="block text-[10px] text-[#8B8C7F] truncate">{loc.label}</span>
+                            <span className="block text-[10px] text-[#94A3B8] truncate">{loc.label}</span>
                           </div>
                         </button>
                       ))}
@@ -2346,8 +2354,8 @@ export default function Home() {
                       onClick={() => selectSavedArea(area)}
                       className={`text-[11px] py-1.5 px-2 rounded border transition text-center cursor-pointer ${
                         selectedAreaId === area.id
-                          ? 'bg-[#4E6A3D]/40 border-[#7FA35C] text-[#EDE8DB]'
-                          : 'bg-[#22241E] border-[#35372E] text-[#8B8C7F] hover:text-[#EDE8DB] hover:border-[#454737]'
+                          ? 'bg-[#F59E0B]/20 border-[#F59E0B] text-[#F8FAFC]'
+                          : 'bg-[#141A24] border-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC] hover:border-[#334155]'
                       }`}
                     >
                       {area.name.replace(' Review', '').replace(' Greenbelt', '')}
@@ -2356,19 +2364,19 @@ export default function Home() {
                 </div>
 
                 {/* Upload boundary */}
-                <label className="flex items-center justify-center gap-2 p-2 bg-[#22241E] border border-[#35372E] hover:border-[#454737] rounded cursor-pointer transition text-[11px] text-[#8B8C7F] hover:text-[#EDE8DB]">
-                  <Upload className="w-3.5 h-3.5 text-[#7FA35C]" />
+                <label className="flex items-center justify-center gap-2 p-2 bg-[#141A24] border border-[#1E293B] hover:border-[#334155] rounded cursor-pointer transition text-[11px] text-[#94A3B8] hover:text-[#F8FAFC]">
+                  <Upload className="w-3.5 h-3.5 text-[#06B6D4]" />
                   <span>Upload GeoJSON boundary</span>
                   <input type="file" accept=".geojson,.json" onChange={handleGeoJSONUpload} className="sr-only" />
                 </label>
 
                 {coords.length > 0 && (
-                  <div className="flex items-center justify-between text-[11px] text-[#8B8C7F] pt-1">
+                  <div className="flex items-center justify-between text-[11px] text-[#94A3B8] pt-1">
                     <span>{aoiAreaHa ? `${aoiAreaHa.toFixed(1)} ha` : ''}</span>
                     <button
                       type="button"
                       onClick={saveCurrentArea}
-                      className="text-[#7FA35C] hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-[#F59E0B] hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <Save className="w-3 h-3" /> Save AOI
                     </button>
@@ -2473,11 +2481,11 @@ export default function Home() {
                         onClick={() => triggerTool('swipe')}
                         className={`w-full py-1.5 px-2 rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition ${
                           swipeActive
-                            ? 'bg-[#7FA35C] text-[#12140F] font-bold shadow-md'
-                            : 'bg-[#22241E] hover:bg-[#2A2C24] text-[#EDE8DB] border border-[#7FA35C]/50'
+                            ? 'bg-[#F59E0B] text-[#0A0D12] font-bold shadow-md'
+                            : 'bg-[#141A24] hover:bg-[#1E293B] text-[#F8FAFC] border border-[#F59E0B]/50'
                         }`}
                       >
-                        <Columns2 className="w-3.5 h-3.5 text-[#7FA35C]" />
+                        <Columns2 className="w-3.5 h-3.5 text-[#F59E0B]" />
                         <span>{swipeActive ? "Exit Split-Screen Curtain" : "Launch Split-Screen Curtain"}</span>
                       </button>
                     </div>
@@ -2487,22 +2495,22 @@ export default function Home() {
                 {/* Feature 6: Atmospheric & Cloud Screening Controls */}
                 <div className="pt-1">
                   <div 
-                    className="flex items-center justify-between py-1 cursor-pointer select-none text-[11.5px] text-[#8B8C7F] hover:text-[#EDE8DB] transition"
+                    className="flex items-center justify-between py-1 cursor-pointer select-none text-[11.5px] text-[#94A3B8] hover:text-[#F8FAFC] transition"
                     onClick={() => setShowAtmosphericConfig(!showAtmosphericConfig)}
                   >
                     <div className="flex items-center gap-1.5">
-                      <Cloud className="w-3.5 h-3.5 text-[#7FA35C]" />
+                      <Cloud className="w-3.5 h-3.5 text-[#06B6D4]" />
                       <span>Atmospheric & Cloud Controls</span>
                     </div>
-                    <span className="mono text-[#7FA35C] text-xs font-semibold">{showAtmosphericConfig ? '−' : '+'}</span>
+                    <span className="mono text-[#06B6D4] text-xs font-semibold">{showAtmosphericConfig ? '−' : '+'}</span>
                   </div>
 
                   {showAtmosphericConfig && (
-                    <div className="mt-2 pt-2 pb-1.5 px-2.5 bg-[#171913] border border-[#35372E] rounded space-y-2.5">
+                    <div className="mt-2 pt-2 pb-1.5 px-2.5 bg-[#0F141C] border border-[#1E293B] rounded space-y-2.5">
                       <div>
                         <label className="field-label flex justify-between items-center">
                           <span>Cloud Mask Algorithm</span>
-                          <span className="text-[10px] text-[#7FA35C] font-mono lowercase">{cloudMaskType}</span>
+                          <span className="text-[10px] text-[#06B6D4] font-mono lowercase">{cloudMaskType}</span>
                         </label>
                         <select
                           value={cloudMaskType}
@@ -2517,19 +2525,19 @@ export default function Home() {
                       </div>
 
                       <div className="flex items-center justify-between py-0.5">
-                        <span className="text-[11px] text-[#8B8C7F]">Filter Cloud Shadows</span>
+                        <span className="text-[11px] text-[#94A3B8]">Filter Cloud Shadows</span>
                         <input
                           type="checkbox"
                           checked={maskShadows}
                           onChange={(e) => setMaskShadows(e.target.checked)}
-                          className="accent-[#7FA35C] cursor-pointer"
+                          className="accent-[#F59E0B] cursor-pointer"
                         />
                       </div>
 
                       <div>
                         <label className="field-label flex justify-between items-center">
                           <span>Seasonal Composite Window</span>
-                          <span className="text-[10px] text-[#7FA35C] font-mono lowercase">{seasonalFilter}</span>
+                          <span className="text-[10px] text-[#06B6D4] font-mono lowercase">{seasonalFilter}</span>
                         </label>
                         <select
                           value={seasonalFilter}
@@ -2670,70 +2678,84 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setLeftRailCollapsed(false)}
-              className="absolute left-2.5 top-2.5 z-[1001] px-2.5 py-1.5 bg-[#1B1D19]/95 hover:bg-[#2A2C24] border border-[#35372E] text-[#7FA35C] rounded-md shadow-xl backdrop-blur-sm transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
-              title="Expand Workflow Pipeline"
+              className="absolute left-2.5 top-2.5 z-[1001] px-2.5 py-1.5 bg-[#0F141C]/95 hover:bg-[#161D2A] border border-amber-500/40 text-amber-400 rounded-sm shadow-2xl backdrop-blur-md transition flex items-center gap-1.5 text-xs font-mono font-semibold cursor-pointer"
+              title="Expand Mission Scope Panel"
             >
               <PanelLeftOpen className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[11px] text-[#EDE8DB]">Workflow</span>
+              <span className="hidden sm:inline text-[10px] tracking-wider uppercase text-slate-200">[SCOPE]</span>
             </button>
           )}
           {rightRailCollapsed && (
             <button
               type="button"
               onClick={() => setRightRailCollapsed(false)}
-              className="absolute right-2.5 top-2.5 z-[1001] px-2.5 py-1.5 bg-[#1B1D19]/95 hover:bg-[#2A2C24] border border-[#35372E] text-[#7FA35C] rounded-md shadow-xl backdrop-blur-sm transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
-              title="Expand Layers & Analysis"
+              className="absolute right-2.5 top-2.5 z-[1001] px-2.5 py-1.5 bg-[#0F141C]/95 hover:bg-[#161D2A] border border-cyan-500/40 text-cyan-400 rounded-sm shadow-2xl backdrop-blur-md transition flex items-center gap-1.5 text-xs font-mono font-semibold cursor-pointer"
+              title="Expand Spectral HUD Panel"
             >
               <PanelRightOpen className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[11px] text-[#EDE8DB]">Layers</span>
+              <span className="hidden sm:inline text-[10px] tracking-wider uppercase text-slate-200">[LAYERS]</span>
             </button>
           )}
           
-          {/* Status strip */}
+          {/* Scientific Mission Telemetry Strip */}
           <div className="status-strip">
-            <div className="status-item primary">
-              <div className="k">Scene status</div>
+            <div className="status-item">
+              <div className="k">MISSION STATUS</div>
               <div className="v">
-                {loadingMapId ? 'Fetching...' : loadingClassify ? 'Classifying...' : tileUrls.classified ? 'Classified' : tileUrls.trueColor ? 'Imagery ready' : 'Awaiting AOI'}
+                {loadingMapId ? (
+                  <span className="status-badge status-badge-computing"><Loader2 className="w-3 h-3 animate-spin mr-1" />FETCHING SCENE</span>
+                ) : loadingClassify ? (
+                  <span className="status-badge status-badge-computing"><Loader2 className="w-3 h-3 animate-spin mr-1" />CLASSIFYING GEE</span>
+                ) : tileUrls.classified ? (
+                  <span className="status-badge status-badge-active">SURFACE CLASSIFIED</span>
+                ) : tileUrls.trueColor ? (
+                  <span className="status-badge status-badge-ready">OPTICAL LOCKED</span>
+                ) : (
+                  <span className="status-badge status-badge-standby">AWAITING AOI</span>
+                )}
               </div>
             </div>
-            <div className="status-item primary">
-              <div className="k">AOI</div>
-              <div className="v">
-                {aoiAreaHa ? `${aoiAreaHa.toFixed(1)} ha` : 'Not selected'}
+            <div className="status-item">
+              <div className="k">TARGET AOI</div>
+              <div className="v font-mono">
+                {aoiAreaHa ? (
+                  <span className="text-amber-400 font-bold">{aoiAreaHa.toFixed(1)} ha</span>
+                ) : (
+                  <span className="text-slate-500">UNBOUND</span>
+                )}
               </div>
             </div>
-            <div className="status-item muted">
-              <div className="k">Period</div>
-              <div className="v">{startDate.slice(0, 4)} season</div>
+            <div className="status-item">
+              <div className="k">TEMPORAL WINDOW</div>
+              <div className="v font-mono text-slate-200">{startDate.slice(0, 4)} Season</div>
             </div>
-            <div className="status-item muted">
-              <div className="k">Cloud limit</div>
-              <div className="v">{cloudCover}% max</div>
+            <div className="status-item">
+              <div className="k">CLOUD MASK</div>
+              <div className="v font-mono text-slate-200">{cloudCover}% Max</div>
             </div>
-            <div className="status-item muted">
-              <div className="k">Layers ready</div>
-              <div className="v">{readyLayersCount} / {layerStack.length}</div>
+            <div className="status-item">
+              <div className="k">SPECTRAL LAYERS</div>
+              <div className="v font-mono text-cyan-400">{readyLayersCount} / {layerStack.length} Ready</div>
             </div>
             {aiQualityMetrics && (
-              <div className="status-item primary">
-                <div className="k">AI Clarity</div>
-                <div className="v flex items-center gap-1.5 text-[#7FA35C]">
+              <div className="status-item">
+                <div className="k">AI CLARITY</div>
+                <div className="v flex items-center gap-1 text-emerald-400 font-mono">
                   <span>{aiQualityMetrics.overall_quality_score}%</span>
-                  <span className="text-[10px] mono text-[#EDE8DB]/60">({aiQualityMetrics.rating})</span>
+                  <span className="text-[10px] text-slate-500">({aiQualityMetrics.rating})</span>
                 </div>
               </div>
             )}
             {buildingStats && (
-              <div className="status-item primary">
-                <div className="k">Buildings</div>
-                <div className="v text-[#C8834C]">{buildingStats.building_count} bldg</div>
+              <div className="status-item">
+                <div className="k">FOOTPRINTS</div>
+                <div className="v font-mono text-amber-400">{buildingStats.building_count} bldg</div>
               </div>
             )}
             {processingTime && (
-              <div className="status-item muted">
-                <div className="k">Compute</div>
-                <div className="v">{processingTime}s</div>
+              <div className="status-item">
+                <div className="k">GEE PIPELINE</div>
+                <div className="v font-mono text-cyan-300">{processingTime}s</div>
               </div>
             )}
           </div>
@@ -2978,34 +3000,66 @@ export default function Home() {
               </button>
             </div>
 
-            {/* AOI Invite (Empty state) */}
+            {/* AOI Guidance Empty State */}
             {coords.length === 0 && !dismissedInvite && !selectedLocation && !locationQuery.trim() && (
-              <div className="aoi-invite relative">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#0A0D12]/95 backdrop-blur-md border border-amber-500/40 rounded px-4 py-3 shadow-2xl max-w-md w-[90vw] text-slate-200">
                 <button
                   type="button"
                   onClick={() => setDismissedInvite(true)}
-                  className="absolute top-2 right-2 text-[#8B8C7F] hover:text-[#EDE8DB] p-1 rounded transition cursor-pointer"
-                  title="Close guidance"
+                  className="absolute top-2 right-2 text-slate-400 hover:text-white p-1 transition cursor-pointer"
+                  title="Dismiss guide"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
-                <div className="headline">Draw or Smart-Select an AOI</div>
-                <div className="body">Use the rectangle, polygon, or SAM smart-select tool at left to mark the district area you want to fetch and classify.</div>
+                <div className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                  Define Mission Area of Interest
+                </div>
+                <div className="text-[11px] text-slate-300 font-sans leading-relaxed">
+                  Use the rectangle or polygon spatial vector tools on the left toolbar to lock your district boundary for Sentinel-2 satellite ingestion and land classification.
+                </div>
               </div>
             )}
 
-            {/* Coordinate readout */}
-            <div className="coord-readout">
-              lat <span className="lat">{mapCenter[0].toFixed(6)}</span>&nbsp;&nbsp;lng <span className="lng">{mapCenter[1].toFixed(6)}</span>
-            </div>
+            {/* Unified Neatline Telemetry Footer Bar */}
+            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#0A0D12]/95 backdrop-blur-md border-t border-[#1E293B] px-3 py-1.5 flex items-center justify-between text-[11px] font-mono text-[#94A3B8] select-none">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-amber-400 font-bold">LAT</span>
+                  <span className="text-slate-100 font-semibold">{mapCenter[0].toFixed(5)}°</span>
+                  <span className="text-amber-400 font-bold ml-1">LNG</span>
+                  <span className="text-slate-100 font-semibold">{mapCenter[1].toFixed(5)}°</span>
+                </div>
+                <span className="text-[#334155]">|</span>
+                <div className="hidden sm:flex items-center gap-1">
+                  <span className="text-slate-500">GSD:</span>
+                  <span className="text-[#22D3EE] font-semibold">10m / px</span>
+                </div>
+                <span className="text-[#334155] hidden md:inline">|</span>
+                <div className="hidden md:flex items-center gap-1">
+                  <span className="text-slate-500">PLATFORM:</span>
+                  <span className="text-slate-200">S2-MSI · GLO-30</span>
+                </div>
+              </div>
 
-            {/* Scale readout */}
-            <div className="scale-readout">
-              Sentinel-2 &middot; 10m
+              <div className="flex items-center gap-3">
+                {aoiAreaHa ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span className="text-amber-400 font-semibold">{aoiAreaHa.toFixed(1)} ha AOI</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-slate-500">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                    <span>NO AOI LOCKED</span>
+                  </div>
+                )}
+                <span className="text-[#334155] hidden lg:inline">|</span>
+                <div className="text-[10px] text-slate-500 hidden lg:block">
+                  GEE &middot; COPERNICUS &middot; ESA &middot; OSM
+                </div>
+              </div>
             </div>
-
-            {/* Attribution */}
-            <div className="attribution">Earth Engine &middot; GeoAI &middot; CartoDB &middot; OSM</div>
 
             {/* Leaflet Map */}
             <MapComponent
@@ -3085,13 +3139,13 @@ export default function Home() {
             {/* Temporal period swapper (in compare mode) */}
             {compareMode && !swipeActive && (tileUrls.classified || tileUrls.trueColor) && (
               <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 16 }} zIndex={1002}>
-                <div className="bg-[#1B1D19]/90 backdrop-blur-md border border-[#35372E] p-1 rounded shadow-2xl flex gap-1 cursor-grab active:cursor-grabbing">
+                <div className="bg-[#0F141C]/95 backdrop-blur-md border border-[#1E293B] p-1 rounded shadow-2xl flex gap-1 cursor-grab active:cursor-grabbing">
                   <button
                     onClick={() => setActiveTimePeriod('target')}
                     className={`px-3 py-1.5 rounded text-[11px] font-medium mono transition cursor-pointer ${
                       activeTimePeriod === 'target'
-                        ? 'bg-[#4E6A3D] text-[#EDE8DB] border border-[#7FA35C]'
-                        : 'text-[#8B8C7F] hover:text-[#EDE8DB]'
+                        ? 'bg-[#F59E0B]/20 text-[#F8FAFC] border border-[#F59E0B]'
+                        : 'text-[#94A3B8] hover:text-[#F8FAFC]'
                     }`}
                   >
                     Target ({startDate.slice(0, 4)})
@@ -3100,8 +3154,8 @@ export default function Home() {
                     onClick={() => setActiveTimePeriod('baseline')}
                     className={`px-3 py-1.5 rounded text-[11px] font-medium mono transition cursor-pointer ${
                       activeTimePeriod === 'baseline'
-                        ? 'bg-[#4E6A3D] text-[#EDE8DB] border border-[#7FA35C]'
-                        : 'text-[#8B8C7F] hover:text-[#EDE8DB]'
+                        ? 'bg-[#F59E0B]/20 text-[#F8FAFC] border border-[#F59E0B]'
+                        : 'text-[#94A3B8] hover:text-[#F8FAFC]'
                     }`}
                   >
                     Baseline ({compareStartDate.slice(0, 4)})
@@ -3115,13 +3169,13 @@ export default function Home() {
           <div className={`analytics ${analyticsExpanded ? 'expanded' : 'collapsed'}`}>
             <div className="analytics-head">
               <div 
-                className="title cursor-pointer select-none flex items-center gap-2 hover:text-[#EDE8DB] transition"
+                className="title cursor-pointer select-none flex items-center gap-2 hover:text-[#F8FAFC] transition"
                 onClick={() => setAnalyticsExpanded(!analyticsExpanded)}
                 title={analyticsExpanded ? "Minimize analytics drawer" : "Expand analytics drawer"}
               >
-                <BarChart3 className="w-4 h-4 text-[#7FA35C]" />
+                <BarChart3 className="w-4 h-4 text-[#06B6D4]" />
                 <span>Classification analytics</span>
-                <span className="text-xs text-[#8B8C7F] font-normal flex items-center gap-1 ml-1">
+                <span className="text-xs text-[#94A3B8] font-normal flex items-center gap-1 ml-1">
                   {analyticsExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
                   <span className="text-[10.5px] mono">{analyticsExpanded ? 'Minimize' : 'Expand'}</span>
                 </span>
@@ -3132,16 +3186,16 @@ export default function Home() {
                     type="button"
                     onClick={triggerPdfBriefing}
                     disabled={generatingPdf}
-                    className="px-2.5 py-1 bg-[#7FA35C]/20 hover:bg-[#7FA35C]/30 border border-[#7FA35C]/50 text-[#EDE8DB] rounded text-xs cursor-pointer flex items-center gap-1.5 transition"
+                    className="px-2.5 py-1 bg-[#F59E0B]/20 hover:bg-[#F59E0B]/30 border border-[#F59E0B]/50 text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center gap-1.5 transition"
                   >
                     {generatingPdf ? (
                       <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7FA35C]" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#F59E0B]" />
                         <span>Generating Briefing...</span>
                       </>
                     ) : (
                       <>
-                        <FileText className="w-3.5 h-3.5 text-[#7FA35C]" />
+                        <FileText className="w-3.5 h-3.5 text-[#F59E0B]" />
                         <span>Executive Briefing PDF</span>
                       </>
                     )}
@@ -3149,9 +3203,9 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={printReport}
-                    className="px-2.5 py-1 bg-[#22241E] hover:bg-[#2A2C24] border border-[#35372E] text-[#EDE8DB] rounded text-xs cursor-pointer flex items-center gap-1.5"
+                    className="px-2.5 py-1 bg-[#141A24] hover:bg-[#1E293B] border border-[#1E293B] text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center gap-1.5"
                   >
-                    <Printer className="w-3.5 h-3.5 text-[#7FA35C]" /> Print report
+                    <Printer className="w-3.5 h-3.5 text-[#06B6D4]" /> Print report
                   </button>
                 </div>
               )}
@@ -3184,17 +3238,17 @@ export default function Home() {
                         {smartResultSummary.map((insight) => (
                           <div
                             key={insight.label}
-                            className="p-3 bg-[#22241E] border border-[#35372E] rounded"
+                            className="p-3 bg-[#141A24] border border-[#1E293B] rounded"
                           >
-                            <div className="flex items-center justify-between text-[10px] uppercase font-semibold text-[#8B8C7F]">
+                            <div className="flex items-center justify-between text-[10px] uppercase font-semibold text-[#94A3B8]">
                               <span>{insight.label}</span>
-                              {insight.tone === 'positive' && <CheckCircle className="w-3.5 h-3.5 text-[#7FA35C]" />}
-                              {insight.tone === 'warning' && <AlertTriangle className="w-3.5 h-3.5 text-[#C8834C]" />}
-                              {insight.tone === 'critical' && <ShieldAlert className="w-3.5 h-3.5 text-[#C56A5A]" />}
-                              {insight.tone === 'neutral' && <Info className="w-3.5 h-3.5 text-[#8CA0AA]" />}
+                              {insight.tone === 'positive' && <CheckCircle className="w-3.5 h-3.5 text-[#10B981]" />}
+                              {insight.tone === 'warning' && <AlertTriangle className="w-3.5 h-3.5 text-[#F59E0B]" />}
+                              {insight.tone === 'critical' && <ShieldAlert className="w-3.5 h-3.5 text-[#F43F5E]" />}
+                              {insight.tone === 'neutral' && <Info className="w-3.5 h-3.5 text-[#06B6D4]" />}
                             </div>
-                            <p className="text-base font-bold text-[#EDE8DB] mt-1.5 mono">{insight.value}</p>
-                            <p className="text-[11px] text-[#8B8C7F] mt-1 leading-normal">{insight.detail}</p>
+                            <p className="text-base font-bold text-[#F8FAFC] mt-1.5 mono">{insight.value}</p>
+                            <p className="text-[11px] text-[#94A3B8] mt-1 leading-normal">{insight.detail}</p>
                           </div>
                         ))}
                       </div>
@@ -3202,12 +3256,12 @@ export default function Home() {
 
                     {/* Temporal Change Detection Matrix */}
                     {compareMode && referenceStatistics && (
-                      <div className="p-3.5 bg-[#22241E] border border-[#35372E] rounded space-y-3">
-                        <div className="flex justify-between items-center border-b border-[#35372E] pb-2">
-                          <span className="text-xs font-semibold text-[#EDE8DB] flex items-center gap-1.5">
-                            <TrendingUp className="w-3.5 h-3.5 text-[#7FA35C]" /> Temporal Change Matrix
+                      <div className="p-3.5 bg-[#141A24] border border-[#1E293B] rounded space-y-3">
+                        <div className="flex justify-between items-center border-b border-[#1E293B] pb-2">
+                          <span className="text-xs font-semibold text-[#F8FAFC] flex items-center gap-1.5">
+                            <TrendingUp className="w-3.5 h-3.5 text-[#06B6D4]" /> Temporal Change Matrix
                           </span>
-                          <span className="text-[10px] mono text-[#8B8C7F]">
+                          <span className="text-[10px] mono text-[#94A3B8]">
                             {startDate.slice(0, 4)} vs {compareStartDate.slice(0, 4)}
                           </span>
                         </div>
@@ -3225,18 +3279,18 @@ export default function Home() {
                             return (
                               <div
                                 key={className}
-                                className={`p-2.5 rounded border bg-[#1B1D19] flex items-center justify-between ${changeTone.borderClass}`}
+                                className={`p-2.5 rounded border bg-[#141A24] flex items-center justify-between ${changeTone.borderClass}`}
                               >
                                 <div>
-                                  <span className="text-[10.5px] uppercase font-semibold text-[#8B8C7F] block">{className}</span>
-                                  <span className="text-sm font-bold text-[#EDE8DB] mono mt-0.5 block">{valCurrent.area_ha.toFixed(1)} ha</span>
+                                  <span className="text-[10.5px] uppercase font-semibold text-[#94A3B8] block">{className}</span>
+                                  <span className="text-sm font-bold text-[#F8FAFC] mono mt-0.5 block">{valCurrent.area_ha.toFixed(1)} ha</span>
                                 </div>
                                 <div className={`text-right ${changeTone.textClass} mono text-xs font-semibold`}>
                                   <div className="flex items-center gap-1 justify-end">
                                     {areaChange < 0 ? <TrendingDown className="w-3.5 h-3.5" /> : areaChange > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : null}
                                     {areaChange > 0 ? '+' : ''}{areaChange.toFixed(1)} ha
                                   </div>
-                                  <div className="text-[10px] text-[#8B8C7F]">
+                                  <div className="text-[10px] text-[#94A3B8]">
                                     {pctChange > 0 ? '+' : ''}{pctChange.toFixed(1)}%
                                   </div>
                                 </div>
@@ -3276,14 +3330,14 @@ export default function Home() {
 
                     {/* Ecological Guidelines */}
                     {reportInsights && (
-                      <div className="p-3.5 bg-[#22241E] border border-[#35372E] rounded space-y-2">
+                      <div className="p-3.5 bg-[#141A24] border border-[#1E293B] rounded space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-[#EDE8DB]">Conservation notes</span>
-                          <span className="text-[10.5px] text-[#7FA35C] mono">{reportInsights.healthStatus}</span>
+                          <span className="text-xs font-semibold text-[#F8FAFC]">Conservation notes</span>
+                          <span className="text-[10.5px] text-[#10B981] mono">{reportInsights.healthStatus}</span>
                         </div>
-                        <ul className="list-disc list-inside space-y-1 text-xs text-[#8B8C7F] leading-relaxed">
+                        <ul className="list-disc list-inside space-y-1 text-xs text-[#94A3B8] leading-relaxed">
                           {reportInsights.recommendations.map((rec, i) => (
-                            <li key={i}><span className="text-[#C7C6BA]">{rec}</span></li>
+                            <li key={i}><span className="text-[#CBD5E1]">{rec}</span></li>
                           ))}
                         </ul>
                       </div>
@@ -3299,15 +3353,15 @@ export default function Home() {
         {/* ---------- Right rail (Layers, Tools & Export) ---------- */}
         <aside className={`rail rail-right ${rightRailCollapsed ? 'collapsed' : ''}`} aria-label="Layers and analysis controls">
           <div className="rail-header">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#EDE8DB]">
-              <Layers className="w-3.5 h-3.5 text-[#7FA35C]" />
-              <span>Layers & Analysis</span>
+            <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#F8FAFC]">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>[02. SPECTRAL OVERLAYS & HUD]</span>
             </div>
             <button
               type="button"
               onClick={() => setRightRailCollapsed(true)}
-              className="p-1 rounded text-[#8B8C7F] hover:text-[#EDE8DB] hover:bg-[#2A2C24] transition cursor-pointer"
-              title="Collapse layers panel"
+              className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-[#1A2230] transition cursor-pointer"
+              title="Collapse spectral HUD"
             >
               <PanelRightClose className="w-4 h-4" />
             </button>
@@ -3318,12 +3372,12 @@ export default function Home() {
             <div className="phase">
               <div className="node"></div>
               <div 
-                className="phase-title cursor-pointer select-none flex items-center justify-between"
+                className="phase-title cursor-pointer select-none flex items-center justify-between font-mono"
                 onClick={() => setPhase4Open(!phase4Open)}
               >
                 <div className="flex items-center gap-2">
-                  <span>Layer stack</span>
-                  <span className="tag mono" style={{ color: 'var(--ink-dim)' }}>
+                  <span>[01. SATELLITE SURFACE LAYERS]</span>
+                  <span className="tag mono text-cyan-400 font-semibold">
                     {readyLayersCount}/{layerStack.length}
                   </span>
                 </div>
@@ -3388,19 +3442,19 @@ export default function Home() {
                       max="100"
                       value={opacity * 100}
                       onChange={(e) => setOpacity(Number(e.target.value) / 100)}
-                      className="w-full accent-[#7FA35C] h-1 bg-[#35372E] rounded-lg appearance-none cursor-pointer"
+                      className="w-full accent-[#F59E0B] h-1 bg-[#1E293B] rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
                   {/* Confidence toggle */}
                   {confidenceReady && (
-                    <div className="pt-3 border-t border-[#35372E] mt-3">
-                      <div className="flex items-center justify-between text-[11.5px] text-[#8B8C7F]">
+                    <div className="pt-3 border-t border-[#1E293B] mt-3">
+                      <div className="flex items-center justify-between text-[11.5px] text-[#94A3B8]">
                         <span>Confidence mask</span>
                         <button
                           type="button"
                           onClick={() => setConfidenceVisible(!confidenceVisible)}
-                          className={`text-[10px] px-2 py-0.5 rounded mono ${confidenceVisible ? 'bg-[#7FA35C]/20 text-[#7FA35C] border border-[#7FA35C]/40' : 'bg-[#22241E] border border-[#35372E] text-[#8B8C7F]'}`}
+                          className={`text-[10px] px-2 py-0.5 rounded mono ${confidenceVisible ? 'bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40' : 'bg-[#141A24] border border-[#1E293B] text-[#94A3B8]'}`}
                         >
                           {confidenceVisible ? 'ON' : 'OFF'}
                         </button>
@@ -3421,7 +3475,7 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <span>Field tools & Export</span>
                 </div>
-                <span className="text-[#8B8C7F] hover:text-[#EDE8DB] transition">
+                <span className="text-[#94A3B8] hover:text-[#F8FAFC] transition">
                   {phase5Open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </span>
               </div>
@@ -3448,21 +3502,21 @@ export default function Home() {
                       onClick={() => triggerTool('spectral')}
                       className={`tool-btn ${spectralInspectorMode ? 'active' : ''}`}
                     >
-                      <Activity className="w-3.5 h-3.5 text-[#4A90E2]" /> Spectral
+                      <Activity className="w-3.5 h-3.5 text-[#06B6D4]" /> Spectral
                     </button>
                     <button
                       type="button"
                       onClick={() => triggerTool('timeline')}
                       className={`tool-btn ${timelineMode ? 'active' : ''}`}
                     >
-                      <History className="w-3.5 h-3.5 text-[#3498DB]" /> Timeline
+                      <History className="w-3.5 h-3.5 text-[#06B6D4]" /> Timeline
                     </button>
                     <button
                       type="button"
                       onClick={() => triggerTool('swipe')}
                       className={`tool-btn ${swipeActive ? 'active' : ''}`}
                     >
-                      <Columns2 className="w-3.5 h-3.5 text-[#7FA35C]" /> Swipe
+                      <Columns2 className="w-3.5 h-3.5 text-[#F59E0B]" /> Swipe
                     </button>
                     <button
                       type="button"
@@ -3479,16 +3533,16 @@ export default function Home() {
                       type="button"
                       onClick={triggerAnalyzeTerrain}
                       disabled={loadingTerrain}
-                      className="w-full py-1.5 px-2 bg-[#22241E] hover:bg-[#2A2C24] border border-[#C8834C]/40 text-[#EDE8DB] rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
+                      className="w-full py-1.5 px-2 bg-[#141A24] hover:bg-[#1E293B] border border-[#F59E0B]/40 text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
                     >
                       {loadingTerrain ? (
                         <>
-                          <span className="w-3 h-3 rounded-full border border-t-[#C8834C] animate-spin"></span>
+                          <span className="w-3 h-3 rounded-full border border-t-[#F59E0B] animate-spin"></span>
                           <span>Analyzing DEM...</span>
                         </>
                       ) : (
                         <>
-                          <Mountain className="w-3.5 h-3.5 text-[#C8834C]" />
+                          <Mountain className="w-3.5 h-3.5 text-[#F59E0B]" />
                           <span>{terrainData ? "Refresh Terrain & Slope" : "Analyze Terrain & Slope"}</span>
                         </>
                       )}
@@ -3501,16 +3555,16 @@ export default function Home() {
                       type="button"
                       onClick={triggerAnalyzeSpectral}
                       disabled={loadingSpectral}
-                      className="w-full py-1.5 px-2 bg-[#22241E] hover:bg-[#2A2C24] border border-[#4A90E2]/40 text-[#EDE8DB] rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
+                      className="w-full py-1.5 px-2 bg-[#141A24] hover:bg-[#1E293B] border border-[#06B6D4]/40 text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
                     >
                       {loadingSpectral ? (
                         <>
-                          <span className="w-3 h-3 rounded-full border border-t-[#4A90E2] animate-spin"></span>
+                          <span className="w-3 h-3 rounded-full border border-t-[#06B6D4] animate-spin"></span>
                           <span>Computing Band Math...</span>
                         </>
                       ) : (
                         <>
-                          <Activity className="w-3.5 h-3.5 text-[#4A90E2]" />
+                          <Activity className="w-3.5 h-3.5 text-[#06B6D4]" />
                           <span>{spectralData ? "Refresh Spectral Indices" : "Analyze Spectral Indices"}</span>
                         </>
                       )}
@@ -3519,7 +3573,7 @@ export default function Home() {
 
                   {/* Export actions */}
                   {tileUrls.classified && (
-                    <div className="pt-3 mt-3 border-t border-[#35372E] space-y-2">
+                    <div className="pt-3 mt-3 border-t border-[#1E293B] space-y-2">
                       <div className="field-label">Export classification</div>
                       <div className="flex gap-2">
                         <select
@@ -3537,9 +3591,9 @@ export default function Home() {
                           type="button"
                           onClick={triggerDownload}
                           disabled={downloading}
-                          className="px-3 py-1.5 bg-[#22241E] hover:bg-[#2A2C24] border border-[#35372E] text-[#EDE8DB] rounded text-xs cursor-pointer flex items-center gap-1.5"
+                          className="px-3 py-1.5 bg-[#141A24] hover:bg-[#1E293B] border border-[#1E293B] text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center gap-1.5"
                         >
-                          <Download className="w-3.5 h-3.5 text-[#7FA35C]" />
+                          <Download className="w-3.5 h-3.5 text-[#06B6D4]" />
                           {downloading ? '...' : 'Save'}
                         </button>
                       </div>
@@ -3550,16 +3604,16 @@ export default function Home() {
                           type="button"
                           onClick={triggerPdfBriefing}
                           disabled={generatingPdf || !statistics}
-                          className="w-full py-2 px-3 bg-[#7FA35C]/20 hover:bg-[#7FA35C]/30 border border-[#7FA35C]/60 text-[#EDE8DB] rounded text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm"
+                          className="w-full py-2 px-3 bg-[#F59E0B]/20 hover:bg-[#F59E0B]/30 border border-[#F59E0B]/60 text-[#F8FAFC] rounded text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm"
                         >
                           {generatingPdf ? (
                             <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7FA35C]" />
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#F59E0B]" />
                               <span>Generating Briefing PDF...</span>
                             </>
                           ) : (
                             <>
-                              <FileText className="w-3.5 h-3.5 text-[#7FA35C]" />
+                              <FileText className="w-3.5 h-3.5 text-[#F59E0B]" />
                               <span>Generate Executive Briefing PDF</span>
                             </>
                           )}

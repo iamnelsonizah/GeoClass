@@ -241,9 +241,9 @@ function DrawControl({
 
       // Create single persistent boundary polygon
       const poly = L.polygon(latLngs, {
-        color: '#7FA35C',
-        fillColor: '#7FA35C',
-        fillOpacity: 0.18,
+        color: '#F59E0B',
+        fillColor: '#F59E0B',
+        fillOpacity: 0.16,
         weight: 2.5,
         pane: 'overlayPane',
       });
@@ -277,9 +277,9 @@ function DrawControl({
 
     // Set styling for drawn polygons and bounding boxes
     map.pm.setPathOptions({
-      color: '#7FA35C',
-      fillColor: '#7FA35C',
-      fillOpacity: 0.18,
+      color: '#F59E0B',
+      fillColor: '#F59E0B',
+      fillOpacity: 0.16,
       weight: 2.5,
       pane: 'overlayPane',
     });
@@ -871,7 +871,7 @@ function SwipeControl({
         className="absolute top-0 bottom-0 z-[1001] pointer-events-none"
         style={{ left: `${sliderPos}%` }}
       >
-        <div className="w-[3px] -ml-[1.5px] h-full bg-gradient-to-b from-[#7FA35C] via-[#EDE8DB] to-[#7FA35C] shadow-[0_0_12px_rgba(127,163,92,0.9)]" />
+        <div className="w-[3px] -ml-[1.5px] h-full bg-gradient-to-b from-[#F59E0B] via-[#F8FAFC] to-[#F59E0B] shadow-[0_0_12px_rgba(245,158,11,0.9)]" />
       </div>
 
       {/* Floating Ratio Badge attached to slider position */}
@@ -879,10 +879,10 @@ function SwipeControl({
         className="absolute top-4 z-[1002] -translate-x-1/2 select-none pointer-events-none"
         style={{ left: `${sliderPos}%` }}
       >
-        <div className="flex items-center gap-1.5 bg-[#1A1C16]/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-[#35372E] shadow-2xl text-[10px] font-bold tracking-wider mono text-[#EDE8DB]">
-          <span className="text-[#7FA35C]">{Math.round(sliderPos)}%</span>
-          <span className="text-[#8B8C7F]">|</span>
-          <span className="text-[#4A90E2]">{Math.round(100 - sliderPos)}%</span>
+        <div className="flex items-center gap-1.5 bg-[#0F141C]/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-[#1E293B] shadow-2xl text-[10px] font-bold tracking-wider mono text-[#F8FAFC]">
+          <span className="text-[#F59E0B]">{Math.round(sliderPos)}%</span>
+          <span className="text-[#94A3B8]">|</span>
+          <span className="text-[#06B6D4]">{Math.round(100 - sliderPos)}%</span>
         </div>
       </div>
 
@@ -893,13 +893,13 @@ function SwipeControl({
         onMouseDown={startDrag}
         onTouchStart={startDrag}
       >
-        <div className="relative w-11 h-11 rounded-full bg-[#1A1C16]/95 border-2 border-[#EDE8DB] backdrop-blur-md flex items-center justify-center shadow-[0_4px_24px_rgba(0,0,0,0.7)] group-hover:scale-110 group-hover:border-[#7FA35C] transition-all cursor-grab active:cursor-grabbing">
+        <div className="relative w-11 h-11 rounded-full bg-[#0F141C]/95 border-2 border-[#F8FAFC] backdrop-blur-md flex items-center justify-center shadow-[0_4px_24px_rgba(0,0,0,0.7)] group-hover:scale-110 group-hover:border-[#F59E0B] transition-all cursor-grab active:cursor-grabbing">
           {/* Dual lateral arrows */}
-          <div className="flex items-center justify-between w-6 text-[#EDE8DB] group-hover:text-[#7FA35C] transition-colors">
+          <div className="flex items-center justify-between w-6 text-[#F8FAFC] group-hover:text-[#F59E0B] transition-colors">
             <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
               <path d="M9 1L2 6L9 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             </svg>
-            <div className="w-0.5 h-3.5 bg-[#45483C]" />
+            <div className="w-0.5 h-3.5 bg-[#334155]" />
             <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
               <path d="M1 1L8 6L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             </svg>
@@ -908,15 +908,15 @@ function SwipeControl({
       </div>
 
       {/* Left side pinned label */}
-      <div className="absolute top-3 left-3 z-[1001] px-3 py-1.5 bg-[#1A1C16]/95 backdrop-blur-md border border-[#35372E] rounded-lg text-xs font-bold text-[#EDE8DB] shadow-xl flex items-center gap-1.5 pointer-events-none">
-        <span className="w-2 h-2 rounded-full bg-[#7FA35C]" />
+      <div className="absolute top-3 left-3 z-[1001] px-3 py-1.5 bg-[#0F141C]/95 backdrop-blur-md border border-[#1E293B] rounded-lg text-xs font-bold text-[#F8FAFC] shadow-xl flex items-center gap-1.5 pointer-events-none">
+        <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
         <span>◀ {leftLabel}</span>
       </div>
 
       {/* Right side pinned label */}
-      <div className="absolute top-3 right-3 z-[1001] px-3 py-1.5 bg-[#1A1C16]/95 backdrop-blur-md border border-[#35372E] rounded-lg text-xs font-bold text-[#EDE8DB] shadow-xl flex items-center gap-1.5 pointer-events-none">
+      <div className="absolute top-3 right-3 z-[1001] px-3 py-1.5 bg-[#0F141C]/95 backdrop-blur-md border border-[#1E293B] rounded-lg text-xs font-bold text-[#F8FAFC] shadow-xl flex items-center gap-1.5 pointer-events-none">
         <span>{rightLabel} ▶</span>
-        <span className="w-2 h-2 rounded-full bg-[#4A90E2]" />
+        <span className="w-2 h-2 rounded-full bg-[#06B6D4]" />
       </div>
     </>
   );
@@ -1340,9 +1340,9 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
 
         let subtextHtml = 'Click map point to begin';
         if (isFinished && points.length > 1) {
-          subtextHtml = `<span style="color: #7FA35C;">✓ Measurement locked (${points.length - 1} segment${points.length === 2 ? '' : 's'})</span>`;
+          subtextHtml = `<span style="color: #06B6D4;">✓ Measurement locked (${points.length - 1} segment${points.length === 2 ? '' : 's'})</span>`;
         } else if (points.length > 1 && liveDistanceMeters !== null && !isFinished) {
-          subtextHtml = `Line: <b>${confirmedDistStr}</b> &bull; +${formatMeasureDistance(liveDelta)} to cursor <span style="color:#e9c947;">(${formatMeasureDistance(liveDistanceMeters)})</span>`;
+          subtextHtml = `Line: <b>${confirmedDistStr}</b> &bull; +${formatMeasureDistance(liveDelta)} to cursor <span style="color:#F59E0B;">(${formatMeasureDistance(liveDistanceMeters)})</span>`;
         } else if (points.length > 1) {
           subtextHtml = `${points.length - 1} segment${points.length === 2 ? '' : 's'} connected`;
         } else if (points.length === 1) {
@@ -1757,22 +1757,22 @@ function ElevationProfilePanel({
 
   return (
     <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 16, bottom: true }} zIndex={1005}>
-      <div className="w-[94vw] max-w-4xl bg-[#1B1D19]/95 backdrop-blur-md border border-[#35372E] rounded-lg shadow-2xl p-4 text-[#EDE8DB] space-y-3 cursor-grab active:cursor-grabbing">
+      <div className="w-[94vw] max-w-4xl bg-[#0F141C]/95 backdrop-blur-md border border-[#1E293B] rounded-md shadow-2xl p-4 text-[#F8FAFC] space-y-3 cursor-grab active:cursor-grabbing">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#35372E] pb-2">
+        <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="w-2.5 h-2.5 rounded-full bg-[#06b6d4] animate-pulse"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#EDE8DB]">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#F8FAFC]">
               Topography Elevation:
             </span>
             {routeTitle ? (
-              <span className="text-xs font-bold text-[#22d3ee] bg-[#22d3ee]/10 px-2 py-0.5 rounded border border-[#22d3ee]/30">
+              <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
                 {routeTitle}
               </span>
             ) : (
-              <span className="text-xs font-semibold text-[#EDE8DB]">Transect Profile</span>
+              <span className="text-xs font-mono font-semibold text-slate-300">Transect Profile</span>
             )}
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#06b6d4]/20 text-[#22d3ee] border border-[#06b6d4]/40 mono">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 mono">
               Copernicus 30m Global DEM
             </span>
           </div>
@@ -1781,7 +1781,7 @@ function ElevationProfilePanel({
             <button
               type="button"
               onClick={handleExportCSV}
-              className="text-[11px] px-2.5 py-1 bg-[#22241E] hover:bg-[#2A2C24] border border-[#35372E] rounded text-[#7FA35C] font-semibold cursor-pointer flex items-center gap-1"
+              className="text-[11px] px-2.5 py-1 bg-[#161D2A] hover:bg-[#1E293B] border border-[#1E293B] rounded text-amber-400 font-mono font-semibold cursor-pointer flex items-center gap-1 transition"
               title="Download CSV of elevation profile"
             >
               Export CSV
@@ -1789,7 +1789,7 @@ function ElevationProfilePanel({
             <button
               type="button"
               onClick={onClose}
-              className="text-[#8B8C7F] hover:text-[#EDE8DB] p-1 rounded transition cursor-pointer text-sm font-bold"
+              className="text-slate-400 hover:text-white p-1 rounded transition cursor-pointer text-sm font-bold"
               title="Close profile"
             >
               ✕
@@ -1799,56 +1799,56 @@ function ElevationProfilePanel({
 
         {/* Route Details Bar */}
         {(startLoc || endLoc || summary.start_point) && (
-          <div className="bg-[#12140F] border border-[#35372E] rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="bg-[#0A0D12] border border-[#1E293B] rounded px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0"></span>
-              <span className="text-[#8B8C7F] text-[11px] uppercase tracking-wider font-semibold">Point A (Start):</span>
-              <span className="text-[#EDE8DB] font-semibold mono">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span>
+              <span className="text-slate-400 text-[10.5px] font-mono uppercase tracking-wider font-semibold">Point A (Start):</span>
+              <span className="text-slate-100 font-semibold mono">
                 {startLoc || (summary.start_point ? `${summary.start_point.lat.toFixed(4)}°, ${summary.start_point.lng.toFixed(4)}°` : 'Start')}
               </span>
             </div>
 
-            <div className="text-[#22d3ee] font-bold px-2 hidden sm:inline">→</div>
+            <div className="text-amber-400 font-bold px-2 hidden sm:inline">→</div>
 
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#ef4444] shrink-0"></span>
-              <span className="text-[#8B8C7F] text-[11px] uppercase tracking-wider font-semibold">Point B (End):</span>
-              <span className="text-[#EDE8DB] font-semibold mono">
+              <span className="w-2 h-2 rounded-full bg-[#EF4444] shrink-0"></span>
+              <span className="text-slate-400 text-[10.5px] font-mono uppercase tracking-wider font-semibold">Point B (End):</span>
+              <span className="text-slate-100 font-semibold mono">
                 {endLoc || (summary.end_point ? `${summary.end_point.lat.toFixed(4)}°, ${summary.end_point.lng.toFixed(4)}°` : 'End')}
               </span>
             </div>
 
-            <div className="text-[#8B8C7F] text-[11px] mono ml-auto">
-              Distance: <strong className="text-[#22d3ee]">{summary.total_distance_km} km</strong>
+            <div className="text-slate-400 text-[11px] mono ml-auto">
+              Distance: <strong className="text-amber-400">{summary.total_distance_km} km</strong>
             </div>
           </div>
         )}
 
         {/* Summary Badges Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center text-xs">
-          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
-            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Total Distance</span>
-            <div className="font-bold text-[#EDE8DB] mono mt-0.5">{summary.total_distance_km} km</div>
+          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Total Distance</span>
+            <div className="font-bold text-[#F8FAFC] mono mt-0.5">{summary.total_distance_km} km</div>
           </div>
-          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
-            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Min Elevation</span>
-            <div className="font-bold text-[#22c55e] mono mt-0.5">{summary.min_elevation_m} m</div>
+          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Min Elevation</span>
+            <div className="font-bold text-[#10B981] mono mt-0.5">{summary.min_elevation_m} m</div>
           </div>
-          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
-            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Max Elevation</span>
-            <div className="font-bold text-[#ef4444] mono mt-0.5">{summary.max_elevation_m} m</div>
+          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Max Elevation</span>
+            <div className="font-bold text-[#EF4444] mono mt-0.5">{summary.max_elevation_m} m</div>
           </div>
-          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
-            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Relief (Δ)</span>
-            <div className="font-bold text-[#06b6d4] mono mt-0.5">{summary.elevation_relief_m} m</div>
+          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Relief (Δ)</span>
+            <div className="font-bold text-[#22D3EE] mono mt-0.5">{summary.elevation_relief_m} m</div>
           </div>
-          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
-            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Gain / Loss</span>
-            <div className="font-bold text-[#EDE8DB] mono mt-0.5">+{summary.elevation_gain_m}m / -{summary.elevation_loss_m}m</div>
+          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Gain / Loss</span>
+            <div className="font-bold text-[#F8FAFC] mono mt-0.5">+{summary.elevation_gain_m}m / -{summary.elevation_loss_m}m</div>
           </div>
-          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
-            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Max Grade</span>
-            <div className="font-bold text-[#e67e22] mono mt-0.5">{summary.max_grade_pct}%</div>
+          <div className="bg-[#0A0D12] border border-[#1E293B] p-1.5 rounded">
+            <span className="text-[9.5px] text-slate-400 uppercase font-mono font-semibold">Max Grade</span>
+            <div className="font-bold text-amber-400 mono mt-0.5">{summary.max_grade_pct}%</div>
           </div>
         </div>
 
@@ -1962,21 +1962,21 @@ function SearchLocationMarker({
     });
 
     const popupNode = document.createElement('div');
-    popupNode.className = 'p-3 space-y-2 text-[#EDE8DB]';
+    popupNode.className = 'p-3 space-y-2 text-[#F8FAFC]';
     popupNode.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: #7FA35C; text-transform: uppercase; letter-spacing: 0.05em;">
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: #06B6D4; text-transform: uppercase; letter-spacing: 0.05em;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
         <span>Location Target</span>
       </div>
       <div>
-        <div style="font-weight: 600; font-size: 12px; color: #EDE8DB; line-height: 1.2;">${location.shortLabel || 'Selected Point'}</div>
-        <div style="font-size: 10px; color: #8B8C7F; margin-top: 2px; max-height: 36px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${location.label}</div>
+        <div style="font-weight: 600; font-size: 12px; color: #F8FAFC; line-height: 1.2;">${location.shortLabel || 'Selected Point'}</div>
+        <div style="font-size: 10px; color: #94A3B8; margin-top: 2px; max-height: 36px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${location.label}</div>
       </div>
-      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: #1A1C16; padding: 4px 8px; border-radius: 4px; border: 1px solid #35372E; color: #A6C97B;">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: #141A24; padding: 4px 8px; border-radius: 4px; border: 1px solid #1E293B; color: #38BDF8;">
         ${location.lat.toFixed(5)}°, ${location.lng.toFixed(5)}°
       </div>
       ${onSetAOI ? `
-        <button id="geo-btn-create-aoi-popup" style="width: 100%; margin-top: 6px; padding: 6px 10px; background: #4E6A3D; color: #EDE8DB; font-size: 11px; font-weight: 500; border-radius: 4px; border: 1px solid rgba(127, 163, 92, 0.4); display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: background 150ms;">
+        <button id="geo-btn-create-aoi-popup" style="width: 100%; margin-top: 6px; padding: 6px 10px; background: #F59E0B; color: #0A0D12; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.4); display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: background 150ms;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
           <span>Create 5km AOI Box</span>
         </button>
@@ -2094,8 +2094,8 @@ function SpectralInspectorHandler({
     if (inspectedPoint) {
       const marker = L.circleMarker([inspectedPoint.lat, inspectedPoint.lng], {
         radius: 8,
-        color: '#EDE8DB',
-        fillColor: '#7FA35C',
+        color: '#F8FAFC',
+        fillColor: '#06B6D4',
         fillOpacity: 0.9,
         weight: 2.5,
       }).addTo(map);
@@ -2302,7 +2302,7 @@ export default function MapComponent({
   onClearElevationProfile,
 }: MapComponentProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [legendOpen, setLegendOpen] = useState(true);
+  const [legendOpen, setLegendOpen] = useState(false);
   const [swipeActive, setSwipeActive] = useState(externalSwipeActive ?? false);
   const [isAutoWiping, setIsAutoWiping] = useState(false);
   const [swipeLeft, setSwipeLeft] = useState<string>('true_color');
@@ -2566,7 +2566,7 @@ export default function MapComponent({
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        {/* Dynamic GEE Imagery Overlays — only shown when swipe is NOT active */}
+        {/* Dynamic GEE Imagery Overlays: only shown when swipe is NOT active */}
         {!swipeActive && activeLayer === 'true_color' && currentTrueColorUrl && (
           <TileLayer key={currentTrueColorUrl} url={currentTrueColorUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Sentinel-2" />
         )}
@@ -2652,7 +2652,7 @@ export default function MapComponent({
         {/* Minimap Overview */}
         <Minimap />
 
-        {/* Swipe comparison — managed inside the map context */}
+        {/* Swipe comparison: managed inside the map context */}
         {swipeActive && swipeLeftUrl && swipeRightUrl && (
           <SwipeControl
             leftUrl={swipeLeftUrl}
@@ -2723,18 +2723,18 @@ export default function MapComponent({
       {/* ── Draggable Swipe Comparison Bar (top-center) ── */}
       {canSwipe && (
         <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 12 }} zIndex={1003}>
-          <div className="flex flex-col gap-1.5 bg-[#1A1C16]/95 backdrop-blur-md border border-[#35372E] rounded-xl p-2 shadow-2xl cursor-grab active:cursor-grabbing max-w-[92vw]">
+          <div className="flex flex-col gap-1.5 bg-[#0F141C]/95 backdrop-blur-md border border-[#1E293B] rounded-xl p-2 shadow-2xl cursor-grab active:cursor-grabbing max-w-[92vw]">
             {/* Top controls row */}
             <div className="flex items-center gap-2">
               {/* Grip handle */}
               <div className="flex flex-col gap-0.5 justify-center opacity-40 hover:opacity-80 transition-opacity select-none mr-0.5">
                 <div className="flex gap-0.5">
-                  <div className="w-1 h-1 rounded-full bg-[#8B8C7F]" />
-                  <div className="w-1 h-1 rounded-full bg-[#8B8C7F]" />
+                  <div className="w-1 h-1 rounded-full bg-[#94A3B8]" />
+                  <div className="w-1 h-1 rounded-full bg-[#94A3B8]" />
                 </div>
                 <div className="flex gap-0.5">
-                  <div className="w-1 h-1 rounded-full bg-[#8B8C7F]" />
-                  <div className="w-1 h-1 rounded-full bg-[#8B8C7F]" />
+                  <div className="w-1 h-1 rounded-full bg-[#94A3B8]" />
+                  <div className="w-1 h-1 rounded-full bg-[#94A3B8]" />
                 </div>
               </div>
 
@@ -2742,33 +2742,33 @@ export default function MapComponent({
                 <>
                   <div className="flex items-center gap-1.5">
                     {/* Left layer select */}
-                    <div className="flex items-center gap-1 bg-[#22241E] border border-[#35372E] rounded px-2 py-0.5">
-                      <span className="w-2 h-2 rounded-full bg-[#7FA35C]" />
+                    <div className="flex items-center gap-1 bg-[#141A24] border border-[#1E293B] rounded px-2 py-0.5">
+                      <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
                       <select
                         value={swipeLeft}
                         onChange={(e) => setSwipeLeft(e.target.value)}
-                        className="bg-transparent text-[11px] text-[#EDE8DB] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
+                        className="bg-transparent text-[11px] text-[#F8FAFC] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
                       >
                         {availableLayers.map(([key]) => (
-                          <option key={key} value={key} className="bg-[#1A1C16] text-[#EDE8DB]">
+                          <option key={key} value={key} className="bg-[#0F141C] text-[#F8FAFC]">
                             {layerLabel(key)}
                           </option>
                         ))}
                       </select>
                     </div>
 
-                    <span className="text-[#8B8C7F] text-[10px] font-bold px-0.5 uppercase tracking-wider">vs</span>
+                    <span className="text-[#94A3B8] text-[10px] font-bold px-0.5 uppercase tracking-wider">vs</span>
 
                     {/* Right layer select */}
-                    <div className="flex items-center gap-1 bg-[#22241E] border border-[#35372E] rounded px-2 py-0.5">
-                      <span className="w-2 h-2 rounded-full bg-[#4A90E2]" />
+                    <div className="flex items-center gap-1 bg-[#141A24] border border-[#1E293B] rounded px-2 py-0.5">
+                      <span className="w-2 h-2 rounded-full bg-[#06B6D4]" />
                       <select
                         value={swipeRight}
                         onChange={(e) => setSwipeRight(e.target.value)}
-                        className="bg-transparent text-[11px] text-[#EDE8DB] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
+                        className="bg-transparent text-[11px] text-[#F8FAFC] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
                       >
                         {availableLayers.map(([key]) => (
-                          <option key={key} value={key} className="bg-[#1A1C16] text-[#EDE8DB]">
+                          <option key={key} value={key} className="bg-[#0F141C] text-[#F8FAFC]">
                             {layerLabel(key)}
                           </option>
                         ))}
@@ -2782,13 +2782,13 @@ export default function MapComponent({
                     title={isAutoWiping ? "Pause automated curtain wipe" : "Start cinematic auto-wipe animation"}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded text-[10.5px] font-semibold transition cursor-pointer ${
                       isAutoWiping
-                        ? 'bg-[#7FA35C]/25 text-[#7FA35C] border border-[#7FA35C]/60 shadow-lg'
-                        : 'bg-[#22241E] hover:bg-[#2A2C24] text-[#EDE8DB] border border-[#35372E]'
+                        ? 'bg-[#F59E0B]/25 text-[#F59E0B] border border-[#F59E0B]/60 shadow-lg'
+                        : 'bg-[#141A24] hover:bg-[#1E293B] text-[#F8FAFC] border border-[#1E293B]'
                     }`}
                   >
                     {isAutoWiping ? (
                       <>
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#7FA35C] animate-ping" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] animate-ping" />
                         <span>Pause Wipe</span>
                       </>
                     ) : (
@@ -2802,7 +2802,7 @@ export default function MapComponent({
                   {/* Exit Swipe button */}
                   <button
                     onClick={handleToggleSwipe}
-                    className="flex items-center gap-1 px-2 py-1 rounded text-[10.5px] font-semibold bg-[#22241E] hover:bg-[#c0392b]/20 hover:text-[#e74c3c] text-[#8B8C7F] border border-[#35372E] transition cursor-pointer"
+                    className="flex items-center gap-1 px-2 py-1 rounded text-[10.5px] font-semibold bg-[#141A24] hover:bg-[#c0392b]/20 hover:text-[#e74c3c] text-[#94A3B8] border border-[#1E293B] transition cursor-pointer"
                   >
                     ✕ Exit
                   </button>
@@ -2810,9 +2810,9 @@ export default function MapComponent({
               ) : (
                 <button
                   onClick={handleToggleSwipe}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-[#EDE8DB] bg-[#22241E] hover:bg-[#2A2C24] border border-[#7FA35C]/50 transition cursor-pointer shadow-lg"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-[#F8FAFC] bg-[#141A24] hover:bg-[#1E293B] border border-[#F59E0B]/50 transition cursor-pointer shadow-lg"
                 >
-                  <span className="text-[#7FA35C]">⚡</span>
+                  <span className="text-[#F59E0B]">⚡</span>
                   <span>Split-Screen Swipe Curtain</span>
                 </button>
               )}
@@ -2820,8 +2820,8 @@ export default function MapComponent({
 
             {/* Presets Row (visible when swipe is active) */}
             {swipeActive && (
-              <div className="flex items-center gap-1 pt-1 border-t border-[#35372E]/60 overflow-x-auto pb-0.5">
-                <span className="text-[9.5px] text-[#8B8C7F] uppercase tracking-wider font-semibold mr-1 shrink-0">
+              <div className="flex items-center gap-1 pt-1 border-t border-[#1E293B] overflow-x-auto pb-0.5">
+                <span className="text-[9.5px] text-[#94A3B8] uppercase tracking-wider font-semibold mr-1 shrink-0">
                   Presets:
                 </span>
                 {swipePresets.filter((p) => p.available).map((preset) => {
@@ -2835,8 +2835,8 @@ export default function MapComponent({
                       }}
                       className={`text-[10px] px-2 py-0.5 rounded transition shrink-0 cursor-pointer font-medium ${
                         isActive
-                          ? 'bg-[#7FA35C] text-[#12140F] font-bold shadow-md'
-                          : 'bg-[#22241E] hover:bg-[#2A2C24] text-[#EDE8DB] border border-[#35372E]'
+                          ? 'bg-[#F59E0B] text-[#0A0D12] font-bold shadow-md'
+                          : 'bg-[#141A24] hover:bg-[#1E293B] text-[#F8FAFC] border border-[#1E293B]'
                       }`}
                     >
                       {preset.badge} {preset.name}
@@ -2851,7 +2851,7 @@ export default function MapComponent({
 
       {/* ── Draggable Collapsible Legend ── */}
       {hasOverlays && (
-        <DraggableContainer defaultPosition={{ x: 16, y: 16, right: true, bottom: true }} zIndex={1002}>
+        <DraggableContainer defaultPosition={{ x: 16, y: 52, bottom: true }} zIndex={1002}>
           <div
             className={`transition-all duration-300 ease-in-out ${
               legendOpen ? 'max-w-[220px]' : ''
@@ -2917,7 +2917,7 @@ export default function MapComponent({
                 </div>
 
                 <div className="px-3 py-2.5 space-y-2 cursor-default" onPointerDown={(e) => e.stopPropagation()}>
-                  {/* Classified layer legend — show LULC classes */}
+                  {/* Classified layer legend: show LULC classes */}
                   {(activeLayer === 'classified' || (swipeActive && (
                     swipeLeft === 'classified' || swipeRight === 'classified' ||
                     swipeLeft === 'target_classified' || swipeRight === 'target_classified' ||
@@ -2938,7 +2938,7 @@ export default function MapComponent({
                     </div>
                   )}
 
-                  {/* Non-classified layer legend — show band/index info */}
+                  {/* Non-classified layer legend: show band/index info */}
                   {activeLayer !== 'none' && activeLayer !== 'classified' && !swipeActive && LAYER_INFO[activeLayer] && (
                     <div className="space-y-1.5">
                       <p className="text-[10px] text-slate-400 leading-relaxed">
@@ -2960,7 +2960,7 @@ export default function MapComponent({
                     </div>
                   )}
 
-                  {/* Swipe mode — show both layer names */}
+                  {/* Swipe mode: show both layer names */}
                   {swipeActive && !(
                     swipeLeft === 'classified' || swipeRight === 'classified' ||
                     swipeLeft === 'target_classified' || swipeRight === 'target_classified' ||

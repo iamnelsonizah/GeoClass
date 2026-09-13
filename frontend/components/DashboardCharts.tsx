@@ -309,7 +309,7 @@ function StatCard({
   accentClass: string;
 }) {
   return (
-    <div className="bg-[#22241E] border border-[#35372E] p-3.5 rounded flex items-center gap-3.5 print:border-slate-300 print:bg-white transition-all duration-200 hover:border-[#454737]">
+    <div className="bg-[#0F141C] border border-[#1E293B] p-3.5 rounded flex items-center gap-3.5 print:border-slate-300 print:bg-white transition-all duration-200 hover:border-[#454737]">
       <div className={`p-2.5 rounded border ${accentClass}`}>{icon}</div>
       <div className="min-w-0">
         <p className="text-[10.5px] text-[#8B8C7F] uppercase tracking-wider font-semibold print:text-slate-600 truncate">
@@ -420,7 +420,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-[#22241E] border border-[#35372E] p-2.5 rounded shadow-xl text-[#C7C6BA] font-sans print:hidden">
+      <div className="bg-[#0F141C] border border-[#1E293B] p-2.5 rounded shadow-xl text-[#C7C6BA] font-sans print:hidden">
         <p className="text-xs font-semibold flex items-center gap-2 text-[#EDE8DB]">
           <span
             className="w-2.5 h-2.5 rounded-xs"
@@ -431,7 +431,7 @@ const CustomTooltip = ({ active, payload }: any) => {
         <p className="text-[11px] mt-1 text-[#8B8C7F]">
           Area:{' '}
           <span className="text-[#EDE8DB] mono font-medium">
-            {data.area?.toLocaleString() ?? '—'} ha
+            {data.area?.toLocaleString() ?? '--'} ha
           </span>
         </p>
         <p className="text-[11px] text-[#8B8C7F]">
@@ -517,7 +517,7 @@ export default function DashboardCharts({
 
   /* ── Summary metrics ── */
   const totalClasses = chartData.length;
-  const dominantClass = chartData[0]?.name ?? '—';
+  const dominantClass = chartData[0]?.name ?? '--';
   const dominantPct = chartData[0]?.value ?? 0;
 
   // Shannon Diversity Index  H = -Σ(p_i * ln(p_i))
@@ -641,7 +641,7 @@ export default function DashboardCharts({
       </div>
 
       {/* ───────────── GeoAI Intelligence & Quality Banner ───────────── */}
-      <div className="bg-[#22241E] border border-[#35372E] p-3.5 rounded space-y-3 print:border-slate-300 print:bg-white">
+      <div className="bg-[#0F141C] border border-[#1E293B] p-3.5 rounded space-y-3 print:border-slate-300 print:bg-white">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
@@ -658,7 +658,7 @@ export default function DashboardCharts({
         </div>
 
         {/* Action Buttons Row */}
-        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#35372E]/60">
+        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#1E293B]/60">
           {onExtractBuildings && (
             <button
               type="button"
@@ -803,7 +803,7 @@ export default function DashboardCharts({
       {/* ───────────── Charts Grid (2×2) ───────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2 print:gap-3">
         {/* ─ Pie Chart ─ */}
-        <div className="bg-[#22241E] border border-[#35372E] p-3.5 rounded print:border-slate-300 print:bg-white">
+        <div className="bg-[#0F141C] border border-[#1E293B] p-3.5 rounded print:border-slate-300 print:bg-white">
           <h4 className="text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider mb-3 print:text-slate-600">
             Land Use Share (%)
           </h4>
@@ -834,7 +834,7 @@ export default function DashboardCharts({
         </div>
 
         {/* ─ Bar Chart ─ */}
-        <div className="bg-[#22241E] border border-[#35372E] p-3.5 rounded print:border-slate-300 print:bg-white">
+        <div className="bg-[#0F141C] border border-[#1E293B] p-3.5 rounded print:border-slate-300 print:bg-white">
           <h4 className="text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider mb-3 print:text-slate-600">
             Class Coverage Area (ha)
           </h4>
@@ -874,14 +874,14 @@ export default function DashboardCharts({
         </div>
 
         {/* ─ Radar Chart ─ */}
-        <div className="bg-[#22241E] border border-[#35372E] p-3.5 rounded print:border-slate-300 print:bg-white">
+        <div className="bg-[#0F141C] border border-[#1E293B] p-3.5 rounded print:border-slate-300 print:bg-white">
           <h4 className="text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider mb-3 print:text-slate-600">
             Multi-Class Radar Profile
           </h4>
           <div className="h-64 print:h-56">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <RadarChart cx="50%" cy="50%" outerRadius="68%" data={radarData}>
-                <PolarGrid stroke="#35372E" />
+                <PolarGrid stroke="#1E293B" />
                 <PolarAngleAxis
                   dataKey="subject"
                   stroke="#8B8C7F"
@@ -908,8 +908,8 @@ export default function DashboardCharts({
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#22241E',
-                    border: '1px solid #35372E',
+                    backgroundColor: '#0F141C',
+                    border: '1px solid #1E293B',
                     borderRadius: 4,
                     fontSize: 12,
                     fontFamily: 'IBM Plex Sans, sans-serif',
@@ -923,7 +923,7 @@ export default function DashboardCharts({
         </div>
 
         {/* ─ Treemap ─ */}
-        <div className="bg-[#22241E] border border-[#35372E] p-3.5 rounded print:border-slate-300 print:bg-white">
+        <div className="bg-[#0F141C] border border-[#1E293B] p-3.5 rounded print:border-slate-300 print:bg-white">
           <h4 className="text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider mb-3 print:text-slate-600">
             Proportional Class Areas (Treemap)
           </h4>
@@ -945,8 +945,8 @@ export default function DashboardCharts({
 
       {/* ───────────── LULC Transition Matrix & Trajectories ───────────── */}
       {transitionData && (
-        <div className="bg-[#22241E] border border-[#35372E] p-4 rounded space-y-4 print:border-slate-300 print:bg-white">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#35372E] pb-2.5">
+        <div className="bg-[#0F141C] border border-[#1E293B] p-4 rounded space-y-4 print:border-slate-300 print:bg-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E293B] pb-2.5">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-[#EDE8DB] uppercase tracking-wider">
@@ -978,7 +978,7 @@ export default function DashboardCharts({
               const isAlert = key === 'deforestation' || key === 'urbanization';
               const isGood = key === 'reforestation' || key === 'stable';
               return (
-                <div key={key} className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+                <div key={key} className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded">
                   <div className="text-[10px] uppercase font-semibold text-[#8B8C7F] truncate">{traj.label}</div>
                   <div className={`text-sm font-bold mono mt-1 ${isAlert && traj.area_ha > 0 ? 'text-[#C8834C]' : isGood ? 'text-[#7FA35C]' : 'text-[#EDE8DB]'}`}>
                     {traj.area_ha} ha
@@ -989,12 +989,12 @@ export default function DashboardCharts({
           </div>
 
           {/* Top Flows Table */}
-          <div className="border border-[#35372E] rounded overflow-hidden">
+          <div className="border border-[#1E293B] rounded overflow-hidden">
             <div className="bg-[#2A2C24] px-3 py-1.5 text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider flex justify-between">
               <span>Class Transition Flows</span>
               <span>Hectares (% Source)</span>
             </div>
-            <div className="divide-y divide-[#35372E] max-h-48 overflow-y-auto">
+            <div className="divide-y divide-[#1E293B] max-h-48 overflow-y-auto">
               {transitionData.matrix.slice(0, 8).map((flow, i) => (
                 <div key={i} className="px-3 py-1.5 flex items-center justify-between text-xs hover:bg-white/[0.02]">
                   <div className="flex items-center gap-2">
@@ -1005,7 +1005,7 @@ export default function DashboardCharts({
                       flow.trajectory === 'stable' ? 'bg-[#7FA35C]/10 text-[#7FA35C]' :
                       flow.trajectory === 'urbanization' ? 'bg-[#C8834C]/15 text-[#C8834C]' :
                       flow.trajectory === 'deforestation' ? 'bg-[#C56A5A]/15 text-[#C56A5A]' :
-                      'bg-[#35372E] text-[#8B8C7F]'
+                      'bg-[#1E293B] text-[#8B8C7F]'
                     }`}>
                       {flow.trajectory}
                     </span>
@@ -1023,8 +1023,8 @@ export default function DashboardCharts({
 
       {/* ───────────── Super-Resolution Intelligence Card ───────────── */}
       {superResData && (
-        <div className="bg-[#22241E] border border-[#35372E] p-4 rounded space-y-3 print:border-slate-300 print:bg-white">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#35372E] pb-2.5">
+        <div className="bg-[#0F141C] border border-[#1E293B] p-4 rounded space-y-3 print:border-slate-300 print:bg-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E293B] pb-2.5">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#419BDF] animate-pulse"></span>
               <span className="text-xs font-bold text-[#EDE8DB] uppercase tracking-wider">
@@ -1040,7 +1040,7 @@ export default function DashboardCharts({
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2.5 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2.5 rounded">
               <div className="text-[10.5px] text-[#8B8C7F] uppercase font-semibold">Native Resolution</div>
               <div className="text-base font-bold text-[#EDE8DB] mono mt-1">{superResData.native_resolution_m}m / px</div>
               <div className="text-[10px] text-[#8B8C7F]">Sentinel-2 Multispectral</div>
@@ -1052,13 +1052,13 @@ export default function DashboardCharts({
               <div className="text-[10px] text-[#419BDF]/80">4× Sub-pixel diffusion</div>
             </div>
 
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2.5 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2.5 rounded">
               <div className="text-[10.5px] text-[#8B8C7F] uppercase font-semibold">PSNR Peak Signal</div>
               <div className="text-base font-bold text-[#7FA35C] mono mt-1">{superResData.metrics.estimated_psnr_db} dB</div>
               <div className="text-[10px] text-[#8B8C7F]">High fidelity reconstruction</div>
             </div>
 
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2.5 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2.5 rounded">
               <div className="text-[10.5px] text-[#8B8C7F] uppercase font-semibold">SSIM Index</div>
               <div className="text-base font-bold text-[#EDE8DB] mono mt-1">{superResData.metrics.structural_similarity_ssim}</div>
               <div className="text-[10px] text-[#8B8C7F]">Structural similarity</div>
@@ -1075,8 +1075,8 @@ export default function DashboardCharts({
 
       {/* ───────────── Seasonal Water Dynamics & Flood Risk Card ───────────── */}
       {waterDynamicsData && (
-        <div className="bg-[#22241E] border border-[#35372E] p-4 rounded space-y-4 print:border-slate-300 print:bg-white">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#35372E] pb-2.5">
+        <div className="bg-[#0F141C] border border-[#1E293B] p-4 rounded space-y-4 print:border-slate-300 print:bg-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E293B] pb-2.5">
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#7A87C6] animate-pulse"></span>
@@ -1112,19 +1112,19 @@ export default function DashboardCharts({
 
           {/* Quick Metrics */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded">
               <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Mean Extent</span>
               <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{waterDynamicsData.mean_water_extent_ha} ha</div>
             </div>
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded">
               <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Permanent Water</span>
               <div className="text-sm font-bold text-[#419BDF] mono mt-0.5">{waterDynamicsData.permanent_water_ha} ha</div>
             </div>
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded">
               <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Seasonal Water</span>
               <div className="text-sm font-bold text-[#7A87C6] mono mt-0.5">{waterDynamicsData.seasonal_water_ha} ha</div>
             </div>
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded">
               <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Peak High / Low</span>
               <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{waterDynamicsData.max_water_extent_ha} / {waterDynamicsData.min_water_extent_ha} ha</div>
             </div>
@@ -1146,7 +1146,7 @@ export default function DashboardCharts({
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#1B1D19',
-                    border: '1px solid #35372E',
+                    border: '1px solid #1E293B',
                     borderRadius: 4,
                     fontSize: 11,
                     fontFamily: 'monospace'
@@ -1162,8 +1162,8 @@ export default function DashboardCharts({
 
       {/* ───────────── Forest Canopy Height & Carbon Stock Card ───────────── */}
       {canopyHeightData && (
-        <div className="bg-[#22241E] border border-[#35372E] p-4 rounded space-y-4 print:border-slate-300 print:bg-white">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#35372E] pb-2.5">
+        <div className="bg-[#0F141C] border border-[#1E293B] p-4 rounded space-y-4 print:border-slate-300 print:bg-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E293B] pb-2.5">
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#397D49] animate-pulse"></span>
@@ -1191,14 +1191,14 @@ export default function DashboardCharts({
 
           {/* Biomass and Carbon KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2.5 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2.5 rounded">
               <div className="text-[10.5px] text-[#8B8C7F] uppercase font-semibold">Biomass Density</div>
               <div className="text-base font-bold text-[#EDE8DB] mono mt-0.5">
                 {canopyHeightData.biomass_and_carbon.biomass_density_mg_ha} <span className="text-xs font-normal text-[#8B8C7F]">Mg / ha</span>
               </div>
             </div>
 
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2.5 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2.5 rounded">
               <div className="text-[10.5px] text-[#8B8C7F] uppercase font-semibold">Total Stand Biomass</div>
               <div className="text-base font-bold text-[#7FA35C] mono mt-0.5">
                 {canopyHeightData.biomass_and_carbon.total_biomass_tonnes.toLocaleString()} <span className="text-xs font-normal text-[#8B8C7F]">tonnes</span>
@@ -1227,7 +1227,7 @@ export default function DashboardCharts({
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#1B1D19',
-                      border: '1px solid #35372E',
+                      border: '1px solid #1E293B',
                       borderRadius: 4,
                       fontSize: 11,
                       fontFamily: 'monospace'
@@ -1244,8 +1244,8 @@ export default function DashboardCharts({
 
       {/* ───────────── Topographic & Slope Stability Engine Card ───────────── */}
       {terrainData && (
-        <div className="bg-[#22241E] border border-[#35372E] p-4 rounded space-y-4 print:border-slate-300 print:bg-white">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#35372E] pb-2.5">
+        <div className="bg-[#0F141C] border border-[#1E293B] p-4 rounded space-y-4 print:border-slate-300 print:bg-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E293B] pb-2.5">
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#C8834C] animate-pulse"></span>
@@ -1270,7 +1270,7 @@ export default function DashboardCharts({
               }`}>
                 Erosion Hazard: {terrainData.hazard_cross_matrix.vulnerability_rating} ({terrainData.hazard_cross_matrix.vulnerability_score}/100)
               </span>
-              <span className="px-2 py-0.5 rounded border bg-[#35372E] text-[#EDE8DB]">
+              <span className="px-2 py-0.5 rounded border bg-[#1E293B] text-[#EDE8DB]">
                 Relief: {terrainData.elevation.relief_m}m
               </span>
             </div>
@@ -1278,13 +1278,13 @@ export default function DashboardCharts({
 
           {/* Topographic KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded">
               <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Min Elev</span>
               <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{terrainData.elevation.min_m} m</div>
               <span className="text-[9.5px] text-[#8B8C7F]">Above sea level</span>
             </div>
 
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded">
               <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Max Elev</span>
               <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{terrainData.elevation.max_m} m</div>
               <span className="text-[9.5px] text-[#8B8C7F]">Peak summit</span>
@@ -1296,13 +1296,13 @@ export default function DashboardCharts({
               <span className="text-[9.5px] text-[#8B8C7F]">Vertical delta</span>
             </div>
 
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded">
               <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Mean Slope</span>
               <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{terrainData.slope.mean_deg}°</div>
               <span className="text-[9.5px] text-[#8B8C7F]">Average grade</span>
             </div>
 
-            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded">
               <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Max Slope</span>
               <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{terrainData.slope.max_deg}°</div>
               <span className="text-[9.5px] text-[#8B8C7F]">Steepest grade</span>
@@ -1326,7 +1326,7 @@ export default function DashboardCharts({
 
             <div className="space-y-2">
               {terrainData.slope_distribution.map((tier) => (
-                <div key={tier.id} className="bg-[#1B1D19] border border-[#35372E] p-2 rounded flex flex-col gap-1.5">
+                <div key={tier.id} className="bg-[#1B1D19] border border-[#1E293B] p-2 rounded flex flex-col gap-1.5">
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: tier.color }}></span>
@@ -1356,7 +1356,7 @@ export default function DashboardCharts({
           {/* Aspect & Cross-Hazard Two-Column Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {/* Solar Aspect Exposure Chart */}
-            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-3 rounded space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider">
                   Terrain Aspect & Solar Exposure
@@ -1372,7 +1372,7 @@ export default function DashboardCharts({
                     <Tooltip
                       contentStyle={{
                         backgroundColor: '#1B1D19',
-                        border: '1px solid #35372E',
+                        border: '1px solid #1E293B',
                         borderRadius: 4,
                         fontSize: 11,
                         fontFamily: 'monospace'
@@ -1386,7 +1386,7 @@ export default function DashboardCharts({
             </div>
 
             {/* Geotechnical & Erosion Hazard Matrix */}
-            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2.5">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-3 rounded space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider">
                   LULC x Slope Hazard Cross-Analysis
@@ -1395,7 +1395,7 @@ export default function DashboardCharts({
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-[#22241E] border border-[#C56A5A]/30 p-2 rounded">
+                <div className="bg-[#0F141C] border border-[#C56A5A]/30 p-2 rounded">
                   <div className="text-[9.5px] text-[#C56A5A] uppercase font-semibold">High Erosion Risk</div>
                   <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
                     {terrainData.hazard_cross_matrix.high_erosion_bare_ground_ha} ha
@@ -1403,7 +1403,7 @@ export default function DashboardCharts({
                   <div className="text-[9px] text-[#8B8C7F]">Bare/Scrub &gt;= 25°</div>
                 </div>
 
-                <div className="bg-[#22241E] border border-[#C8834C]/30 p-2 rounded">
+                <div className="bg-[#0F141C] border border-[#C8834C]/30 p-2 rounded">
                   <div className="text-[9.5px] text-[#C8834C] uppercase font-semibold">Urban Slope Risk</div>
                   <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
                     {terrainData.hazard_cross_matrix.urban_slope_risk_ha} ha
@@ -1411,7 +1411,7 @@ export default function DashboardCharts({
                   <div className="text-[9px] text-[#8B8C7F]">Built-up &gt;= 15°</div>
                 </div>
 
-                <div className="bg-[#22241E] border border-[#419BDF]/30 p-2 rounded">
+                <div className="bg-[#0F141C] border border-[#419BDF]/30 p-2 rounded">
                   <div className="text-[9.5px] text-[#419BDF] uppercase font-semibold">Retention Basins</div>
                   <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
                     {terrainData.hazard_cross_matrix.flat_inundation_basin_ha} ha
@@ -1421,7 +1421,7 @@ export default function DashboardCharts({
               </div>
 
               {/* Geotechnical Commentary */}
-              <div className="space-y-1 pt-1 border-t border-[#35372E]">
+              <div className="space-y-1 pt-1 border-t border-[#1E293B]">
                 {terrainData.hazard_cross_matrix.geotechnical_notes.map((note, idx) => (
                   <div key={idx} className="flex items-start gap-1.5 text-[11px] text-[#C7C6BA]">
                     <span className="text-[#C8834C] font-bold mt-0.5">•</span>
@@ -1436,8 +1436,8 @@ export default function DashboardCharts({
 
       {/* ───────────── Multispectral Indices Explorer Card ───────────── */}
       {spectralData && (
-        <div className="bg-[#22241E] border border-[#35372E] rounded p-4 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#35372E] pb-3">
+        <div className="bg-[#0F141C] border border-[#1E293B] rounded p-4 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E293B] pb-3">
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#4A90E2] animate-pulse" />
@@ -1454,15 +1454,15 @@ export default function DashboardCharts({
               <span className="px-2 py-0.5 rounded border border-[#4A90E2]/40 bg-[#4A90E2]/15 text-[#4A90E2] mono text-[10px] font-semibold">
                 S2 SR Band Math (B2–B12)
               </span>
-              <span className="px-2 py-0.5 rounded border border-[#35372E] bg-[#1B1D19] text-[#EDE8DB] mono text-[10px]">
-                AOI: {spectralData.total_area_ha?.toLocaleString() ?? '—'} ha
+              <span className="px-2 py-0.5 rounded border border-[#1E293B] bg-[#141A24] text-[#F8FAFC] mono text-[10px]">
+                AOI: {spectralData.total_area_ha?.toLocaleString() ?? '--'} ha
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* NDBI Card */}
-            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2.5 flex flex-col justify-between">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-3 rounded space-y-2.5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-bold text-[#E67E22] flex items-center gap-1.5">
@@ -1473,7 +1473,7 @@ export default function DashboardCharts({
                     <button
                       type="button"
                       onClick={() => onSelectLayer('ndbi')}
-                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#2A2C24] hover:bg-[#35372E] text-[#EDE8DB] border border-[#3D4035] transition cursor-pointer"
+                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#2A2C24] hover:bg-[#1E293B] text-[#EDE8DB] border border-[#3D4035] transition cursor-pointer"
                     >
                       View Layer
                     </button>
@@ -1482,13 +1482,13 @@ export default function DashboardCharts({
                 <div className="text-[10px] text-[#8B8C7F] mt-0.5">Formula: (SWIR1 - NIR) / (SWIR1 + NIR)</div>
 
                 <div className="grid grid-cols-2 gap-2 text-center mt-2.5">
-                  <div className="bg-[#22241E] border border-[#35372E] p-1.5 rounded">
+                  <div className="bg-[#0F141C] border border-[#1E293B] p-1.5 rounded">
                     <div className="text-[9px] text-[#8B8C7F] uppercase font-semibold">Mean NDBI</div>
                     <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
                       {spectralData.ndbi.mean > 0 ? `+${spectralData.ndbi.mean}` : spectralData.ndbi.mean}
                     </div>
                   </div>
-                  <div className="bg-[#22241E] border border-[#E67E22]/30 p-1.5 rounded">
+                  <div className="bg-[#0F141C] border border-[#E67E22]/30 p-1.5 rounded">
                     <div className="text-[9px] text-[#E67E22] uppercase font-semibold">Built Footprint</div>
                     <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
                       {spectralData.ndbi.built_area_ha} ha
@@ -1515,7 +1515,7 @@ export default function DashboardCharts({
             </div>
 
             {/* MNDWI Card */}
-            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2.5 flex flex-col justify-between">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-3 rounded space-y-2.5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-bold text-[#2980B9] flex items-center gap-1.5">
@@ -1526,7 +1526,7 @@ export default function DashboardCharts({
                     <button
                       type="button"
                       onClick={() => onSelectLayer('mndwi')}
-                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#2A2C24] hover:bg-[#35372E] text-[#EDE8DB] border border-[#3D4035] transition cursor-pointer"
+                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#2A2C24] hover:bg-[#1E293B] text-[#EDE8DB] border border-[#3D4035] transition cursor-pointer"
                     >
                       View Layer
                     </button>
@@ -1535,13 +1535,13 @@ export default function DashboardCharts({
                 <div className="text-[10px] text-[#8B8C7F] mt-0.5">Formula: (Green - SWIR1) / (Green + SWIR1)</div>
 
                 <div className="grid grid-cols-2 gap-2 text-center mt-2.5">
-                  <div className="bg-[#22241E] border border-[#35372E] p-1.5 rounded">
+                  <div className="bg-[#0F141C] border border-[#1E293B] p-1.5 rounded">
                     <div className="text-[9px] text-[#8B8C7F] uppercase font-semibold">Mean MNDWI</div>
                     <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
                       {spectralData.mndwi.mean > 0 ? `+${spectralData.mndwi.mean}` : spectralData.mndwi.mean}
                     </div>
                   </div>
-                  <div className="bg-[#22241E] border border-[#2980B9]/30 p-1.5 rounded">
+                  <div className="bg-[#0F141C] border border-[#2980B9]/30 p-1.5 rounded">
                     <div className="text-[9px] text-[#2980B9] uppercase font-semibold">Water Extent</div>
                     <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
                       {spectralData.mndwi.water_area_ha} ha
@@ -1568,7 +1568,7 @@ export default function DashboardCharts({
             </div>
 
             {/* NBR Card */}
-            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2.5 flex flex-col justify-between">
+            <div className="bg-[#1B1D19] border border-[#1E293B] p-3 rounded space-y-2.5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-bold text-[#C0392B] flex items-center gap-1.5">
@@ -1579,7 +1579,7 @@ export default function DashboardCharts({
                     <button
                       type="button"
                       onClick={() => onSelectLayer('nbr')}
-                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#2A2C24] hover:bg-[#35372E] text-[#EDE8DB] border border-[#3D4035] transition cursor-pointer"
+                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#2A2C24] hover:bg-[#1E293B] text-[#EDE8DB] border border-[#3D4035] transition cursor-pointer"
                     >
                       View Layer
                     </button>
@@ -1588,13 +1588,13 @@ export default function DashboardCharts({
                 <div className="text-[10px] text-[#8B8C7F] mt-0.5">Formula: (NIR - SWIR2) / (NIR + SWIR2)</div>
 
                 <div className="grid grid-cols-2 gap-2 text-center mt-2.5">
-                  <div className="bg-[#22241E] border border-[#35372E] p-1.5 rounded">
+                  <div className="bg-[#0F141C] border border-[#1E293B] p-1.5 rounded">
                     <div className="text-[9px] text-[#8B8C7F] uppercase font-semibold">Mean NBR</div>
                     <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
                       {spectralData.nbr.mean > 0 ? `+${spectralData.nbr.mean}` : spectralData.nbr.mean}
                     </div>
                   </div>
-                  <div className="bg-[#22241E] border border-[#C0392B]/30 p-1.5 rounded">
+                  <div className="bg-[#0F141C] border border-[#C0392B]/30 p-1.5 rounded">
                     <div className="text-[9px] text-[#C0392B] uppercase font-semibold">Burn Scars</div>
                     <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
                       {spectralData.nbr.burn_severity_breakdown[0]?.percentage ?? 0}%
@@ -1633,17 +1633,17 @@ export default function DashboardCharts({
       )}
 
       {/* ───────────── Enhanced Data Table ───────────── */}
-      <div className="bg-[#22241E] border border-[#35372E] rounded overflow-hidden print:border-slate-300 print:bg-white">
+      <div className="bg-[#0F141C] border border-[#1E293B] rounded overflow-hidden print:border-slate-300 print:bg-white">
         <table className="w-full text-left text-xs border-collapse print:text-[10px]">
           <thead>
-            <tr className="bg-[#2A2C24] text-[#8B8C7F] uppercase tracking-wider font-semibold border-b border-[#35372E] print:bg-slate-100 print:text-slate-600">
+            <tr className="bg-[#2A2C24] text-[#8B8C7F] uppercase tracking-wider font-semibold border-b border-[#1E293B] print:bg-slate-100 print:text-slate-600">
               <th className="py-2.5 px-3.5">Class</th>
               <th className="py-2.5 px-3.5 text-right">Area (ha)</th>
               <th className="py-2.5 px-3.5 text-right">Pixels</th>
               <th className="py-2.5 px-3.5 text-right w-44">Percentage</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#35372E] print:divide-slate-200">
+          <tbody className="divide-y divide-[#1E293B] print:divide-slate-200">
             {chartData.map((row) => (
               <tr
                 key={row.name}
@@ -1682,12 +1682,12 @@ export default function DashboardCharts({
             ))}
           </tbody>
           <tfoot>
-            <tr className="bg-[#2A2C24] text-[#EDE8DB] font-semibold border-t border-[#35372E] print:bg-slate-50 print:text-slate-800">
+            <tr className="bg-[#141A24] text-[#F8FAFC] font-semibold border-t border-[#1E293B] print:bg-slate-50 print:text-slate-800">
               <td className="py-2.5 px-3.5">Total</td>
               <td className="py-2.5 px-3.5 text-right mono tabular-nums">
-                {totalArea?.toLocaleString() ?? '—'}
+                {totalArea?.toLocaleString() ?? '--'}
               </td>
-              <td className="py-2.5 px-3.5 text-right mono tabular-nums text-[#8B8C7F]">
+              <td className="py-2.5 px-3.5 text-right mono tabular-nums text-[#94A3B8]">
                 {totalPixels.toLocaleString()}
               </td>
               <td className="py-2.5 px-3.5 text-right mono tabular-nums">100%</td>
