@@ -1393,7 +1393,7 @@ export default function Home() {
   };
 
   // Feature 1: Handle Elevation Profile Transect Line
-  const handleTransectDrawn = async (lineCoords: number[][]) => {
+  const handleTransectDrawn = async (lineCoords: number[][], startLocation?: string, endLocation?: string) => {
     setLoadingElevationProfile(true);
     setErrorMessage(null);
     try {
@@ -1403,6 +1403,8 @@ export default function Home() {
         body: JSON.stringify({
           line_coords: lineCoords,
           num_samples: 80,
+          start_location: startLocation || undefined,
+          end_location: endLocation || undefined,
         }),
       });
       if (!response.ok) {
@@ -1411,7 +1413,12 @@ export default function Home() {
       }
       const data = await response.json();
       setElevationProfileData(data);
-      setSuccessMessage(`Elevation transect profile computed across ${data.summary.total_distance_km} km.`);
+      const routeLabel = data.summary?.route_title || (startLocation && endLocation ? `${startLocation} → ${endLocation}` : null);
+      if (routeLabel) {
+        setSuccessMessage(`Topography elevation profile computed: ${routeLabel} (${data.summary.total_distance_km} km).`);
+      } else {
+        setSuccessMessage(`Elevation transect profile computed across ${data.summary.total_distance_km} km.`);
+      }
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to compute elevation transect profile.");
     } finally {

@@ -185,6 +185,8 @@ class ElevationProfileRequest(BaseModel):
         description="Coordinates of the line transect [[lng1, lat1], [lng2, lat2], ...]"
     )
     num_samples: int = Field(80, ge=10, le=250, description="Number of sample elevation points along the line")
+    start_location: Optional[str] = Field(None, description="Human readable name or address of the start location")
+    end_location: Optional[str] = Field(None, description="Human readable name or address of the end location")
 
 class SpectralAnalyzeRequest(AOIRequest):
     pass
@@ -898,7 +900,9 @@ def elevation_profile(payload: ElevationProfileRequest):
             )
         result = compute_elevation_profile(
             line_coords=payload.line_coords,
-            num_samples=payload.num_samples
+            num_samples=payload.num_samples,
+            start_location=payload.start_location,
+            end_location=payload.end_location
         )
         return result
     except HTTPException:

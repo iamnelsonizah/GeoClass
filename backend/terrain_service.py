@@ -341,7 +341,9 @@ def calculate_haversine_distance_km(pt1: List[float], pt2: List[float]) -> float
 
 def compute_elevation_profile(
     line_coords: List[List[float]],
-    num_samples: int = 80
+    num_samples: int = 80,
+    start_location: Optional[str] = None,
+    end_location: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Computes a cross-sectional elevation profile along a user-drawn transect line.
@@ -461,8 +463,21 @@ def compute_elevation_profile(
 
     avg_grade_pct = (abs(elevations[-1] - elevations[0]) / (total_dist_km * 1000.0) * 100.0) if total_dist_km > 0 else 0.0
 
+    route_title = ""
+    if start_location and end_location:
+        route_title = f"{start_location} -> {end_location}"
+    elif start_location:
+        route_title = f"{start_location} -> Transect"
+    elif end_location:
+        route_title = f"Transect -> {end_location}"
+    else:
+        route_title = "Elevation Transect Profile"
+
     return {
         "summary": {
+            "route_title": route_title,
+            "start_location": start_location,
+            "end_location": end_location,
             "total_distance_km": round(total_dist_km, 2),
             "min_elevation_m": round(min_elev, 1),
             "max_elevation_m": round(max_elev, 1),

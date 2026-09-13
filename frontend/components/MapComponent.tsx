@@ -173,7 +173,7 @@ interface MapComponentProps {
   buildingFootprintsGeoJSON?: any;
   showBuildings?: boolean;
   transectMode?: boolean;
-  onTransectDrawn?: (coords: number[][]) => void;
+  onTransectDrawn?: (coords: number[][], startLocation?: string, endLocation?: string) => void;
   elevationProfileData?: any;
   onClearElevationProfile?: () => void;
 }
@@ -1407,17 +1407,84 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
   return null;
 }
 
+interface LocationDetails {
+  shortLabel: string;
+  fullLabel: string;
+}
+
+const geocodeCache = new Map<string, LocationDetails>();
+
+async function reverseGeocodePoint(lat: number, lng: number): Promise<LocationDetails> {
+  const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+  if (geocodeCache.has(key)) {
+    return geocodeCache.get(key)!;
+  }
+
+  try {
+    const params = new URLSearchParams({
+      lat: String(lat),
+      lon: String(lng),
+      format: 'jsonv2',
+      addressdetails: '1',
+      zoom: '12',
+    });
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?${params.toString()}`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data) {
+        const addr = data.address || {};
+        const place = addr.city || addr.town || addr.village || addr.municipality || addr.suburb || addr.hamlet || addr.county;
+        const region = addr.state || addr.country;
+
+        let shortLabel = '';
+        if (place && region && place !== region) {
+          shortLabel = `${place}, ${region}`;
+        } else if (place) {
+          shortLabel = place;
+        } else if (region) {
+          shortLabel = region;
+        } else if (data.name) {
+          shortLabel = data.name;
+        } else if (data.display_name) {
+          shortLabel = data.display_name.split(',')[0].trim();
+        } else {
+          shortLabel = `${lat.toFixed(3)}°, ${lng.toFixed(3)}°`;
+        }
+
+        const fullLabel = data.display_name || `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`;
+        const result = { shortLabel, fullLabel };
+        geocodeCache.set(key, result);
+        return result;
+      }
+    }
+  } catch (e) {
+    // Graceful fallback on network timeout or failure
+  }
+
+  const fallback = {
+    shortLabel: `${lat.toFixed(3)}°, ${lng.toFixed(3)}°`,
+    fullLabel: `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`,
+  };
+  geocodeCache.set(key, fallback);
+  return fallback;
+}
+
 function ElevationTransectTool({
   enabled,
   onTransectDrawn,
   hoverPoint,
 }: {
   enabled: boolean;
-  onTransectDrawn?: (coords: number[][]) => void;
+  onTransectDrawn?: (coords: number[][], startLocation?: string, endLocation?: string) => void;
   hoverPoint?: { lat: number; lng: number } | null;
 }) {
   const map = useMap();
   const [points, setPoints] = useState<L.LatLng[]>([]);
+  const [pointLocations, setPointLocations] = useState<{ [index: number]: LocationDetails }>({});
   const layerRef = useRef<L.LayerGroup | null>(null);
   const hoverMarkerRef = useRef<L.Marker | null>(null);
   const controlRef = useRef<L.Control | null>(null);
@@ -1433,7 +1500,14 @@ function ElevationTransectTool({
     const container = map.getContainer();
     container.classList.add('geo-transect-mode');
     const handleClick = (e: L.LeafletMouseEvent) => {
-      setPoints(prev => [...prev, e.latlng]);
+      setPoints(prev => {
+        const next = [...prev, e.latlng];
+        const pointIdx = next.length - 1;
+        reverseGeocodePoint(e.latlng.lat, e.latlng.lng).then(loc => {
+          setPointLocations(prevLocs => ({ ...prevLocs, [pointIdx]: loc }));
+        });
+        return next;
+      });
     };
 
     map.on('click', handleClick);
@@ -1441,6 +1515,7 @@ function ElevationTransectTool({
       map.off('click', handleClick);
       container.classList.remove('geo-transect-mode');
       setPoints([]);
+      setPointLocations({});
     };
   }, [enabled, map]);
 
@@ -1474,17 +1549,31 @@ function ElevationTransectTool({
       const isStart = index === 0;
       const isEnd = index === points.length - 1 && points.length > 1;
       const markerColor = isStart ? '#22c55e' : isEnd ? '#ef4444' : '#06b6d4';
+      const loc = pointLocations[index];
+      const locLabel = loc?.shortLabel;
+
+      let tooltipHtml = `<div style="font-family:monospace;font-size:11px;padding:3px 6px;color:#EDE8DB;background:#1B1D19;border:1px solid #35372E;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.6);">`;
+      if (isStart) {
+        tooltipHtml += `<strong style="color:#22c55e;">Start (Point A)</strong>${locLabel ? `<br/><span style="color:#ffffff;">${locLabel}</span>` : '<br/><span style="color:#8B8C7F;">Resolving location...</span>'}`;
+      } else if (isEnd) {
+        tooltipHtml += `<strong style="color:#ef4444;">End (Point B)</strong>${locLabel ? `<br/><span style="color:#ffffff;">${locLabel}</span>` : '<br/><span style="color:#8B8C7F;">Resolving location...</span>'}`;
+      } else {
+        tooltipHtml += `<strong style="color:#22d3ee;">Vertex ${index + 1}</strong>${locLabel ? `<br/><span style="color:#ffffff;">${locLabel}</span>` : ''}`;
+      }
+      tooltipHtml += `</div>`;
 
       L.circleMarker(point, {
-        radius: 6,
+        radius: isStart || isEnd ? 7 : 5,
         color: '#1B1D19',
         fillColor: markerColor,
         fillOpacity: 1,
         weight: 2,
       })
-        .bindTooltip(isStart ? 'Transect Start (A)' : isEnd ? 'Transect End (B)' : `Vertex ${index + 1}`, {
-          permanent: false,
+        .bindTooltip(tooltipHtml, {
+          permanent: isStart || isEnd,
           direction: 'top',
+          opacity: 0.95,
+          offset: [0, -8],
         })
         .addTo(group);
     });
@@ -1496,7 +1585,7 @@ function ElevationTransectTool({
       map.removeLayer(group);
       if (layerRef.current === group) layerRef.current = null;
     };
-  }, [enabled, map, points]);
+  }, [enabled, map, points, pointLocations]);
 
   // Dynamic hover marker synced with chart cursor
   useEffect(() => {
@@ -1551,13 +1640,38 @@ function ElevationTransectTool({
         div.style.display = 'flex';
         div.style.flexDirection = 'column';
         div.style.gap = '6px';
-        div.style.minWidth = '190px';
+        div.style.minWidth = '220px';
+
+        const startLoc = pointLocations[0]?.shortLabel || (points[0] ? `${points[0].lat.toFixed(3)}°, ${points[0].lng.toFixed(3)}°` : null);
+        const endLoc = (points.length > 1 && pointLocations[points.length - 1]?.shortLabel) || (points.length > 1 ? `${points[points.length - 1].lat.toFixed(3)}°, ${points[points.length - 1].lng.toFixed(3)}°` : null);
+
+        let routeHtml = '';
+        if (startLoc && endLoc) {
+          routeHtml = `
+            <div style="background:#12140F;border:1px solid #35372E;border-radius:4px;padding:4px 6px;margin-top:2px;">
+              <div style="color:#8B8C7F;font-size:9.5px;text-transform:uppercase;">Elevation Transect Route</div>
+              <div style="font-weight:600;display:flex;align-items:center;gap:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;">
+                <span style="color:#22c55e;">${startLoc}</span>
+                <span style="color:#8B8C7F;">→</span>
+                <span style="color:#ef4444;">${endLoc}</span>
+              </div>
+            </div>
+          `;
+        } else if (startLoc) {
+          routeHtml = `
+            <div style="background:#12140F;border:1px solid #35372E;border-radius:4px;padding:4px 6px;margin-top:2px;">
+              <div style="color:#8B8C7F;font-size:9.5px;text-transform:uppercase;">Starting Point (A)</div>
+              <div style="font-weight:600;color:#22c55e;margin-top:1px;">${startLoc}</div>
+            </div>
+          `;
+        }
 
         div.innerHTML = `
           <div style="font-weight: 700; color: #22d3ee; display: flex; align-items: center; gap: 6px;">
             <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#22d3ee;"></span>
             Elevation Transect Line
           </div>
+          ${routeHtml}
           <div style="color: #8B8C7F;">
             ${points.length < 2 ? 'Click on map to place transect points (min 2 points)' : `${points.length} points &middot; <strong style="color:#EDE8DB">${distKm} km</strong>`}
           </div>
@@ -1570,16 +1684,27 @@ function ElevationTransectTool({
 
         div.querySelector('#btn-calc-profile')?.addEventListener('click', () => {
           if (onTransectDrawn && points.length >= 2) {
-            onTransectDrawn(points.map(p => [p.lng, p.lat]));
+            const startName = pointLocations[0]?.shortLabel || `${points[0].lat.toFixed(3)}°, ${points[0].lng.toFixed(3)}°`;
+            const endName = pointLocations[points.length - 1]?.shortLabel || `${points[points.length - 1].lat.toFixed(3)}°, ${points[points.length - 1].lng.toFixed(3)}°`;
+            onTransectDrawn(points.map(p => [p.lng, p.lat]), startName, endName);
           }
         });
 
         div.querySelector('#btn-undo-point')?.addEventListener('click', () => {
-          setPoints(prev => prev.slice(0, -1));
+          setPoints(prev => {
+            const next = prev.slice(0, -1);
+            setPointLocations(prevLocs => {
+              const updated = { ...prevLocs };
+              delete updated[next.length];
+              return updated;
+            });
+            return next;
+          });
         });
 
         div.querySelector('#btn-clear-transect')?.addEventListener('click', () => {
           setPoints([]);
+          setPointLocations({});
         });
 
         return div;
@@ -1594,7 +1719,7 @@ function ElevationTransectTool({
       map.removeControl(control);
       if (controlRef.current === control) controlRef.current = null;
     };
-  }, [distanceMeters, enabled, map, onTransectDrawn, points]);
+  }, [distanceMeters, enabled, map, onTransectDrawn, points, pointLocations]);
 
   return null;
 }
@@ -1610,6 +1735,9 @@ function ElevationProfilePanel({
 }) {
   const summary = profileData.summary;
   const points = profileData.points;
+  const startLoc = summary.start_location;
+  const endLoc = summary.end_location;
+  const routeTitle = summary.route_title || (startLoc && endLoc ? `${startLoc} → ${endLoc}` : null);
 
   const handleExportCSV = () => {
     const rows = [
@@ -1620,7 +1748,8 @@ function ElevationProfilePanel({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `elevation_profile_${summary.total_distance_km}km.csv`);
+    const sanitizedTitle = (routeTitle || 'transect').replace(/[^a-zA-Z0-9_-]/g, '_');
+    link.setAttribute('download', `elevation_profile_${sanitizedTitle}_${summary.total_distance_km}km.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1631,11 +1760,18 @@ function ElevationProfilePanel({
       <div className="w-[94vw] max-w-4xl bg-[#1B1D19]/95 backdrop-blur-md border border-[#35372E] rounded-lg shadow-2xl p-4 text-[#EDE8DB] space-y-3 cursor-grab active:cursor-grabbing">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#35372E] pb-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="w-2.5 h-2.5 rounded-full bg-[#06b6d4] animate-pulse"></span>
             <span className="text-xs font-bold uppercase tracking-wider text-[#EDE8DB]">
-              Topographic Elevation Profile Transect
+              Topography Elevation:
             </span>
+            {routeTitle ? (
+              <span className="text-xs font-bold text-[#22d3ee] bg-[#22d3ee]/10 px-2 py-0.5 rounded border border-[#22d3ee]/30">
+                {routeTitle}
+              </span>
+            ) : (
+              <span className="text-xs font-semibold text-[#EDE8DB]">Transect Profile</span>
+            )}
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#06b6d4]/20 text-[#22d3ee] border border-[#06b6d4]/40 mono">
               Copernicus 30m Global DEM
             </span>
@@ -1660,6 +1796,33 @@ function ElevationProfilePanel({
             </button>
           </div>
         </div>
+
+        {/* Route Details Bar */}
+        {(startLoc || endLoc || summary.start_point) && (
+          <div className="bg-[#12140F] border border-[#35372E] rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0"></span>
+              <span className="text-[#8B8C7F] text-[11px] uppercase tracking-wider font-semibold">Point A (Start):</span>
+              <span className="text-[#EDE8DB] font-semibold mono">
+                {startLoc || (summary.start_point ? `${summary.start_point.lat.toFixed(4)}°, ${summary.start_point.lng.toFixed(4)}°` : 'Start')}
+              </span>
+            </div>
+
+            <div className="text-[#22d3ee] font-bold px-2 hidden sm:inline">→</div>
+
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#ef4444] shrink-0"></span>
+              <span className="text-[#8B8C7F] text-[11px] uppercase tracking-wider font-semibold">Point B (End):</span>
+              <span className="text-[#EDE8DB] font-semibold mono">
+                {endLoc || (summary.end_point ? `${summary.end_point.lat.toFixed(4)}°, ${summary.end_point.lng.toFixed(4)}°` : 'End')}
+              </span>
+            </div>
+
+            <div className="text-[#8B8C7F] text-[11px] mono ml-auto">
+              Distance: <strong className="text-[#22d3ee]">{summary.total_distance_km} km</strong>
+            </div>
+          </div>
+        )}
 
         {/* Summary Badges Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center text-xs">
