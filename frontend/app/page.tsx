@@ -2340,26 +2340,7 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Preset saved locations */}
-                <div>
-                  <div className="field-label">Quick presets</div>
-                  <div className="grid grid-cols-3 gap-1.5 pt-1">
-                    {SAVED_AREAS.map((area) => (
-                      <button
-                        key={area.id}
-                        type="button"
-                        onClick={() => selectSavedArea(area)}
-                        className={`text-center px-2 py-1.5 rounded text-[11px] border transition cursor-pointer ${
-                          selectedAreaId === area.id 
-                            ? 'bg-[#99aa38]/20 border-[#99aa38] text-[#c0d45a] font-semibold' 
-                            : 'bg-[#18191D] hover:bg-[#202227] border-[#272930] text-neutral-300'
-                        }`}
-                      >
-                        <span className="truncate block font-medium">{area.name.replace(' Review', '').replace(' Greenbelt', '')}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+
 
                 {/* GeoJSON File Ingestion */}
                 <label className="flex items-center justify-center gap-2 w-full py-2 px-3 border border-dashed border-[#383B44] hover:border-[#99aa38]/60 rounded bg-[#18191D]/60 hover:bg-[#18191D] text-xs text-neutral-300 hover:text-white transition cursor-pointer mt-1">
