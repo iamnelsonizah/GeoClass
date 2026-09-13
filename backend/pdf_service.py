@@ -4,14 +4,18 @@ import logging
 import datetime
 from typing import List, Dict, Any, Optional
 
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.lib import colors
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, HRFlowable, Image as RLImage
-)
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.graphics.shapes import Drawing, Rect, String, Group, Circle
-from reportlab.graphics.charts.piecharts import Pie
+try:
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.lib import colors
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, HRFlowable, Image as RLImage
+    )
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.graphics.shapes import Drawing, Rect, String, Group, Circle
+    from reportlab.graphics.charts.piecharts import Pie
+    REPORTLAB_AVAILABLE = True
+except ImportError:
+    REPORTLAB_AVAILABLE = False
 
 import ee
 from gee_service import initialize_gee
@@ -171,6 +175,9 @@ def generate_executive_pdf(
     summarizing land cover classification, geodetic parameters, remote sensing metadata,
     and automated ecological risk assessment.
     """
+    if not REPORTLAB_AVAILABLE:
+        raise RuntimeError("ReportLab is not installed on this server. Please install reportlab to generate executive PDF briefings.")
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
