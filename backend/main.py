@@ -1,8 +1,12 @@
 import os
+import io
+import zipfile
+import base64
+import requests
 import logging
 from datetime import date
 from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, model_validator
 import ee
@@ -12,7 +16,8 @@ from classifier import (
     train_and_classify_gee,
     train_and_classify_deep_learning_gee,
     get_precomputed_statistics,
-    LULC_PALETTE
+    LULC_PALETTE,
+    LULC_CLASSES
 )
 from ai_service import (
     perform_sam_smart_select,
@@ -22,6 +27,21 @@ from ai_service import (
     compute_super_resolution_tiles,
     compute_water_dynamics,
     compute_canopy_height_estimation
+)
+from terrain_service import (
+    compute_terrain_metrics,
+    compute_elevation_profile,
+    SLOPE_TIERS
+)
+from spectral_service import (
+    compute_spectral_analysis,
+    inspect_pixel_spectrum
+)
+from timeseries_service import (
+    extract_pixel_timeseries
+)
+from pdf_service import (
+    generate_executive_pdf
 )
 
 # Configure Logger
@@ -75,6 +95,9 @@ class AOIRequest(BaseModel):
     start_date: str = Field("2024-01-01", description="Start date YYYY-MM-DD")
     end_date: str = Field("2024-12-31", description="End date YYYY-MM-DD")
     cloud_cover: float = Field(20.0, description="Max cloud cover percentage allowed")
+    cloud_mask_type: Optional[str] = Field("both", description="Masking algorithm: 'both', 'scl', 'qa60', or 'none'")
+    mask_shadows: Optional[bool] = Field(True, description="Whether to mask cloud shadows specifically")
+    seasonal_filter: Optional[str] = Field("all", description="Seasonal compositing filter: 'all', 'dry', or 'wet'")
 
     @model_validator(mode="after")
     def validate_date_range(self):
@@ -153,6 +176,44 @@ class WaterDynamicsRequest(AOIRequest):
 class CanopyHeightRequest(AOIRequest):
     forest_stats: Optional[Dict[str, Any]] = None
 
+class TerrainAnalyzeRequest(AOIRequest):
+    pass
+
+class ElevationProfileRequest(BaseModel):
+    line_coords: List[List[float]] = Field(
+        ...,
+        description="Coordinates of the line transect [[lng1, lat1], [lng2, lat2], ...]"
+    )
+    num_samples: int = Field(80, ge=10, le=250, description="Number of sample elevation points along the line")
+
+class SpectralAnalyzeRequest(AOIRequest):
+    pass
+
+class PixelSpectrumRequest(BaseModel):
+    lat: float = Field(..., description="Latitude of the pixel to inspect")
+    lng: float = Field(..., description="Longitude of the pixel to inspect")
+    start_date: str = Field(..., description="Start date (YYYY-MM-DD)")
+    end_date: str = Field(..., description="End date (YYYY-MM-DD)")
+
+class PixelTimelineRequest(BaseModel):
+    lat: float = Field(..., description="Latitude of the pixel location")
+    lng: float = Field(..., description="Longitude of the pixel location")
+    start_year: Optional[int] = Field(2021, description="Start year of analysis window")
+    end_year: Optional[int] = Field(2025, description="End year of analysis window")
+    interval: Optional[str] = Field("quarterly", description="Temporal cadence: 'quarterly' or 'monthly'")
+
+class PDFBriefingRequest(BaseModel):
+    coords: List[List[float]] = Field(..., description="AOI polygon coordinates")
+    statistics: Dict[str, Any] = Field(..., description="Classified statistics dictionary")
+    total_area_ha: float = Field(..., description="Total AOI area in hectares")
+    start_date: str = Field("2024-01-01")
+    end_date: str = Field("2024-12-31")
+    cloud_cover: Optional[float] = Field(20.0)
+    model_type: Optional[str] = Field("random_forest")
+    cloud_mask_type: Optional[str] = Field("both")
+    seasonal_filter: Optional[str] = Field("all")
+    location_name: Optional[str] = Field(None)
+
 def coords_to_ee_geometry(coords: List[List[float]]) -> ee.Geometry:
     """
     Helper function to convert coords [[lng, lat], ...] to ee.Geometry.Polygon.
@@ -220,7 +281,10 @@ def get_s2_map_id(payload: AOIRequest):
             aoi=aoi,
             start_date=payload.start_date,
             end_date=payload.end_date,
-            cloud_percentage=payload.cloud_cover
+            cloud_percentage=payload.cloud_cover,
+            cloud_mask_type=payload.cloud_mask_type or "both",
+            mask_shadows=payload.mask_shadows if payload.mask_shadows is not None else True,
+            seasonal_filter=payload.seasonal_filter or "all"
         )
 
         # Standard False Color composite parameters (NIR, Red, Green) for vegetation highlighting
@@ -299,7 +363,10 @@ def classify_aoi(payload: ClassifyRequest):
                 aoi=aoi,
                 start_date=payload.start_date,
                 end_date=payload.end_date,
-                cloud_percentage=payload.cloud_cover
+                cloud_percentage=payload.cloud_cover,
+                cloud_mask_type=payload.cloud_mask_type or "both",
+                mask_shadows=payload.mask_shadows if payload.mask_shadows is not None else True,
+                seasonal_filter=payload.seasonal_filter or "all"
             )
             classified_image, stats = train_and_classify_deep_learning_gee(
                 s2_composite=s2_composite,
@@ -314,7 +381,10 @@ def classify_aoi(payload: ClassifyRequest):
                 aoi=aoi,
                 start_date=payload.start_date,
                 end_date=payload.end_date,
-                cloud_percentage=payload.cloud_cover
+                cloud_percentage=payload.cloud_cover,
+                cloud_mask_type=payload.cloud_mask_type or "both",
+                mask_shadows=payload.mask_shadows if payload.mask_shadows is not None else True,
+                seasonal_filter=payload.seasonal_filter or "all"
             )
             classified_image, stats = train_and_classify_gee(
                 s2_composite=s2_composite,
@@ -354,13 +424,13 @@ def classify_aoi(payload: ClassifyRequest):
         )
 
 class DownloadRequest(ClassifyRequest):
-    export_format: str = Field("geotiff", description="Export format: 'geotiff', 'png', 'geojson'")
+    export_format: str = Field("geotiff", description="Export format: 'geotiff', 'png', 'geojson', 'kml', 'kmz'")
 
 @app.post("/api/gee/download-url")
 def get_download_link(payload: DownloadRequest):
     """
     Generates a direct download link for the classification result
-    supporting GeoTIFF, PNG, and GeoJSON formats.
+    supporting GeoTIFF, PNG, GeoJSON, and KML formats.
     """
     if not initialize_gee():
         raise HTTPException(
@@ -371,25 +441,29 @@ def get_download_link(payload: DownloadRequest):
     try:
         aoi = coords_to_ee_geometry(payload.coords)
 
-        if payload.export_format == "geojson":
-            # Return GeoJSON directly
-            return {
-                "download_url": None,
-                "geojson_data": {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": payload.coords if isinstance(payload.coords[0][0], list) else [payload.coords]
-                    },
-                    "properties": {
-                        "name": "GeoClass AI AOI Boundary",
-                        "start_date": payload.start_date,
-                        "end_date": payload.end_date,
-                        "model_type": payload.model_type
-                    }
-                }
-            }
+        # 1. Coordinate parsing & spatial extent calculations
+        raw_ring = payload.coords if not (len(payload.coords) > 0 and isinstance(payload.coords[0][0], list)) else payload.coords[0]
+        ring_coords = [list(pt) for pt in raw_ring]
+        if ring_coords and ring_coords[0] != ring_coords[-1]:
+            ring_coords.append(ring_coords[0])
 
+        lats = [float(pt[1]) for pt in ring_coords]
+        lngs = [float(pt[0]) for pt in ring_coords]
+        north = max(lats) if lats else 0.0
+        south = min(lats) if lats else 0.0
+        east = max(lngs) if lngs else 0.0
+        west = min(lngs) if lngs else 0.0
+        center_lat = (north + south) / 2.0
+        center_lng = (east + west) / 2.0
+
+        try:
+            area_ha = aoi.area().divide(10000).getInfo()
+        except Exception:
+            area_ha = 0.0
+
+        api_key = os.getenv("GEE_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
+        # 2. Build classified image layer
         dw_labels = get_dynamic_world_composite(aoi, payload.start_date, payload.end_date)
         
         if payload.model_type == "dynamic_world":
@@ -423,28 +497,225 @@ def get_download_link(payload: DownloadRequest):
                 sample_points=payload.sample_points
             )
 
+        # 3. GeoJSON Export (Comprehensive Vector Package with Coordinates, CRS, and Class Legend)
+        if payload.export_format == "geojson":
+            legend_dict = {
+                LULC_CLASSES.get(i, f"Class {i}"): f"#{LULC_PALETTE[i]}"
+                for i in range(min(len(LULC_PALETTE), len(LULC_CLASSES)))
+            }
+            return {
+                "download_url": None,
+                "export_format": "geojson",
+                "geojson_data": {
+                    "type": "FeatureCollection",
+                    "crs": {
+                        "type": "name",
+                        "properties": {
+                            "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+                        }
+                    },
+                    "features": [
+                        {
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Polygon",
+                                "coordinates": [ring_coords]
+                            },
+                            "properties": {
+                                "title": f"GeoClass LULC Analysis ({payload.model_type})",
+                                "model_type": payload.model_type,
+                                "start_date": payload.start_date,
+                                "end_date": payload.end_date,
+                                "cloud_cover_max": payload.cloud_cover,
+                                "center_latitude": round(center_lat, 6),
+                                "center_longitude": round(center_lng, 6),
+                                "bounding_box": {
+                                    "west_longitude": round(west, 6),
+                                    "south_latitude": round(south, 6),
+                                    "east_longitude": round(east, 6),
+                                    "north_latitude": round(north, 6)
+                                },
+                                "area_hectares": round(area_ha, 2),
+                                "area_km2": round(area_ha / 100.0, 3),
+                                "coordinate_system": "WGS84 / EPSG:4326",
+                                "classes_legend": legend_dict
+                            }
+                        }
+                    ]
+                }
+            }
+
+        # 4. KML / KMZ Export (Google Earth with GroundOverlay Raster draped on 3D terrain + Vector Placemark + Legend)
+        if payload.export_format in ("kml", "kmz"):
+            bbox_geom = ee.Geometry.BBox(west, south, east, north)
+            overlay_url = classified_image.getThumbURL({
+                'name': f'geoclass_overlay_{payload.start_date}',
+                'dimensions': 2048,
+                'region': bbox_geom,
+                'format': 'png',
+                'min': 0,
+                'max': 8,
+                'palette': LULC_PALETTE
+            })
+
+            # Fetch the actual rendered PNG raster server-side using GEE authenticated client
+            png_bytes = None
+            try:
+                png_bytes = ee.data.getThumbnail({
+                    'image': classified_image,
+                    'dimensions': 2048,
+                    'region': bbox_geom,
+                    'format': 'png',
+                    'min': 0,
+                    'max': 8,
+                    'palette': LULC_PALETTE
+                })
+                logger.info(f"Successfully retrieved classification PNG raster for KMZ ({len(png_bytes)} bytes)")
+            except Exception as e:
+                logger.warning(f"ee.data.getThumbnail failed for KMZ bundling: {e}")
+                try:
+                    headers = {"Referer": "http://localhost:3000/"}
+                    img_res = requests.get(overlay_url, headers=headers, timeout=30)
+                    if img_res.status_code == 200:
+                        png_bytes = img_res.content
+                        logger.info(f"Retrieved classification PNG raster via fallback HTTP ({len(png_bytes)} bytes)")
+                except Exception as fallback_e:
+                    logger.warning(f"Fallback HTTP thumbnail fetch also failed: {fallback_e}")
+
+            kml_coords_str = " ".join([f"{pt[0]},{pt[1]},0" for pt in ring_coords])
+
+            # HTML Legend Table inside KML description
+            legend_rows = "".join([
+                f'<tr><td style="background-color:#{LULC_PALETTE[i]};width:16px;height:16px;border:1px solid #444;"></td>'
+                f'<td style="padding-left:8px;font-size:12px;color:#222;">{LULC_CLASSES.get(i, f"Class {i}")}</td></tr>'
+                for i in range(min(len(LULC_PALETTE), len(LULC_CLASSES)))
+            ])
+
+            def build_kml_content(image_href: str) -> str:
+                return f"""<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>GeoClass Land Cover Analysis ({payload.start_date} to {payload.end_date})</name>
+    <open>1</open>
+    <description><![CDATA[
+      <h2>GeoClass Satellite Land Cover Classification</h2>
+      <table cellpadding="4" cellspacing="0" style="font-family:Arial,sans-serif;font-size:12px;border-collapse:collapse;">
+        <tr><td><b>Model:</b></td><td>{payload.model_type}</td></tr>
+        <tr><td><b>Date Range:</b></td><td>{payload.start_date} to {payload.end_date}</td></tr>
+        <tr><td><b>Center:</b></td><td>{center_lat:.5f}&deg; N, {center_lng:.5f}&deg; E</td></tr>
+        <tr><td><b>Area:</b></td><td>{area_ha:,.2f} ha ({area_ha/100:,.2f} km&sup2;)</td></tr>
+        <tr><td><b>Bounding Box:</b></td><td>[{west:.4f}, {south:.4f}] to [{east:.4f}, {north:.4f}]</td></tr>
+        <tr><td><b>Coordinate System:</b></td><td>WGS84 (EPSG:4326)</td></tr>
+      </table>
+      <hr style="border:0;border-top:1px solid #ddd;margin:10px 0;"/>
+      <h4>LULC Classification Palette</h4>
+      <table cellpadding="3" cellspacing="0" style="font-family:Arial,sans-serif;">
+        {legend_rows}
+      </table>
+    ]]></description>
+
+    <!-- Ground Overlay: The colored classified raster draped on Google Earth 3D terrain -->
+    <GroundOverlay>
+      <name>Land Cover Classification Layer</name>
+      <description>Classification map draped over 3D topography</description>
+      <color>e6ffffff</color>
+      <Icon>
+        <href>{image_href}</href>
+      </Icon>
+      <LatLonBox>
+        <north>{north}</north>
+        <south>{south}</south>
+        <east>{east}</east>
+        <west>{west}</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <!-- Vector AOI Boundary Outline -->
+    <Style id="geoclassBoundary">
+      <LineStyle>
+        <color>ff4ca37f</color>
+        <width>3</width>
+      </LineStyle>
+      <PolyStyle>
+        <color>254ca37f</color>
+      </PolyStyle>
+    </Style>
+    <Placemark>
+      <name>AOI Boundary Outline</name>
+      <styleUrl>#geoclassBoundary</styleUrl>
+      <Polygon>
+        <extrude>1</extrude>
+        <altitudeMode>clampToGround</altitudeMode>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>{kml_coords_str}</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>"""
+
+            kmz_base64 = None
+            if png_bytes:
+                # In KMZ, the relative path points directly inside the archive (NO external network request)
+                kmz_doc_kml = build_kml_content("files/classification.png")
+                kmz_buf = io.BytesIO()
+                with zipfile.ZipFile(kmz_buf, "w", zipfile.ZIP_DEFLATED) as zf:
+                    zf.writestr("doc.kml", kmz_doc_kml)
+                    zf.writestr("files/classification.png", png_bytes)
+                kmz_base64 = base64.b64encode(kmz_buf.getvalue()).decode("utf-8")
+
+            # Fallback standalone KML with XML-escaped remote URL
+            xml_safe_remote_url = overlay_url.replace("&", "&amp;")
+            standalone_kml = build_kml_content(xml_safe_remote_url)
+
+            return {
+                "download_url": None,
+                "export_format": payload.export_format,
+                "kml_data": standalone_kml,
+                "kmz_base64": kmz_base64
+            }
+
+        # Adaptive scale calculation for GeoTIFF and PNG
+        if area_ha > 500000:
+            export_scale = 120
+        elif area_ha > 100000:
+            export_scale = 60
+        elif area_ha > 30000:
+            export_scale = 30
+        elif area_ha > 10000:
+            export_scale = 20
+        else:
+            export_scale = 10
+
         if payload.export_format == "png":
-            # Generate visualization thumbnail URL (colored PNG)
             download_url = classified_image.getThumbURL({
-                'name': 'geoclass_map',
-                'scale': 10,
+                'name': f'geoclass_map_{payload.start_date}',
+                'dimensions': 2048,
                 'region': aoi,
                 'format': 'png',
                 'min': 0,
                 'max': 8,
                 'palette': LULC_PALETTE
             })
+            if api_key and "?key=" not in download_url and "&key=" not in download_url:
+                sep = "&" if "?" in download_url else "?"
+                download_url += f"{sep}key={api_key}"
         else:
-            # Default to GeoTIFF
+            # Default to GeoTIFF (WGS84 EPSG:4326 for QGIS, ArcGIS, Leapfrog)
             download_url = classified_image.getDownloadURL({
-                'name': 'geoclass_classification',
-                'scale': 10,
+                'name': f'geoclass_classification_{payload.start_date}',
+                'scale': export_scale,
+                'crs': 'EPSG:4326',
                 'region': aoi,
                 'fileFormat': 'GeoTIFF'
             })
 
         return {
-            "download_url": download_url
+            "download_url": download_url,
+            "export_format": payload.export_format
         }
 
     except Exception as e:
@@ -593,3 +864,153 @@ def canopy_height(payload: CanopyHeightRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Canopy height estimation failed: {e}"
         )
+
+@app.post("/api/terrain/analyze")
+def analyze_terrain(payload: TerrainAnalyzeRequest):
+    """
+    Computes topographic elevation, slope stability classes (0-5, 5-15, 15-25, 25-35, >35 deg),
+    aspect distribution, and LULC x Slope geotechnical hazard cross-matrix using Copernicus 30m Global DEM.
+    """
+    try:
+        result = compute_terrain_metrics(
+            aoi_coords=payload.coords,
+            start_date=payload.start_date,
+            end_date=payload.end_date
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in terrain analysis endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Terrain analysis failed: {e}"
+        )
+
+@app.post("/api/terrain/elevation-profile")
+def elevation_profile(payload: ElevationProfileRequest):
+    """
+    Computes elevation profile transect slice along a user-drawn polyline across Copernicus 30m DEM.
+    """
+    try:
+        if len(payload.line_coords) < 2:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="At least 2 coordinate points are required for an elevation profile transect."
+            )
+        result = compute_elevation_profile(
+            line_coords=payload.line_coords,
+            num_samples=payload.num_samples
+        )
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in elevation profile endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Elevation profile calculation failed: {e}"
+        )
+
+@app.post("/api/spectral/analyze")
+def analyze_spectral(payload: SpectralAnalyzeRequest):
+    """
+    Computes NDBI (built-up), MNDWI (water), and NBR (burn severity) index statistics,
+    zonal footprints, and map tile URLs across the Area of Interest.
+    """
+    try:
+        result = compute_spectral_analysis(
+            aoi_coords=payload.coords,
+            start_date=payload.start_date,
+            end_date=payload.end_date
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in spectral analysis endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Spectral analysis failed: {e}"
+        )
+
+@app.post("/api/spectral/inspect-pixel")
+def inspect_pixel(payload: PixelSpectrumRequest):
+    """
+    Extracts 10-band Sentinel-2 spectral reflectance curve, computes diagnostic indices
+    (NDVI, NDBI, MNDWI, NBR, NDRE, BSI), and classifies the spectral surface archetype.
+    """
+    try:
+        result = inspect_pixel_spectrum(
+            lat=payload.lat,
+            lng=payload.lng,
+            start_date=payload.start_date,
+            end_date=payload.end_date
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in pixel spectral inspection endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Pixel spectral inspection failed: {e}"
+        )
+
+
+@app.post("/api/timeseries/pixel-history")
+def pixel_timeseries_history(payload: PixelTimelineRequest):
+    """
+    Extracts a 5-year multi-index temporal time-series (NDVI, MNDWI, NBR, NDBI) across Sentinel-2
+    harmonized surface reflectance and executes automated statistical disturbance/anomaly detection.
+    """
+    try:
+        result = extract_pixel_timeseries(
+            lat=payload.lat,
+            lng=payload.lng,
+            start_year=payload.start_year or 2021,
+            end_year=payload.end_year or 2025,
+            interval=payload.interval or "quarterly"
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in pixel timeseries history endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Temporal time-series extraction failed: {e}"
+        )
+
+
+@app.post("/api/export/pdf-briefing")
+def export_pdf_briefing(payload: PDFBriefingRequest):
+    """
+    Generates an executive PDF briefing report bundling geodetic extent,
+    Sentinel-2 sensor metadata, LULC area distribution table, vector chart,
+    and automated ecological risk bullets.
+    """
+    try:
+        pdf_bytes = generate_executive_pdf(
+            coords=payload.coords,
+            statistics=payload.statistics,
+            total_area_ha=payload.total_area_ha,
+            start_date=payload.start_date,
+            end_date=payload.end_date,
+            cloud_cover=payload.cloud_cover or 20.0,
+            model_type=payload.model_type or "random_forest",
+            cloud_mask_type=payload.cloud_mask_type or "both",
+            seasonal_filter=payload.seasonal_filter or "all",
+            location_name=payload.location_name
+        )
+        filename = f"GeoClass_Executive_Briefing_{date.today().isoformat()}.pdf"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Access-Control-Expose-Headers": "Content-Disposition"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate executive PDF briefing: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Executive PDF briefing generation failed: {e}"
+        )
+
+
+
+

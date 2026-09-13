@@ -138,7 +138,8 @@ def train_and_classify_gee(
         reducer=ee.Reducer.frequencyHistogram(),
         geometry=aoi,
         scale=scale,
-        maxPixels=1e8
+        maxPixels=1e10,
+        bestEffort=True
     )
     
     # Retrieve the stats
@@ -280,13 +281,14 @@ def train_and_classify_deep_learning_gee(
         reducer=ee.Reducer.frequencyHistogram(),
         geometry=aoi,
         scale=scale,
-        maxPixels=1e8
+        maxPixels=1e10,
+        bestEffort=True
     )
 
     try:
         histogram = stats.get('label').getInfo()
     except Exception as e:
-        logger.error(f"Failed to fetch DL classification statistics: {e}")
+        logger.error(f"Failed to fetch deep learning statistics: {e}")
         histogram = {}
 
     processed_stats = {}
@@ -322,7 +324,9 @@ def get_precomputed_statistics(label_image: ee.Image, aoi: ee.Geometry) -> Dict[
         logger.warning(f"Could not calculate area to determine scale, defaulting to 10m: {e}")
         area_ha = 0
 
-    if area_ha > 100000:
+    if area_ha > 500000:
+        scale = 120
+    elif area_ha > 100000:
         scale = 60
     elif area_ha > 30000:
         scale = 30
@@ -335,7 +339,8 @@ def get_precomputed_statistics(label_image: ee.Image, aoi: ee.Geometry) -> Dict[
         reducer=ee.Reducer.frequencyHistogram(),
         geometry=aoi,
         scale=scale,
-        maxPixels=1e8
+        maxPixels=1e10,
+        bestEffort=True
     )
     
     try:

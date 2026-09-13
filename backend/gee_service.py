@@ -31,6 +31,8 @@ def initialize_gee() -> bool:
     base_dir = os.path.dirname(os.path.abspath(__file__))
     key_path = os.path.join(base_dir, key_file)
 
+    api_key = os.getenv("GEE_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
     try:
         # Option 1: Prefer credentials supplied by the hosting platform.
         if key_data_b64 and not key_data:
@@ -76,28 +78,60 @@ def initialize_gee() -> bool:
         gee_initialized = False
         return False
 
+def mask_s2_clouds_configured(
+    image: ee.Image,
+    mask_type: str = "both",
+    mask_shadows: bool = True
+) -> ee.Image:
+    """
+    Applies configurable cloud and shadow masking on Sentinel-2 L2A imagery.
+    Supports:
+    - 'scl': Scene Classification Layer (values 3: shadow, 8: med cloud, 9: high cloud, 10: cirrus)
+    - 'qa60': Standard bitmask (bit 10: opaque clouds, bit 11: cirrus)
+    - 'both': Dual-masking combining SCL and QA60 for strict cloud screening
+    - 'none': Raw reflectance without masking
+    """
+    if mask_type == "none":
+        return image
+
+    mask = ee.Image(1)
+
+    if mask_type in ("qa60", "both"):
+        qa = image.select('QA60')
+        cloud_bit = 1 << 10
+        cirrus_bit = 1 << 11
+        qa_mask = qa.bitwiseAnd(cloud_bit).eq(0).And(qa.bitwiseAnd(cirrus_bit).eq(0))
+        mask = mask.And(qa_mask)
+
+    if mask_type in ("scl", "both"):
+        scl = image.select('SCL')
+        scl_mask = scl.neq(8).And(scl.neq(9)).And(scl.neq(10))
+        if mask_shadows:
+            scl_mask = scl_mask.And(scl.neq(3))
+        mask = mask.And(scl_mask)
+
+    return image.updateMask(mask)
+
+
 def mask_s2_clouds(image: ee.Image) -> ee.Image:
     """
-    Applies cloud and shadow masking on Sentinel-2 L2A imagery using the Scene Classification Layer (SCL).
-    SCL Band values:
-    3: Cloud shadow
-    8: Cloud medium probability
-    9: Cloud high probability
-    10: Cirrus
+    Default cloud and shadow masking wrapper for backward compatibility.
     """
-    scl = image.select('SCL')
-    # Keep pixels that are NOT cloud shadow (3), NOT medium cloud (8), NOT high cloud (9), and NOT cirrus (10)
-    mask = scl.neq(3).And(scl.neq(8)).And(scl.neq(9)).And(scl.neq(10))
-    return image.updateMask(mask)
+    return mask_s2_clouds_configured(image, mask_type="both", mask_shadows=True)
+
 
 def get_s2_composite(
     aoi: ee.Geometry, 
     start_date: str, 
     end_date: str, 
-    cloud_percentage: float = 20.0
+    cloud_percentage: float = 20.0,
+    cloud_mask_type: str = "both",
+    mask_shadows: bool = True,
+    seasonal_filter: str = "all"
 ) -> ee.Image:
     """
     Fetches and cloud-masks Sentinel-2 Surface Reflectance imagery, returning a median composite.
+    Supports configurable cloud screening (SCL / QA60 / Both) and seasonal filtering (Dry / Wet).
     """
     collection = (
         ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
@@ -105,15 +139,30 @@ def get_s2_composite(
         .filterDate(start_date, end_date)
         .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', cloud_percentage))
     )
+
+    # Apply seasonal filter if requested
+    if seasonal_filter == "dry":
+        # Filter for typical low-cloud dry periods (Nov-Apr)
+        collection = collection.filter(
+            ee.Filter.Or(
+                ee.Filter.calendarRange(1, 4, 'month'),
+                ee.Filter.calendarRange(11, 12, 'month')
+            )
+        )
+    elif seasonal_filter == "wet":
+        # Filter for wet / green season (May-Oct)
+        collection = collection.filter(ee.Filter.calendarRange(5, 10, 'month'))
     
-    # Apply cloud masking and scale reflectances to 0-1 range
-    masked_col = collection.map(mask_s2_clouds)
+    # Apply configured cloud masking
+    def mask_wrapper(img):
+        return mask_s2_clouds_configured(img, mask_type=cloud_mask_type, mask_shadows=mask_shadows)
+
+    masked_col = collection.map(mask_wrapper)
     
     # Calculate median composite across the date range and clip to AOI
     composite = masked_col.median().clip(aoi)
     
     # Rescale back to standard unit float scale (values in Sentinel-2 SR are 0-10000)
-    # Scale only the spectral bands, keep SCL or other indices unchanged if needed
     spectral_bands = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12']
     scaled = composite.select(spectral_bands).divide(10000.0)
     
@@ -149,4 +198,9 @@ def get_map_tile_url(image: ee.Image, vis_params: Dict[str, Any]) -> str:
     Generates a direct map tile URL from GEE using MapId.
     """
     map_id_dict = image.getMapId(vis_params)
-    return map_id_dict['tile_fetcher'].url_format
+    url_format = map_id_dict['tile_fetcher'].url_format
+    api_key = os.getenv("GEE_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if api_key and "?key=" not in url_format and "&key=" not in url_format:
+        separator = "&" if "?" in url_format else "?"
+        url_format += f"{separator}key={api_key}"
+    return url_format

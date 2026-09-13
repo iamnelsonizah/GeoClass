@@ -135,6 +135,90 @@ interface CanopyHeightData {
   model_used: string;
 }
 
+export interface TerrainData {
+  status: string;
+  source: string;
+  aoi_area_ha: number;
+  elevation: {
+    min_m: number;
+    max_m: number;
+    mean_m: number;
+    relief_m: number;
+  };
+  slope: {
+    mean_deg: number;
+    max_deg: number;
+    steep_slopes_pct: number;
+    steep_slopes_ha: number;
+  };
+  slope_distribution: Array<{
+    id: number;
+    name: string;
+    min: number;
+    max: number;
+    area_ha: number;
+    percentage: number;
+    color: string;
+    hazard: string;
+  }>;
+  aspect_distribution: Array<{
+    cardinal: string;
+    degrees: string;
+    area_ha: number;
+    percentage: number;
+  }>;
+  hazard_cross_matrix: {
+    vulnerability_score: number;
+    vulnerability_rating: string;
+    high_erosion_bare_ground_ha: number;
+    urban_slope_risk_ha: number;
+    flat_inundation_basin_ha: number;
+    geotechnical_notes: string[];
+  };
+  tile_urls: {
+    slope?: string | null;
+    elevation?: string | null;
+    hillshade?: string | null;
+  };
+}
+
+export interface SpectralData {
+  total_area_ha: number;
+  ndbi: {
+    mean: number;
+    min: number;
+    max: number;
+    std_dev: number;
+    built_area_ha: number;
+    built_percentage: number;
+    tile_url?: string | null;
+  };
+  mndwi: {
+    mean: number;
+    min: number;
+    max: number;
+    std_dev: number;
+    water_area_ha: number;
+    water_percentage: number;
+    tile_url?: string | null;
+  };
+  nbr: {
+    mean: number;
+    min: number;
+    max: number;
+    std_dev: number;
+    burn_severity_breakdown: Array<{
+      tier: string;
+      range: string;
+      count: number;
+      percentage: number;
+      color: string;
+      description: string;
+    }>;
+    tile_url?: string | null;
+  };
+}
+
 interface DashboardChartsProps {
   statistics?: Record<string, ClassData>;
   totalArea?: number;
@@ -144,14 +228,21 @@ interface DashboardChartsProps {
   superResData?: SuperResData | null;
   waterDynamicsData?: WaterDynamicsData | null;
   canopyHeightData?: CanopyHeightData | null;
+  terrainData?: TerrainData | null;
+  spectralData?: SpectralData | null;
   loadingSuperRes?: boolean;
   loadingWaterDynamics?: boolean;
   loadingCanopyHeight?: boolean;
+  loadingTerrain?: boolean;
+  loadingSpectral?: boolean;
   onExtractBuildings?: () => void;
   extractingBuildings?: boolean;
   onTriggerSuperRes?: () => void;
   onTriggerWaterDynamics?: () => void;
   onTriggerCanopyHeight?: () => void;
+  onTriggerTerrain?: () => void;
+  onTriggerSpectral?: () => void;
+  onSelectLayer?: (layer: string) => void;
 }
 
 /* ─── Colour Palette ─────────────────────────────────────────── */
@@ -372,14 +463,21 @@ export default function DashboardCharts({
   superResData,
   waterDynamicsData,
   canopyHeightData,
+  terrainData,
+  spectralData,
   loadingSuperRes = false,
   loadingWaterDynamics = false,
   loadingCanopyHeight = false,
+  loadingTerrain = false,
+  loadingSpectral = false,
   onExtractBuildings,
   extractingBuildings = false,
   onTriggerSuperRes,
   onTriggerWaterDynamics,
   onTriggerCanopyHeight,
+  onTriggerTerrain,
+  onTriggerSpectral,
+  onSelectLayer,
 }: DashboardChartsProps) {
   /* ── Derived data ── */
   const chartData = useMemo(
@@ -652,8 +750,55 @@ export default function DashboardCharts({
               )}
             </button>
           )}
+
+          {onTriggerTerrain && (
+            <button
+              type="button"
+              onClick={onTriggerTerrain}
+              disabled={loadingTerrain}
+              className="px-2.5 py-1.5 rounded bg-[#C8834C]/20 hover:bg-[#C8834C]/35 text-[#EDE8DB] border border-[#C8834C]/50 text-xs font-medium transition cursor-pointer flex items-center gap-1.5"
+            >
+              {loadingTerrain ? (
+                <>
+                  <span className="w-3 h-3 rounded-full border border-t-[#C8834C] animate-spin"></span>
+                  <span>Analyzing Terrain...</span>
+                </>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M2 20h20L15 6 9 14l-4-4z" />
+                  </svg>
+                  <span>{terrainData ? `Terrain & Slope (${terrainData.elevation.relief_m}m Relief)` : "Analyze Terrain & Slope"}</span>
+                </>
+              )}
+            </button>
+          )}
+
+          {onTriggerSpectral && (
+            <button
+              type="button"
+              onClick={onTriggerSpectral}
+              disabled={loadingSpectral}
+              className="px-2.5 py-1.5 rounded bg-[#4A90E2]/20 hover:bg-[#4A90E2]/35 text-[#EDE8DB] border border-[#4A90E2]/50 text-xs font-medium transition cursor-pointer flex items-center gap-1.5"
+            >
+              {loadingSpectral ? (
+                <>
+                  <span className="w-3 h-3 rounded-full border border-t-[#4A90E2] animate-spin"></span>
+                  <span>Computing Spectral Indices...</span>
+                </>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                  </svg>
+                  <span>{spectralData ? "Spectral Indices (NDBI/MNDWI/NBR)" : "Analyze Spectral Indices"}</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
+
 
       {/* ───────────── Charts Grid (2×2) ───────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2 print:gap-3">
@@ -1092,6 +1237,396 @@ export default function DashboardCharts({
                   <Bar dataKey="percentage" fill="#397D49" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ───────────── Topographic & Slope Stability Engine Card ───────────── */}
+      {terrainData && (
+        <div className="bg-[#22241E] border border-[#35372E] p-4 rounded space-y-4 print:border-slate-300 print:bg-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#35372E] pb-2.5">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#C8834C] animate-pulse"></span>
+                <span className="text-xs font-bold text-[#EDE8DB] uppercase tracking-wider">
+                  Topographic & Slope Stability Engine
+                </span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#C8834C]/20 text-[#C8834C] border border-[#C8834C]/40 mono">
+                  {terrainData.source || "Copernicus 30m GLO-30"}
+                </span>
+              </div>
+              <p className="text-[11.5px] text-[#8B8C7F] mt-0.5">
+                Digital Elevation Model (DEM) terrain morphology, 5-tier slope geotechnical breakdown, and erosion hazard cross-analysis.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs mono">
+              <span className={`px-2 py-0.5 rounded border ${
+                terrainData.hazard_cross_matrix.vulnerability_rating === 'Critical' ? 'bg-[#C56A5A]/20 border-[#C56A5A]/40 text-[#C56A5A]' :
+                terrainData.hazard_cross_matrix.vulnerability_rating === 'High' ? 'bg-[#C56A5A]/15 border-[#C56A5A]/30 text-[#C56A5A]' :
+                terrainData.hazard_cross_matrix.vulnerability_rating === 'Moderate' ? 'bg-[#C8834C]/15 border-[#C8834C]/30 text-[#C8834C]' :
+                'bg-[#7FA35C]/15 border-[#7FA35C]/30 text-[#7FA35C]'
+              }`}>
+                Erosion Hazard: {terrainData.hazard_cross_matrix.vulnerability_rating} ({terrainData.hazard_cross_matrix.vulnerability_score}/100)
+              </span>
+              <span className="px-2 py-0.5 rounded border bg-[#35372E] text-[#EDE8DB]">
+                Relief: {terrainData.elevation.relief_m}m
+              </span>
+            </div>
+          </div>
+
+          {/* Topographic KPIs */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
+            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+              <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Min Elev</span>
+              <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{terrainData.elevation.min_m} m</div>
+              <span className="text-[9.5px] text-[#8B8C7F]">Above sea level</span>
+            </div>
+
+            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+              <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Max Elev</span>
+              <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{terrainData.elevation.max_m} m</div>
+              <span className="text-[9.5px] text-[#8B8C7F]">Peak summit</span>
+            </div>
+
+            <div className="bg-[#1B1D19] border border-[#C8834C]/30 p-2 rounded">
+              <span className="text-[10px] text-[#C8834C] uppercase font-semibold">Relief</span>
+              <div className="text-sm font-bold text-[#C8834C] mono mt-0.5">{terrainData.elevation.relief_m} m</div>
+              <span className="text-[9.5px] text-[#8B8C7F]">Vertical delta</span>
+            </div>
+
+            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+              <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Mean Slope</span>
+              <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{terrainData.slope.mean_deg}°</div>
+              <span className="text-[9.5px] text-[#8B8C7F]">Average grade</span>
+            </div>
+
+            <div className="bg-[#1B1D19] border border-[#35372E] p-2 rounded">
+              <span className="text-[10px] text-[#8B8C7F] uppercase font-semibold">Max Slope</span>
+              <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">{terrainData.slope.max_deg}°</div>
+              <span className="text-[9.5px] text-[#8B8C7F]">Steepest grade</span>
+            </div>
+
+            <div className="bg-[#1B1D19] border border-[#C56A5A]/30 p-2 rounded">
+              <span className="text-[10px] text-[#C56A5A] uppercase font-semibold">Steep (&gt;=25°)</span>
+              <div className="text-sm font-bold text-[#C56A5A] mono mt-0.5">{terrainData.slope.steep_slopes_pct}%</div>
+              <span className="text-[9.5px] text-[#8B8C7F]">{terrainData.slope.steep_slopes_ha} ha</span>
+            </div>
+          </div>
+
+          {/* 5-Tier Geotechnical Slope Classification */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider">
+                Geotechnical Slope Stability Categories
+              </span>
+              <span className="text-[10.5px] text-[#8B8C7F] mono">5 Stability Tiers</span>
+            </div>
+
+            <div className="space-y-2">
+              {terrainData.slope_distribution.map((tier) => (
+                <div key={tier.id} className="bg-[#1B1D19] border border-[#35372E] p-2 rounded flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: tier.color }}></span>
+                      <span className="font-semibold text-[#EDE8DB]">{tier.name}</span>
+                      <span className="text-[10.5px] text-[#8B8C7F] hidden sm:inline">: {tier.hazard}</span>
+                    </div>
+                    <div className="mono tabular-nums text-right flex items-center gap-3">
+                      <span className="text-[#EDE8DB] font-medium">{tier.area_ha.toLocaleString()} ha</span>
+                      <span className="w-12 text-right text-[#C8834C] font-semibold">{tier.percentage}%</span>
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="w-full h-1.5 bg-[#2A2C24] rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.min(100, Math.max(tier.percentage, 0.5))}%`,
+                        backgroundColor: tier.color,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Aspect & Cross-Hazard Two-Column Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {/* Solar Aspect Exposure Chart */}
+            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider">
+                  Terrain Aspect & Solar Exposure
+                </span>
+                <span className="text-[10px] text-[#8B8C7F] mono">8 Cardinal Bearings</span>
+              </div>
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={terrainData.aspect_distribution} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2C24" vertical={false} />
+                    <XAxis dataKey="cardinal" tick={{ fill: '#8B8C7F', fontSize: 10 }} />
+                    <YAxis unit="%" tick={{ fill: '#8B8C7F', fontSize: 9.5 }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1B1D19',
+                        border: '1px solid #35372E',
+                        borderRadius: 4,
+                        fontSize: 11,
+                        fontFamily: 'monospace'
+                      }}
+                      formatter={(val: any, name: any, item: any) => [`${val}% (${item.payload.area_ha} ha)`, `Facing ${item.payload.degrees}`]}
+                    />
+                    <Bar dataKey="percentage" fill="#E49635" radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Geotechnical & Erosion Hazard Matrix */}
+            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-[#8B8C7F] uppercase tracking-wider">
+                  LULC x Slope Hazard Cross-Analysis
+                </span>
+                <span className="text-[10px] text-[#C8834C] mono font-semibold">Geotechnical Insights</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-[#22241E] border border-[#C56A5A]/30 p-2 rounded">
+                  <div className="text-[9.5px] text-[#C56A5A] uppercase font-semibold">High Erosion Risk</div>
+                  <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
+                    {terrainData.hazard_cross_matrix.high_erosion_bare_ground_ha} ha
+                  </div>
+                  <div className="text-[9px] text-[#8B8C7F]">Bare/Scrub &gt;= 25°</div>
+                </div>
+
+                <div className="bg-[#22241E] border border-[#C8834C]/30 p-2 rounded">
+                  <div className="text-[9.5px] text-[#C8834C] uppercase font-semibold">Urban Slope Risk</div>
+                  <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
+                    {terrainData.hazard_cross_matrix.urban_slope_risk_ha} ha
+                  </div>
+                  <div className="text-[9px] text-[#8B8C7F]">Built-up &gt;= 15°</div>
+                </div>
+
+                <div className="bg-[#22241E] border border-[#419BDF]/30 p-2 rounded">
+                  <div className="text-[9.5px] text-[#419BDF] uppercase font-semibold">Retention Basins</div>
+                  <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
+                    {terrainData.hazard_cross_matrix.flat_inundation_basin_ha} ha
+                  </div>
+                  <div className="text-[9px] text-[#8B8C7F]">Low gradient &lt;= 3°</div>
+                </div>
+              </div>
+
+              {/* Geotechnical Commentary */}
+              <div className="space-y-1 pt-1 border-t border-[#35372E]">
+                {terrainData.hazard_cross_matrix.geotechnical_notes.map((note, idx) => (
+                  <div key={idx} className="flex items-start gap-1.5 text-[11px] text-[#C7C6BA]">
+                    <span className="text-[#C8834C] font-bold mt-0.5">•</span>
+                    <span>{note}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ───────────── Multispectral Indices Explorer Card ───────────── */}
+      {spectralData && (
+        <div className="bg-[#22241E] border border-[#35372E] rounded p-4 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#35372E] pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#4A90E2] animate-pulse" />
+                <h3 className="text-sm font-semibold text-[#EDE8DB] tracking-wide">
+                  Multispectral Indices Explorer (Sentinel-2 Band Math)
+                </h3>
+              </div>
+              <p className="text-[11px] text-[#8B8C7F] mt-0.5">
+                Advanced surface discrimination via NDBI (built-up), MNDWI (water), and NBR (burn severity & clearing)
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="px-2 py-0.5 rounded border border-[#4A90E2]/40 bg-[#4A90E2]/15 text-[#4A90E2] mono text-[10px] font-semibold">
+                S2 SR Band Math (B2–B12)
+              </span>
+              <span className="px-2 py-0.5 rounded border border-[#35372E] bg-[#1B1D19] text-[#EDE8DB] mono text-[10px]">
+                AOI: {spectralData.total_area_ha?.toLocaleString() ?? '—'} ha
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* NDBI Card */}
+            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2.5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold text-[#E67E22] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#E67E22]" />
+                    <span>NDBI (Built-Up Index)</span>
+                  </div>
+                  {onSelectLayer && (
+                    <button
+                      type="button"
+                      onClick={() => onSelectLayer('ndbi')}
+                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#2A2C24] hover:bg-[#35372E] text-[#EDE8DB] border border-[#3D4035] transition cursor-pointer"
+                    >
+                      View Layer
+                    </button>
+                  )}
+                </div>
+                <div className="text-[10px] text-[#8B8C7F] mt-0.5">Formula: (SWIR1 - NIR) / (SWIR1 + NIR)</div>
+
+                <div className="grid grid-cols-2 gap-2 text-center mt-2.5">
+                  <div className="bg-[#22241E] border border-[#35372E] p-1.5 rounded">
+                    <div className="text-[9px] text-[#8B8C7F] uppercase font-semibold">Mean NDBI</div>
+                    <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
+                      {spectralData.ndbi.mean > 0 ? `+${spectralData.ndbi.mean}` : spectralData.ndbi.mean}
+                    </div>
+                  </div>
+                  <div className="bg-[#22241E] border border-[#E67E22]/30 p-1.5 rounded">
+                    <div className="text-[9px] text-[#E67E22] uppercase font-semibold">Built Footprint</div>
+                    <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
+                      {spectralData.ndbi.built_area_ha} ha
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[10px] text-[#8B8C7F] mb-1">
+                  <span>Built-up / Impervious</span>
+                  <span className="text-[#EDE8DB] mono font-bold">{spectralData.ndbi.built_percentage}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-[#2A2C24] rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[#E67E22]"
+                    style={{ width: `${Math.min(100, Math.max(0, spectralData.ndbi.built_percentage))}%` }}
+                  />
+                </div>
+                <div className="text-[9.5px] text-[#8B8C7F] mt-1.5">
+                  Separates concrete, asphalt, excavation rock, and quarries from vegetation.
+                </div>
+              </div>
+            </div>
+
+            {/* MNDWI Card */}
+            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2.5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold text-[#2980B9] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#2980B9]" />
+                    <span>MNDWI (Water Index)</span>
+                  </div>
+                  {onSelectLayer && (
+                    <button
+                      type="button"
+                      onClick={() => onSelectLayer('mndwi')}
+                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#2A2C24] hover:bg-[#35372E] text-[#EDE8DB] border border-[#3D4035] transition cursor-pointer"
+                    >
+                      View Layer
+                    </button>
+                  )}
+                </div>
+                <div className="text-[10px] text-[#8B8C7F] mt-0.5">Formula: (Green - SWIR1) / (Green + SWIR1)</div>
+
+                <div className="grid grid-cols-2 gap-2 text-center mt-2.5">
+                  <div className="bg-[#22241E] border border-[#35372E] p-1.5 rounded">
+                    <div className="text-[9px] text-[#8B8C7F] uppercase font-semibold">Mean MNDWI</div>
+                    <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
+                      {spectralData.mndwi.mean > 0 ? `+${spectralData.mndwi.mean}` : spectralData.mndwi.mean}
+                    </div>
+                  </div>
+                  <div className="bg-[#22241E] border border-[#2980B9]/30 p-1.5 rounded">
+                    <div className="text-[9px] text-[#2980B9] uppercase font-semibold">Water Extent</div>
+                    <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
+                      {spectralData.mndwi.water_area_ha} ha
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[10px] text-[#8B8C7F] mb-1">
+                  <span>Open Water Bodies</span>
+                  <span className="text-[#EDE8DB] mono font-bold">{spectralData.mndwi.water_percentage}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-[#2A2C24] rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[#2980B9]"
+                    style={{ width: `${Math.min(100, Math.max(0, spectralData.mndwi.water_percentage))}%` }}
+                  />
+                </div>
+                <div className="text-[9.5px] text-[#8B8C7F] mt-1.5">
+                  Suppresses built-up noise; isolates open reservoirs, retention basins, and tailings.
+                </div>
+              </div>
+            </div>
+
+            {/* NBR Card */}
+            <div className="bg-[#1B1D19] border border-[#35372E] p-3 rounded space-y-2.5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold text-[#C0392B] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#C0392B]" />
+                    <span>NBR (Burn Severity)</span>
+                  </div>
+                  {onSelectLayer && (
+                    <button
+                      type="button"
+                      onClick={() => onSelectLayer('nbr')}
+                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#2A2C24] hover:bg-[#35372E] text-[#EDE8DB] border border-[#3D4035] transition cursor-pointer"
+                    >
+                      View Layer
+                    </button>
+                  )}
+                </div>
+                <div className="text-[10px] text-[#8B8C7F] mt-0.5">Formula: (NIR - SWIR2) / (NIR + SWIR2)</div>
+
+                <div className="grid grid-cols-2 gap-2 text-center mt-2.5">
+                  <div className="bg-[#22241E] border border-[#35372E] p-1.5 rounded">
+                    <div className="text-[9px] text-[#8B8C7F] uppercase font-semibold">Mean NBR</div>
+                    <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
+                      {spectralData.nbr.mean > 0 ? `+${spectralData.nbr.mean}` : spectralData.nbr.mean}
+                    </div>
+                  </div>
+                  <div className="bg-[#22241E] border border-[#C0392B]/30 p-1.5 rounded">
+                    <div className="text-[9px] text-[#C0392B] uppercase font-semibold">Burn Scars</div>
+                    <div className="text-sm font-bold text-[#EDE8DB] mono mt-0.5">
+                      {spectralData.nbr.burn_severity_breakdown[0]?.percentage ?? 0}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4-Tier Severity Distribution */}
+              <div className="space-y-1">
+                <div className="text-[9.5px] text-[#8B8C7F] font-semibold uppercase">
+                  Burn Severity Classification
+                </div>
+                <div className="flex h-2 w-full rounded-full overflow-hidden bg-[#2A2C24]">
+                  {spectralData.nbr.burn_severity_breakdown.map((t, i) => (
+                    <div
+                      key={i}
+                      style={{ width: `${t.percentage}%`, backgroundColor: t.color }}
+                      title={`${t.tier}: ${t.percentage}%`}
+                    />
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px] text-[#8B8C7F] pt-0.5">
+                  {spectralData.nbr.burn_severity_breakdown.map((t, i) => (
+                    <div key={i} className="flex items-center gap-1 truncate">
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
+                      <span className="truncate">{t.tier.split('/')[0]}:</span>
+                      <span className="mono text-[#EDE8DB] font-semibold">{t.percentage}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

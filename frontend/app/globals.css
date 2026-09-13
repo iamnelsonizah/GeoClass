@@ -59,9 +59,11 @@ nextjs-portal {
 
 /* App container layout */
 .geo-app {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--graphite);
   color: var(--ink);
 }
@@ -71,10 +73,11 @@ nextjs-portal {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 10px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--graphite);
   z-index: 40;
+  flex-shrink: 0;
 }
 
 .brand {
@@ -175,26 +178,81 @@ nextjs-portal {
   box-shadow: 0 0 8px rgba(197, 106, 90, 0.6);
 }
 
-/* ---------- Main grid ---------- */
+/* ---------- Main grid: Dual-Sidebar 3-Column Grid Layout ---------- */
 .main-grid {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 320px minmax(0, 1fr) 315px;
+  width: 100vw;
+  max-width: 100vw;
+  height: calc(100vh - 53px);
   min-height: 0;
   overflow: hidden;
+  position: relative;
+  transition: grid-template-columns 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ---------- Left rail ---------- */
+.main-grid.left-collapsed {
+  grid-template-columns: 0px minmax(0, 1fr) 315px;
+}
+
+.main-grid.right-collapsed {
+  grid-template-columns: 320px minmax(0, 1fr) 0px;
+}
+
+.main-grid.left-collapsed.right-collapsed {
+  grid-template-columns: 0px minmax(0, 1fr) 0px;
+}
+
+/* ---------- Rails (Left & Right) ---------- */
 .rail {
-  border-right: 1px solid var(--border);
   background: var(--graphite);
   overflow-y: auto;
-  padding: 20px 0 32px;
   min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 200ms ease;
+  z-index: 20;
+}
+
+.rail-left {
+  width: 100%;
+  max-width: 320px;
+  border-right: 1px solid var(--border);
+}
+
+.rail-left.collapsed {
+  display: none !important;
+}
+
+.rail-right {
+  width: 100%;
+  max-width: 315px;
+  border-left: 1px solid var(--border);
+}
+
+.rail-right.collapsed {
+  display: none !important;
+}
+
+.rail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(27, 29, 25, 0.95);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
 }
 
 .rail-track {
   position: relative;
-  padding: 0 20px;
+  padding: 16px 16px 28px;
+  flex: 1;
 }
 
 .phase {
@@ -479,6 +537,10 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   position: relative;
   display: flex;
   flex-direction: column;
+  flex: 1 1 0%;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   background: var(--canvas);
 }
@@ -536,8 +598,10 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 
 .map-canvas {
   position: relative;
-  flex: 1;
-  min-height: 480px;
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(180deg, rgba(127,163,92,0.03), transparent 40%), #12140F;
 }
 
@@ -582,6 +646,99 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   color: var(--moss);
   background: var(--panel-alt);
 }
+
+.toolstrip .divider {
+  width: 20px;
+  height: 1px;
+  background: var(--border);
+  margin: 3px auto;
+}
+
+/* Rich Toolstrip Hover Tooltips */
+.toolstrip .t {
+  position: relative;
+}
+
+.toolstrip .tool-tip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  background: #171913;
+  border: 1px solid #35372E;
+  border-radius: 6px;
+  padding: 8px 12px;
+  width: max-content;
+  max-width: 250px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(127, 163, 92, 0.12);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1), visibility 150ms;
+  z-index: 2000;
+  text-align: left;
+}
+
+.toolstrip .tool-tip::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #35372E transparent transparent;
+}
+
+.toolstrip .tool-tip::after {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: transparent #171913 transparent transparent;
+}
+
+.toolstrip .t:hover .tool-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+.tool-tip-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #EDE8DB;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.tool-tip-badge {
+  font-size: 9px;
+  font-family: 'IBM Plex Mono', monospace;
+  background: rgba(127, 163, 92, 0.15);
+  color: #7FA35C;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+  border: 1px solid rgba(127, 163, 92, 0.3);
+  text-transform: uppercase;
+}
+
+.tool-tip-desc {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #A0A195;
+  font-weight: 400;
+  white-space: normal;
+}
+
 
 .coord-readout {
   position: absolute;
@@ -676,10 +833,17 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 .analytics {
   border-top: 1px solid var(--border);
   background: var(--graphite);
-  padding: 18px 24px 24px;
+  padding: 14px 20px 20px;
   flex-shrink: 0;
   max-height: 480px;
   overflow-y: auto;
+  transition: max-height 250ms cubic-bezier(0.16, 1, 0.3, 1), padding 200ms ease;
+}
+
+.analytics.collapsed {
+  max-height: 44px;
+  overflow: hidden;
+  padding-bottom: 8px;
 }
 
 .analytics-head {
@@ -829,20 +993,21 @@ input[type="range"]::-webkit-slider-thumb:hover {
   .main-grid {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-    position: relative;
+    overflow-y: auto;
   }
 
-  .rail {
-    flex: 1;
-    height: 100%;
-    max-height: none;
+  .rail-left, .rail-right {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
     border-right: none;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 14px 0 24px;
+    border-left: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 440px;
+  }
+
+  .rail-left.collapsed, .rail-right.collapsed {
+    display: none !important;
   }
 
   .map-area {
@@ -850,7 +1015,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     height: 100%;
     display: flex;
     flex-direction: column;
-    min-height: 0;
+    min-height: 420px;
     overflow: hidden;
     position: relative;
   }
@@ -858,7 +1023,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   .map-canvas {
     flex: 1;
     height: 100%;
-    min-height: 0;
+    min-height: 380px;
   }
 
   .status-strip {
@@ -911,73 +1076,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
   }
 }
 
-/* Mobile Bottom Navigation Bar */
 .mobile-bottom-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  background: #141611;
-  border-top: 1px solid var(--border);
-  padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
-  z-index: 1000;
-  flex-shrink: 0;
-}
-
-.mobile-tab-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 5px 12px;
-  border-radius: 6px;
-  color: var(--ink-dim);
-  font-size: 11px;
-  font-weight: 500;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  position: relative;
-  transition: all 150ms ease;
-  min-width: 64px;
-}
-
-.mobile-tab-btn.active {
-  color: var(--paper);
-  background: rgba(127, 163, 92, 0.15);
-}
-
-.mobile-tab-btn.active svg {
-  color: var(--moss);
-}
-
-.tab-pill {
-  font-size: 8.5px;
-  font-family: 'IBM Plex Mono', monospace;
-  background: rgba(200, 131, 76, 0.2);
-  color: var(--clay);
-  border: 1px solid rgba(200, 131, 76, 0.35);
-  padding: 0 4px;
-  border-radius: 4px;
-}
-
-.tab-badge {
-  font-size: 8.5px;
-  font-family: 'IBM Plex Mono', monospace;
-  background: rgba(127, 163, 92, 0.25);
-  color: var(--moss);
-  border: 1px solid rgba(127, 163, 92, 0.4);
-  padding: 0 4px;
-  border-radius: 999px;
-}
-
-.tab-indicator {
-  position: absolute;
-  top: 4px;
-  right: 14px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--moss);
+  display: none !important;
 }
 
 /* Animated Search Location Marker & Precision Pointer */
@@ -1107,6 +1207,156 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .geo-custom-popup .leaflet-popup-close-button:hover {
   color: #EDE8DB !important;
+}
+
+/* ---------- Real-Time Live Measurement Tool ---------- */
+.geo-measure-mode {
+  cursor: crosshair !important;
+}
+
+.geo-measure-control {
+  background: rgba(23, 25, 19, 0.95);
+  border: 1px solid #35372E;
+  border-radius: 6px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(233, 201, 71, 0.25);
+  color: #EDE8DB;
+  font-family: 'IBM Plex Sans', sans-serif;
+  min-width: 200px;
+  backdrop-filter: blur(8px);
+}
+
+.geo-measure-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.geo-measure-control small {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #e9c947;
+  font-weight: 600;
+}
+
+.geo-measure-badge {
+  font-size: 9px;
+  font-family: 'IBM Plex Mono', monospace;
+  background: rgba(233, 201, 71, 0.15);
+  color: #e9c947;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid rgba(233, 201, 71, 0.3);
+}
+
+.geo-measure-value {
+  display: block;
+  font-size: 17px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 2px 0 4px;
+}
+
+.geo-measure-subtext {
+  font-size: 11px;
+  color: #8B8C7F;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.geo-measure-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.geo-measure-actions button {
+  flex: 1;
+  background: #2A2C24;
+  border: 1px solid #35372E;
+  color: #EDE8DB;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+}
+
+.geo-measure-actions button:hover {
+  background: #35372E;
+  border-color: #e9c947;
+  color: #FFFFFF;
+}
+
+.geo-measure-actions .btn-finish {
+  background: #e9c947 !important;
+  color: #12140F !important;
+  border-color: #e9c947 !important;
+  font-weight: 600 !important;
+}
+
+.geo-measure-actions .btn-finish:hover {
+  background: #f7df72 !important;
+  color: #000000 !important;
+}
+
+.geo-measure-actions .btn-resume {
+  border-color: #7FA35C !important;
+  color: #7FA35C !important;
+}
+
+.geo-measure-segment-pill {
+  background: rgba(20, 22, 17, 0.94);
+  border: 1px solid #e9c947;
+  color: #f7df72;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.geo-measure-midpoint-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.geo-measure-cursor-tooltip {
+  background: rgba(18, 20, 15, 0.96) !important;
+  border: 1px solid #e9c947 !important;
+  color: #EDE8DB !important;
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 11px !important;
+  padding: 4px 9px !important;
+  border-radius: 5px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.75) !important;
+  pointer-events: none !important;
+  white-space: nowrap !important;
+}
+
+.geo-measure-cursor-tooltip::before {
+  border-right-color: #e9c947 !important;
+}
+
+.geo-measure-vertex-tooltip {
+  background: #1B1D19 !important;
+  border: 1px solid #35372E !important;
+  color: #EDE8DB !important;
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
 }
 
 

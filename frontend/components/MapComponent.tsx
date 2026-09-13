@@ -4,6 +4,15 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, LayersControl, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  CartesianGrid,
+} from 'recharts';
 
 // Set up default icon paths to avoid missing icon errors in Next.js
 if (typeof window !== 'undefined') {
@@ -34,35 +43,89 @@ const LAYER_INFO: Record<string, { title: string; description: string; bands?: {
     title: 'True Color (RGB)',
     description: 'Natural color composite using B4 (Red), B3 (Green), B2 (Blue)',
     bands: [
-      { label: 'B4 — Red', color: '#ef4444' },
-      { label: 'B3 — Green', color: '#22c55e' },
-      { label: 'B2 — Blue', color: '#3b82f6' },
+      { label: 'B4 - Red', color: '#ef4444' },
+      { label: 'B3 - Green', color: '#22c55e' },
+      { label: 'B2 - Blue', color: '#3b82f6' },
     ],
   },
   false_color: {
     title: 'False Color (NIR)',
     description: 'Infrared composite: B8 (NIR), B4 (Red), B3 (Green). Vegetation appears bright red.',
     bands: [
-      { label: 'B8 — Near-IR', color: '#dc2626' },
-      { label: 'B4 — Red', color: '#16a34a' },
-      { label: 'B3 — Green', color: '#2563eb' },
+      { label: 'B8 - Near-IR', color: '#dc2626' },
+      { label: 'B4 - Red', color: '#16a34a' },
+      { label: 'B3 - Green', color: '#2563eb' },
     ],
   },
   ndvi: {
     title: 'NDVI Vegetation Index',
-    description: 'Normalized Difference Vegetation Index: (NIR − Red) / (NIR + Red)',
+    description: 'Normalized Difference Vegetation Index: (NIR - Red) / (NIR + Red)',
     bands: [
-      { label: '< 0 — Water / Bare', color: '#a16207' },
-      { label: '0 – 0.3 — Sparse', color: '#d4d4aa' },
-      { label: '0.3 – 0.6 — Moderate', color: '#65a30d' },
-      { label: '> 0.6 — Dense', color: '#166534' },
+      { label: '< 0 - Water / Bare', color: '#a16207' },
+      { label: '0 - 0.3 - Sparse', color: '#d4d4aa' },
+      { label: '0.3 - 0.6 - Moderate', color: '#65a30d' },
+      { label: '> 0.6 - Dense', color: '#166534' },
     ],
   },
   classified: {
     title: 'Land Cover Classification',
     description: 'Model output for land use and land cover review',
   },
+  slope: {
+    title: 'Topographic Slope Stability',
+    description: 'Copernicus 30m terrain slope classification (degrees):',
+    bands: [
+      { label: '0-5° (Flat / Basin)', color: '#2ecc71' },
+      { label: '5-15° (Gentle / Stable)', color: '#f1c40f' },
+      { label: '15-25° (Moderate / Runoff)', color: '#e67e22' },
+      { label: '25-35° (Steep / Erosion)', color: '#e74c3c' },
+      { label: '>35° (Cliff / Critical Hazard)', color: '#8e44ad' },
+    ],
+  },
+  elevation: {
+    title: 'Digital Elevation Model (DEM)',
+    description: 'Copernicus 30m continuous surface elevation above sea level:',
+    bands: [
+      { label: 'Lowlands', color: '#006633' },
+      { label: 'Midlands', color: '#ffff99' },
+      { label: 'Highlands', color: '#cc9966' },
+      { label: 'Summits / Peaks', color: '#ffffff' },
+    ],
+  },
+  hillshade: {
+    title: 'Terrain Hillshade Relief',
+    description: 'Illuminated 3D shaded relief model (azimuth 315°, sun altitude 45°)',
+  },
+  ndbi: {
+    title: 'NDBI (Built-Up Index)',
+    description: 'Separates impervious urban concrete, asphalt, and quarry rock:',
+    bands: [
+      { label: 'Vegetation / Water (< 0.0)', color: '#2c3e50' },
+      { label: 'Moderate / Transition (0.0 to 0.1)', color: '#f39c12' },
+      { label: 'Dense Built-Up / Quarry (> 0.1)', color: '#c0392b' },
+    ],
+  },
+  mndwi: {
+    title: 'MNDWI (Modified Water Index)',
+    description: 'Suppresses built-up noise while isolating water bodies:',
+    bands: [
+      { label: 'Dry Land / Soil (< 0.0)', color: '#d73027' },
+      { label: 'Wetlands / Turbid (0.0 to 0.1)', color: '#91cf60' },
+      { label: 'Open Water / Reservoirs (> 0.1)', color: '#053061' },
+    ],
+  },
+  nbr: {
+    title: 'NBR (Burn Ratio & Severity)',
+    description: 'Highlights wildfire burn scars, canopy dieback, and clearing:',
+    bands: [
+      { label: 'High Severity / Burn Scar (< -0.1)', color: '#67001f' },
+      { label: 'Moderate Severity (-0.1 to 0.1)', color: '#f4a582' },
+      { label: 'Low Severity / Regrowth (0.1 to 0.27)', color: '#92c5de' },
+      { label: 'Unburned / Healthy Canopy (≥ 0.27)', color: '#2166ac' },
+    ],
+  },
 };
+
 
 import { DraggableContainer } from './DraggableContainer';
 
@@ -73,6 +136,12 @@ interface MapComponentProps {
   falseColorUrl?: string;
   ndviUrl?: string;
   classifiedUrl?: string;
+  slopeUrl?: string;
+  elevationUrl?: string;
+  hillshadeUrl?: string;
+  ndbiUrl?: string;
+  mndwiUrl?: string;
+  nbrUrl?: string;
   baselineTrueColorUrl?: string;
   baselineFalseColorUrl?: string;
   baselineNdviUrl?: string;
@@ -80,7 +149,7 @@ interface MapComponentProps {
   compareMode?: boolean;
   activeTimePeriod?: 'target' | 'baseline';
   opacity: number;
-  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified';
+  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr';
   mapCenter: [number, number];
   mapZoom: number;
   searchLocation?: SearchLocation | null;
@@ -91,11 +160,22 @@ interface MapComponentProps {
   noteMode?: boolean;
   notes?: MapNote[];
   onNoteAdd?: (lat: number, lng: number) => void;
+  swipeActive?: boolean;
   onSwipeActiveChange?: (active: boolean) => void;
   smartSelectMode?: boolean;
   onSmartSelectClick?: (lat: number, lng: number) => void;
+  spectralInspectorMode?: boolean;
+  onSpectralInspectorClick?: (lat: number, lng: number) => void;
+  inspectedSpectralCoord?: { lat: number; lng: number } | null;
+  timelineMode?: boolean;
+  onTimelineClick?: (lat: number, lng: number) => void;
+  inspectedTimelineCoord?: { lat: number; lng: number } | null;
   buildingFootprintsGeoJSON?: any;
   showBuildings?: boolean;
+  transectMode?: boolean;
+  onTransectDrawn?: (coords: number[][]) => void;
+  elevationProfileData?: any;
+  onClearElevationProfile?: () => void;
 }
 
 interface MapNote {
@@ -121,44 +201,114 @@ const getConfidenceScore = (row: number, col: number) => (
 );
 
 // ───────────────────────────────── Draw Control ─────────────────────────────────
-function DrawControl({ onAOIDrawn }: { onAOIDrawn: (coords: number[][]) => void }) {
+// ───────────────────────────────── Unified Draw & Boundary Control ─────────────────────────────────
+function DrawControl({
+  coords,
+  onAOIDrawn,
+}: {
+  coords: number[][];
+  onAOIDrawn: (coords: number[][]) => void;
+}) {
   const map = useMap();
   const drawnLayerRef = useRef<L.Layer | null>(null);
+  const isInternalUpdate = useRef(false);
+
+  // Synchronize external coords (from presets, GeoJSON upload, or SAM smart-select) with the single map layer
+  useEffect(() => {
+    if (!map) return;
+
+    // If change was caused by user dragging or editing this layer via Geoman, skip recreating
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false;
+      return;
+    }
+
+    if (coords && coords.length > 2) {
+      const latLngs = coords.map(c => [c[1], c[0]] as [number, number]);
+
+      if (drawnLayerRef.current) {
+        if ('setLatLngs' in drawnLayerRef.current) {
+          (drawnLayerRef.current as L.Polygon).setLatLngs(latLngs);
+          if ('bringToFront' in drawnLayerRef.current) {
+            (drawnLayerRef.current as any).bringToFront();
+          }
+          return;
+        } else {
+          map.removeLayer(drawnLayerRef.current);
+          drawnLayerRef.current = null;
+        }
+      }
+
+      // Create single persistent boundary polygon
+      const poly = L.polygon(latLngs, {
+        color: '#7FA35C',
+        fillColor: '#7FA35C',
+        fillOpacity: 0.18,
+        weight: 2.5,
+        pane: 'overlayPane',
+      });
+      poly.addTo(map);
+      drawnLayerRef.current = poly;
+      poly.bringToFront();
+    } else {
+      if (drawnLayerRef.current) {
+        map.removeLayer(drawnLayerRef.current);
+        drawnLayerRef.current = null;
+      }
+    }
+  }, [map, coords]);
+
+  // Keep single boundary visible above newly added raster or satellite layers
+  useEffect(() => {
+    if (!map) return;
+    const bringFront = () => {
+      if (drawnLayerRef.current && 'bringToFront' in drawnLayerRef.current) {
+        (drawnLayerRef.current as any).bringToFront();
+      }
+    };
+    map.on('layeradd', bringFront);
+    return () => {
+      map.off('layeradd', bringFront);
+    };
+  }, [map]);
 
   useEffect(() => {
     if (!map) return;
 
-    map.pm.addControls({
-      position: 'topleft',
-      drawPolygon: true,
-      drawRectangle: true,
-      drawCircle: false,
-      drawMarker: false,
-      drawPolyline: false,
-      drawCircleMarker: false,
-      editMode: true,
-      dragMode: true,
-      removalMode: true,
-      cutPolygon: false,
-    });
-
+    // Set styling for drawn polygons and bounding boxes
     map.pm.setPathOptions({
       color: '#7FA35C',
       fillColor: '#7FA35C',
       fillOpacity: 0.18,
-      weight: 2,
+      weight: 2.5,
+      pane: 'overlayPane',
     });
 
+    const updateDrawnCoords = (layer: any) => {
+      if (!layer) return;
+      try {
+        const geojson = layer.toGeoJSON();
+        if (geojson?.geometry?.coordinates?.[0]) {
+          const newCoords = geojson.geometry.coordinates[0] as number[][];
+          isInternalUpdate.current = true;
+          onAOIDrawn(newCoords);
+        }
+      } catch (err) {
+        console.error("Failed to extract edited coords:", err);
+      }
+    };
+
     map.on('pm:create', (e: any) => {
-      const { layer } = e;
-      if (drawnLayerRef.current) {
+      const { layer, shape } = e;
+      if (shape === 'Text') {
+        return;
+      }
+      if (drawnLayerRef.current && drawnLayerRef.current !== layer) {
         map.removeLayer(drawnLayerRef.current);
       }
       drawnLayerRef.current = layer;
 
-      const geojson = layer.toGeoJSON();
-      const coords = geojson.geometry.coordinates[0] as number[][];
-      onAOIDrawn(coords);
+      updateDrawnCoords(layer);
 
       if (layer.getBounds) {
         map.fitBounds(layer.getBounds());
@@ -172,11 +322,83 @@ function DrawControl({ onAOIDrawn }: { onAOIDrawn: (coords: number[][]) => void 
       }
     });
 
-    const onDrawRect = () => map.pm.enableDraw('Rectangle');
-    const onDrawPoly = () => map.pm.enableDraw('Polygon');
-    const onPan = () => map.pm.disableDraw();
+    map.on('pm:dragstart', () => {
+      isInternalUpdate.current = true;
+    });
+
+    map.on('pm:rotatestart', () => {
+      isInternalUpdate.current = true;
+    });
+
+    map.on('pm:edit', (e: any) => {
+      isInternalUpdate.current = true;
+      updateDrawnCoords(e.layer || drawnLayerRef.current);
+    });
+
+    map.on('pm:dragend', (e: any) => {
+      isInternalUpdate.current = true;
+      updateDrawnCoords(e.layer || drawnLayerRef.current);
+    });
+
+    map.on('pm:rotateend', (e: any) => {
+      isInternalUpdate.current = true;
+      updateDrawnCoords(e.layer || drawnLayerRef.current);
+    });
+
+    const onDrawRect = () => {
+      map.pm.disableGlobalEditMode();
+      map.pm.disableGlobalDragMode();
+      map.pm.disableGlobalRotateMode();
+      map.pm.enableDraw('Rectangle');
+    };
+
+    const onDrawPoly = () => {
+      map.pm.disableGlobalEditMode();
+      map.pm.disableGlobalDragMode();
+      map.pm.disableGlobalRotateMode();
+      map.pm.enableDraw('Polygon');
+    };
+
+    const onDrawText = () => {
+      map.pm.disableGlobalEditMode();
+      map.pm.disableGlobalDragMode();
+      map.pm.disableGlobalRotateMode();
+      map.pm.enableDraw('Text');
+    };
+
+    const onToggleEdit = () => {
+      map.pm.disableDraw();
+      map.pm.disableGlobalDragMode();
+      map.pm.disableGlobalRotateMode();
+      map.pm.toggleGlobalEditMode();
+    };
+
+    const onToggleDrag = () => {
+      map.pm.disableDraw();
+      map.pm.disableGlobalEditMode();
+      map.pm.disableGlobalRotateMode();
+      map.pm.toggleGlobalDragMode();
+    };
+
+    const onToggleRotate = () => {
+      map.pm.disableDraw();
+      map.pm.disableGlobalEditMode();
+      map.pm.disableGlobalDragMode();
+      map.pm.toggleGlobalRotateMode();
+    };
+
+    const onPan = () => {
+      map.pm.disableDraw();
+      map.pm.disableGlobalEditMode();
+      map.pm.disableGlobalDragMode();
+      map.pm.disableGlobalRotateMode();
+    };
+
     const onClear = () => {
       map.pm.disableDraw();
+      map.pm.disableGlobalEditMode();
+      map.pm.disableGlobalDragMode();
+      map.pm.disableGlobalRotateMode();
       if (drawnLayerRef.current) {
         map.removeLayer(drawnLayerRef.current);
         drawnLayerRef.current = null;
@@ -186,68 +408,35 @@ function DrawControl({ onAOIDrawn }: { onAOIDrawn: (coords: number[][]) => void 
 
     window.addEventListener('map-tool-rectangle', onDrawRect);
     window.addEventListener('map-tool-polygon', onDrawPoly);
+    window.addEventListener('map-tool-text', onDrawText);
+    window.addEventListener('map-tool-edit', onToggleEdit);
+    window.addEventListener('map-tool-drag', onToggleDrag);
+    window.addEventListener('map-tool-rotate', onToggleRotate);
     window.addEventListener('map-tool-pan', onPan);
     window.addEventListener('map-tool-clear', onClear);
 
     return () => {
-      map.pm.removeControls();
+      map.pm.disableDraw();
+      map.pm.disableGlobalEditMode();
+      map.pm.disableGlobalDragMode();
+      map.pm.disableGlobalRotateMode();
       map.off('pm:create');
       map.off('pm:remove');
+      map.off('pm:dragstart');
+      map.off('pm:rotatestart');
+      map.off('pm:edit');
+      map.off('pm:dragend');
+      map.off('pm:rotateend');
       window.removeEventListener('map-tool-rectangle', onDrawRect);
       window.removeEventListener('map-tool-polygon', onDrawPoly);
+      window.removeEventListener('map-tool-text', onDrawText);
+      window.removeEventListener('map-tool-edit', onToggleEdit);
+      window.removeEventListener('map-tool-drag', onToggleDrag);
+      window.removeEventListener('map-tool-rotate', onToggleRotate);
       window.removeEventListener('map-tool-pan', onPan);
       window.removeEventListener('map-tool-clear', onClear);
     };
   }, [map, onAOIDrawn]);
-
-  return null;
-}
-
-// ───────────────────────────── AOI Boundary Outline ─────────────────────────────
-// Persistent highlighted border around the drawn AOI, always visible above overlays
-function AOIBoundary({ coords }: { coords: number[][] }) {
-  const map = useMap();
-  const borderRef = useRef<L.Polygon | null>(null);
-
-  useEffect(() => {
-    if (borderRef.current) {
-      map.removeLayer(borderRef.current);
-      borderRef.current = null;
-    }
-
-    if (coords.length > 2) {
-      // coords come as [lng, lat], Leaflet needs [lat, lng]
-      const latLngs = coords.map(c => [c[1], c[0]] as [number, number]);
-
-      borderRef.current = L.polygon(latLngs, {
-        color: '#C8834C',
-        weight: 2.5,
-        dashArray: '6 4',
-        fill: false,
-        interactive: false,
-        pane: 'overlayPane',
-      }).addTo(map);
-
-      borderRef.current.bringToFront();
-    }
-
-    return () => {
-      if (borderRef.current) {
-        map.removeLayer(borderRef.current);
-        borderRef.current = null;
-      }
-    };
-  }, [map, coords]);
-
-
-  // Re-bring to front when map layers change
-  useEffect(() => {
-    const bringFront = () => {
-      if (borderRef.current) borderRef.current.bringToFront();
-    };
-    map.on('layeradd', bringFront);
-    return () => { map.off('layeradd', bringFront); };
-  }, [map]);
 
   return null;
 }
@@ -259,6 +448,24 @@ function MapController({ center, zoom }: { center: [number, number]; zoom: numbe
   useEffect(() => {
     map.setView(center, zoom);
   }, [map, center, zoom]);
+
+  // Automatically reflow and invalidate Leaflet map size whenever panel toggles or container resizes
+  useEffect(() => {
+    const container = map.getContainer();
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    resizeObserver.observe(container);
+
+    // Also trigger immediate invalidateSize on mount/update
+    map.invalidateSize();
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [map]);
 
   useEffect(() => {
     const handleZoomIn = () => map.zoomIn();
@@ -492,12 +699,16 @@ function SwipeControl({
   leftLabel,
   rightLabel,
   opacity,
+  isAutoWiping = false,
+  onToggleAutoWipe,
 }: {
   leftUrl: string;
   rightUrl: string;
   leftLabel: string;
   rightLabel: string;
   opacity: number;
+  isAutoWiping?: boolean;
+  onToggleAutoWipe?: () => void;
 }) {
   const map = useMap();
   const leftLayerRef = useRef<L.TileLayer | null>(null);
@@ -506,7 +717,7 @@ function SwipeControl({
   const [sliderPos, setSliderPos] = useState(50);
   const draggingRef = useRef(false);
 
-  // Clip function: apply CSS clip-path to each layer's container
+  // Clip function: apply modern CSS clip-path to each layer's container
   const applyClip = useCallback(() => {
     const pos = sliderPosRef.current;
     const size = map.getSize();
@@ -515,12 +726,14 @@ function SwipeControl({
     if (leftLayerRef.current) {
       const container = (leftLayerRef.current as any)._container as HTMLElement;
       if (container) {
+        container.style.clipPath = `polygon(0 0, ${clipX}px 0, ${clipX}px ${size.y}px, 0 ${size.y}px)`;
         container.style.clip = `rect(0px, ${clipX}px, ${size.y}px, 0px)`;
       }
     }
     if (rightLayerRef.current) {
       const container = (rightLayerRef.current as any)._container as HTMLElement;
       if (container) {
+        container.style.clipPath = `polygon(${clipX}px 0, ${size.x}px 0, ${size.x}px ${size.y}px, ${clipX}px ${size.y}px)`;
         container.style.clip = `rect(0px, ${size.x}px, ${size.y}px, ${clipX}px)`;
       }
     }
@@ -545,6 +758,52 @@ function SwipeControl({
   useEffect(() => {
     applyClip();
   }, [sliderPos, applyClip]);
+
+  // Auto-Wipe animation loop (oscillating between 15% and 85%)
+  const autoWipeRef = useRef<number | null>(null);
+  const wipeDirectionRef = useRef<1 | -1>(1);
+
+  useEffect(() => {
+    if (!isAutoWiping) {
+      if (autoWipeRef.current) {
+        cancelAnimationFrame(autoWipeRef.current);
+        autoWipeRef.current = null;
+      }
+      return;
+    }
+
+    let lastTime = performance.now();
+    const step = (time: number) => {
+      const dt = (time - lastTime) / 1000;
+      lastTime = time;
+
+      const speed = 22; // % per second
+      let nextPos = sliderPosRef.current + wipeDirectionRef.current * speed * dt;
+
+      if (nextPos >= 85) {
+        nextPos = 85;
+        wipeDirectionRef.current = -1;
+      } else if (nextPos <= 15) {
+        nextPos = 15;
+        wipeDirectionRef.current = 1;
+      }
+
+      sliderPosRef.current = nextPos;
+      setSliderPos(nextPos);
+      applyClip();
+
+      autoWipeRef.current = requestAnimationFrame(step);
+    };
+
+    autoWipeRef.current = requestAnimationFrame(step);
+
+    return () => {
+      if (autoWipeRef.current) {
+        cancelAnimationFrame(autoWipeRef.current);
+        autoWipeRef.current = null;
+      }
+    };
+  }, [isAutoWiping, applyClip]);
 
   // Mouse/touch drag handlers for the slider
   const handleSliderMove = useCallback((clientX: number) => {
@@ -598,43 +857,66 @@ function SwipeControl({
   const startDrag = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (onToggleAutoWipe && isAutoWiping) {
+      onToggleAutoWipe();
+    }
     draggingRef.current = true;
     map.dragging.disable();
-  }, [map]);
+  }, [map, onToggleAutoWipe, isAutoWiping]);
 
   return (
     <>
-      {/* Slider line */}
+      {/* Slider line with vibrant gradient glow */}
       <div
         className="absolute top-0 bottom-0 z-[1001] pointer-events-none"
         style={{ left: `${sliderPos}%` }}
       >
-        <div className="w-0.5 h-full bg-white/80 shadow-lg shadow-black/40" />
+        <div className="w-[3px] -ml-[1.5px] h-full bg-gradient-to-b from-[#7FA35C] via-[#EDE8DB] to-[#7FA35C] shadow-[0_0_12px_rgba(127,163,92,0.9)]" />
+      </div>
+
+      {/* Floating Ratio Badge attached to slider position */}
+      <div
+        className="absolute top-4 z-[1002] -translate-x-1/2 select-none pointer-events-none"
+        style={{ left: `${sliderPos}%` }}
+      >
+        <div className="flex items-center gap-1.5 bg-[#1A1C16]/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-[#35372E] shadow-2xl text-[10px] font-bold tracking-wider mono text-[#EDE8DB]">
+          <span className="text-[#7FA35C]">{Math.round(sliderPos)}%</span>
+          <span className="text-[#8B8C7F]">|</span>
+          <span className="text-[#4A90E2]">{Math.round(100 - sliderPos)}%</span>
+        </div>
       </div>
 
       {/* Slider drag handle */}
       <div
-        className="absolute top-1/2 z-[1002] -translate-y-1/2 cursor-ew-resize select-none touch-none"
+        className="absolute top-1/2 z-[1002] -translate-y-1/2 cursor-ew-resize select-none touch-none group"
         style={{ left: `${sliderPos}%`, transform: 'translate(-50%, -50%)' }}
         onMouseDown={startDrag}
         onTouchStart={startDrag}
       >
-        <div className="w-10 h-10 rounded-full bg-slate-900/90 border-2 border-white/70 backdrop-blur-md flex items-center justify-center shadow-xl shadow-black/40 hover:scale-110 transition-transform">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M8 5l-4 7 4 7" />
-            <path d="M16 5l4 7-4 7" />
-          </svg>
+        <div className="relative w-11 h-11 rounded-full bg-[#1A1C16]/95 border-2 border-[#EDE8DB] backdrop-blur-md flex items-center justify-center shadow-[0_4px_24px_rgba(0,0,0,0.7)] group-hover:scale-110 group-hover:border-[#7FA35C] transition-all cursor-grab active:cursor-grabbing">
+          {/* Dual lateral arrows */}
+          <div className="flex items-center justify-between w-6 text-[#EDE8DB] group-hover:text-[#7FA35C] transition-colors">
+            <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
+              <path d="M9 1L2 6L9 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+            </svg>
+            <div className="w-0.5 h-3.5 bg-[#45483C]" />
+            <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
+              <path d="M1 1L8 6L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+            </svg>
+          </div>
         </div>
       </div>
 
-      {/* Left label */}
-      <div className="absolute top-3 left-3 z-[1001] px-2.5 py-1 bg-slate-900/85 backdrop-blur-md border border-slate-700 rounded-lg text-[10px] font-bold text-white uppercase tracking-wider shadow-lg">
-        {leftLabel}
+      {/* Left side pinned label */}
+      <div className="absolute top-3 left-3 z-[1001] px-3 py-1.5 bg-[#1A1C16]/95 backdrop-blur-md border border-[#35372E] rounded-lg text-xs font-bold text-[#EDE8DB] shadow-xl flex items-center gap-1.5 pointer-events-none">
+        <span className="w-2 h-2 rounded-full bg-[#7FA35C]" />
+        <span>◀ {leftLabel}</span>
       </div>
 
-      {/* Right label */}
-      <div className="absolute top-3 right-3 z-[1001] px-2.5 py-1 bg-slate-900/85 backdrop-blur-md border border-slate-700 rounded-lg text-[10px] font-bold text-white uppercase tracking-wider shadow-lg">
-        {rightLabel}
+      {/* Right side pinned label */}
+      <div className="absolute top-3 right-3 z-[1001] px-3 py-1.5 bg-[#1A1C16]/95 backdrop-blur-md border border-[#35372E] rounded-lg text-xs font-bold text-[#EDE8DB] shadow-xl flex items-center gap-1.5 pointer-events-none">
+        <span>{rightLabel} ▶</span>
+        <span className="w-2 h-2 rounded-full bg-[#4A90E2]" />
       </div>
     </>
   );
@@ -809,35 +1091,149 @@ function NotesLayer({
   return null;
 }
 
+function formatMeasureDistance(meters: number): string {
+  if (meters < 1000) {
+    return `${Math.round(meters)} m`;
+  }
+  return `${(meters / 1000).toFixed(2)} km`;
+}
+
 function MeasurementTool({ enabled }: { enabled: boolean }) {
   const map = useMap();
   const [points, setPoints] = useState<L.LatLng[]>([]);
+  const [liveDistanceMeters, setLiveDistanceMeters] = useState<number | null>(null);
+  const [isFinished, setIsFinished] = useState(false);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const liveLayerRef = useRef<L.LayerGroup | null>(null);
   const controlRef = useRef<L.Control | null>(null);
+  const pointsRef = useRef<L.LatLng[]>([]);
+  const isFinishedRef = useRef(false);
 
-  const distanceMeters = points.reduce((total, point, index) => {
+  // Keep refs in sync with state for continuous real-time listeners
+  useEffect(() => {
+    pointsRef.current = points;
+  }, [points]);
+
+  useEffect(() => {
+    isFinishedRef.current = isFinished;
+  }, [isFinished]);
+
+  const accumulatedDistanceMeters = points.reduce((total, point, index) => {
     if (index === 0) return total;
     return total + map.distance(points[index - 1], point);
   }, 0);
 
+  // Handle map events: click, mousemove, dblclick
   useEffect(() => {
     if (!enabled) return;
 
+    // Ensure Geoman drawing modes are disengaged so they don't capture clicks
+    try {
+      map.pm?.disableDraw?.();
+      map.pm?.disableGlobalEditMode?.();
+      map.pm?.disableGlobalDragMode?.();
+      map.pm?.disableGlobalRotateMode?.();
+    } catch {
+      // ignore
+    }
+
     const container = map.getContainer();
     container.classList.add('geo-measure-mode');
-    const handleClick = (e: L.LeafletMouseEvent) => {
-      setPoints(prev => [...prev, e.latlng]);
+
+    // Create a live layer group for dynamic guide line and live tooltip
+    const liveGroup = L.layerGroup().addTo(map);
+    liveLayerRef.current = liveGroup;
+
+    const handleMouseMove = (e: L.LeafletMouseEvent) => {
+      if (isFinishedRef.current) {
+        liveGroup.clearLayers();
+        setLiveDistanceMeters(null);
+        return;
+      }
+
+      const currentPoints = pointsRef.current;
+      if (currentPoints.length === 0) {
+        liveGroup.clearLayers();
+        setLiveDistanceMeters(null);
+        return;
+      }
+
+      liveGroup.clearLayers();
+      const lastPoint = currentPoints[currentPoints.length - 1];
+      const segDistance = map.distance(lastPoint, e.latlng);
+
+      let totalAccumulated = 0;
+      for (let i = 0; i < currentPoints.length - 1; i++) {
+        totalAccumulated += map.distance(currentPoints[i], currentPoints[i + 1]);
+      }
+      const totalLive = totalAccumulated + segDistance;
+      setLiveDistanceMeters(totalLive);
+
+      // Draw dashed rubberband guide line from last point to cursor
+      L.polyline([lastPoint, e.latlng], {
+        color: '#e9c947',
+        weight: 2.5,
+        dashArray: '5 5',
+        opacity: 0.9,
+      }).addTo(liveGroup);
+
+      // Add dynamic floating tooltip right at cursor position
+      const tooltipContent = currentPoints.length === 1
+        ? `Distance: ${formatMeasureDistance(segDistance)}`
+        : `+${formatMeasureDistance(segDistance)} (Total: ${formatMeasureDistance(totalLive)})`;
+
+      L.circleMarker(e.latlng, {
+        radius: 4,
+        color: '#e9c947',
+        fillColor: '#e9c947',
+        fillOpacity: 0.9,
+        weight: 1,
+        interactive: false,
+      })
+        .bindTooltip(tooltipContent, {
+          permanent: true,
+          direction: 'right',
+          offset: [14, -8],
+          className: 'geo-measure-cursor-tooltip',
+        })
+        .addTo(liveGroup);
     };
 
+    const handleClick = (e: L.LeafletMouseEvent) => {
+      if (isFinishedRef.current) return;
+      setPoints(prev => [...prev, e.latlng]);
+      liveGroup.clearLayers();
+      setLiveDistanceMeters(null);
+    };
+
+    const handleDblClick = (e: L.LeafletMouseEvent) => {
+      L.DomEvent.stopPropagation(e);
+      liveGroup.clearLayers();
+      setLiveDistanceMeters(null);
+      setIsFinished(true);
+    };
+
+    map.on('mousemove', handleMouseMove);
     map.on('click', handleClick);
+    map.on('dblclick', handleDblClick);
+
     return () => {
+      map.off('mousemove', handleMouseMove);
       map.off('click', handleClick);
+      map.off('dblclick', handleDblClick);
       container.classList.remove('geo-measure-mode');
+
+      if (liveLayerRef.current) {
+        map.removeLayer(liveLayerRef.current);
+        liveLayerRef.current = null;
+      }
       setPoints([]);
+      setLiveDistanceMeters(null);
+      setIsFinished(false);
     };
   }, [enabled, map]);
 
-
+  // Render confirmed points, polylines, and segment midpoint distance badges
   useEffect(() => {
     if (layerRef.current) {
       map.removeLayer(layerRef.current);
@@ -847,21 +1243,59 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
     if (!enabled || points.length === 0) return;
 
     const group = L.layerGroup();
+
+    // Draw main polyline connecting confirmed points
     if (points.length > 1) {
       L.polyline(points, {
         color: '#e9c947',
-        weight: 3,
+        weight: 3.5,
         dashArray: '6 5',
+        opacity: 0.95,
       }).addTo(group);
+
+      // Add automatic midpoint distance pills on each segment
+      for (let i = 0; i < points.length - 1; i++) {
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const midLat = (p1.lat + p2.lat) / 2;
+        const midLng = (p1.lng + p2.lng) / 2;
+        const segDist = map.distance(p1, p2);
+
+        const pillIcon = L.divIcon({
+          className: 'geo-measure-midpoint-wrapper',
+          html: `<div class="geo-measure-segment-pill">${formatMeasureDistance(segDist)}</div>`,
+          iconSize: [64, 20],
+          iconAnchor: [32, 10],
+        });
+
+        L.marker([midLat, midLng], {
+          icon: pillIcon,
+          interactive: false,
+        }).addTo(group);
+      }
     }
+
+    // Draw vertex markers with cumulative distance tooltips
+    let runningDist = 0;
     points.forEach((point, index) => {
+      if (index > 0) {
+        runningDist += map.distance(points[index - 1], point);
+      }
+      const label = index === 0 ? 'Start (0 m)' : `Pt ${index + 1}: ${formatMeasureDistance(runningDist)}`;
+
       L.circleMarker(point, {
-        radius: 5,
-        color: '#233f35',
+        radius: 6,
+        color: '#12140F',
         fillColor: '#e9c947',
         fillOpacity: 1,
         weight: 2,
-      }).bindTooltip(index === 0 ? 'Start' : `${index + 1}`).addTo(group);
+      })
+        .bindTooltip(label, {
+          permanent: false,
+          direction: 'top',
+          className: 'geo-measure-vertex-tooltip',
+        })
+        .addTo(group);
     });
 
     group.addTo(map);
@@ -873,6 +1307,7 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
     };
   }, [enabled, map, points]);
 
+  // Bottom-right measurement control widget
   useEffect(() => {
     if (controlRef.current) {
       map.removeControl(controlRef.current);
@@ -886,12 +1321,75 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
       onAdd() {
         const div = L.DomUtil.create('div', 'geo-measure-control');
         L.DomEvent.disableClickPropagation(div);
+
+        const confirmedDistStr = points.length > 1
+          ? formatMeasureDistance(accumulatedDistanceMeters)
+          : null;
+
+        const liveDelta = (liveDistanceMeters !== null && points.length > 0)
+          ? Math.max(0, liveDistanceMeters - accumulatedDistanceMeters)
+          : 0;
+
+        let headlineValue = 'Click map to measure';
+        if (points.length > 1) {
+          // Primary headline always matches the confirmed line distance identically!
+          headlineValue = confirmedDistStr || '0 m';
+        } else if (points.length === 1 && liveDistanceMeters !== null) {
+          headlineValue = formatMeasureDistance(liveDistanceMeters);
+        }
+
+        let subtextHtml = 'Click map point to begin';
+        if (isFinished && points.length > 1) {
+          subtextHtml = `<span style="color: #7FA35C;">✓ Measurement locked (${points.length - 1} segment${points.length === 2 ? '' : 's'})</span>`;
+        } else if (points.length > 1 && liveDistanceMeters !== null && !isFinished) {
+          subtextHtml = `Line: <b>${confirmedDistStr}</b> &bull; +${formatMeasureDistance(liveDelta)} to cursor <span style="color:#e9c947;">(${formatMeasureDistance(liveDistanceMeters)})</span>`;
+        } else if (points.length > 1) {
+          subtextHtml = `${points.length - 1} segment${points.length === 2 ? '' : 's'} connected`;
+        } else if (points.length === 1) {
+          subtextHtml = 'Move cursor and click to place point 2';
+        }
+
         div.innerHTML = `
-          <small>Measurement</small>
-          <strong>${points.length < 2 ? 'Click map points' : `${(distanceMeters / 1000).toFixed(2)} km`}</strong>
-          <button type="button">Clear</button>
+          <div class="geo-measure-header">
+            <small>${isFinished ? 'Measured Path' : 'Live Measurement'}</small>
+            <span class="geo-measure-badge">${points.length} pt${points.length === 1 ? '' : 's'}</span>
+          </div>
+          <strong class="geo-measure-value">${headlineValue}</strong>
+          <div class="geo-measure-subtext">
+            ${subtextHtml}
+          </div>
+          <div class="geo-measure-actions">
+            ${points.length > 1 && !isFinished ? '<button type="button" class="btn-finish">Finish</button>' : ''}
+            ${isFinished ? '<button type="button" class="btn-resume">Resume</button>' : ''}
+            ${points.length > 1 && !isFinished ? '<button type="button" class="btn-undo">Undo</button>' : ''}
+            ${points.length > 0 ? '<button type="button" class="btn-clear">Clear</button>' : ''}
+          </div>
         `;
-        div.querySelector('button')?.addEventListener('click', () => setPoints([]));
+
+        div.querySelector('.btn-finish')?.addEventListener('click', () => {
+          if (liveLayerRef.current) liveLayerRef.current.clearLayers();
+          setLiveDistanceMeters(null);
+          setIsFinished(true);
+        });
+
+        div.querySelector('.btn-resume')?.addEventListener('click', () => {
+          setIsFinished(false);
+        });
+
+        div.querySelector('.btn-undo')?.addEventListener('click', () => {
+          setPoints(prev => prev.slice(0, -1));
+          if (liveLayerRef.current) liveLayerRef.current.clearLayers();
+          setLiveDistanceMeters(null);
+          setIsFinished(false);
+        });
+
+        div.querySelector('.btn-clear')?.addEventListener('click', () => {
+          setPoints([]);
+          if (liveLayerRef.current) liveLayerRef.current.clearLayers();
+          setLiveDistanceMeters(null);
+          setIsFinished(false);
+        });
+
         return div;
       },
     });
@@ -904,9 +1402,349 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
       map.removeControl(control);
       if (controlRef.current === control) controlRef.current = null;
     };
-  }, [distanceMeters, enabled, map, points.length]);
+  }, [accumulatedDistanceMeters, enabled, isFinished, liveDistanceMeters, map, points.length]);
 
   return null;
+}
+
+function ElevationTransectTool({
+  enabled,
+  onTransectDrawn,
+  hoverPoint,
+}: {
+  enabled: boolean;
+  onTransectDrawn?: (coords: number[][]) => void;
+  hoverPoint?: { lat: number; lng: number } | null;
+}) {
+  const map = useMap();
+  const [points, setPoints] = useState<L.LatLng[]>([]);
+  const layerRef = useRef<L.LayerGroup | null>(null);
+  const hoverMarkerRef = useRef<L.Marker | null>(null);
+  const controlRef = useRef<L.Control | null>(null);
+
+  const distanceMeters = points.reduce((total, point, index) => {
+    if (index === 0) return total;
+    return total + map.distance(points[index - 1], point);
+  }, 0);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const container = map.getContainer();
+    container.classList.add('geo-transect-mode');
+    const handleClick = (e: L.LeafletMouseEvent) => {
+      setPoints(prev => [...prev, e.latlng]);
+    };
+
+    map.on('click', handleClick);
+    return () => {
+      map.off('click', handleClick);
+      container.classList.remove('geo-transect-mode');
+      setPoints([]);
+    };
+  }, [enabled, map]);
+
+  // Update transect line and markers on map
+  useEffect(() => {
+    if (layerRef.current) {
+      map.removeLayer(layerRef.current);
+      layerRef.current = null;
+    }
+
+    if (!enabled || points.length === 0) return;
+
+    const group = L.layerGroup();
+    if (points.length > 1) {
+      // Glow underlay
+      L.polyline(points, {
+        color: '#06b6d4',
+        weight: 6,
+        opacity: 0.35,
+      }).addTo(group);
+
+      // Core transect polyline
+      L.polyline(points, {
+        color: '#22d3ee',
+        weight: 3,
+        dashArray: '5 4',
+      }).addTo(group);
+    }
+
+    points.forEach((point, index) => {
+      const isStart = index === 0;
+      const isEnd = index === points.length - 1 && points.length > 1;
+      const markerColor = isStart ? '#22c55e' : isEnd ? '#ef4444' : '#06b6d4';
+
+      L.circleMarker(point, {
+        radius: 6,
+        color: '#1B1D19',
+        fillColor: markerColor,
+        fillOpacity: 1,
+        weight: 2,
+      })
+        .bindTooltip(isStart ? 'Transect Start (A)' : isEnd ? 'Transect End (B)' : `Vertex ${index + 1}`, {
+          permanent: false,
+          direction: 'top',
+        })
+        .addTo(group);
+    });
+
+    group.addTo(map);
+    layerRef.current = group;
+
+    return () => {
+      map.removeLayer(group);
+      if (layerRef.current === group) layerRef.current = null;
+    };
+  }, [enabled, map, points]);
+
+  // Dynamic hover marker synced with chart cursor
+  useEffect(() => {
+    if (hoverMarkerRef.current) {
+      map.removeLayer(hoverMarkerRef.current);
+      hoverMarkerRef.current = null;
+    }
+
+    if (!hoverPoint) return;
+
+    const icon = L.divIcon({
+      className: 'geo-transect-hover-pin',
+      html: `<div style="width:14px;height:14px;background:#f59e0b;border:2px solid #ffffff;border-radius:50%;box-shadow:0 0 10px rgba(245,158,11,0.9);"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+
+    const marker = L.marker([hoverPoint.lat, hoverPoint.lng], { icon, zIndexOffset: 2000 }).addTo(map);
+    hoverMarkerRef.current = marker;
+
+    return () => {
+      if (hoverMarkerRef.current) {
+        map.removeLayer(hoverMarkerRef.current);
+        hoverMarkerRef.current = null;
+      }
+    };
+  }, [hoverPoint, map]);
+
+  // Transect bottom tool control
+  useEffect(() => {
+    if (controlRef.current) {
+      map.removeControl(controlRef.current);
+      controlRef.current = null;
+    }
+
+    if (!enabled) return;
+
+    const TransectControl = L.Control.extend({
+      options: { position: 'bottomright' as L.ControlPosition },
+      onAdd() {
+        const div = L.DomUtil.create('div', 'geo-transect-control');
+        L.DomEvent.disableClickPropagation(div);
+        const distKm = (distanceMeters / 1000).toFixed(2);
+        div.style.backgroundColor = 'rgba(27, 29, 25, 0.94)';
+        div.style.border = '1px solid #35372E';
+        div.style.padding = '8px 12px';
+        div.style.borderRadius = '6px';
+        div.style.color = '#EDE8DB';
+        div.style.fontSize = '11px';
+        div.style.fontFamily = 'monospace';
+        div.style.boxShadow = '0 4px 14px rgba(0,0,0,0.5)';
+        div.style.display = 'flex';
+        div.style.flexDirection = 'column';
+        div.style.gap = '6px';
+        div.style.minWidth = '190px';
+
+        div.innerHTML = `
+          <div style="font-weight: 700; color: #22d3ee; display: flex; align-items: center; gap: 6px;">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#22d3ee;"></span>
+            Elevation Transect Line
+          </div>
+          <div style="color: #8B8C7F;">
+            ${points.length < 2 ? 'Click on map to place transect points (min 2 points)' : `${points.length} points &middot; <strong style="color:#EDE8DB">${distKm} km</strong>`}
+          </div>
+          <div style="display: flex; gap: 6px; margin-top: 4px;">
+            ${points.length >= 2 ? `<button id="btn-calc-profile" type="button" style="flex:1;background:#0891b2;color:#ffffff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;font-weight:600;font-size:10.5px;">Get Profile</button>` : ''}
+            ${points.length > 0 ? `<button id="btn-undo-point" type="button" style="background:#2A2C24;color:#EDE8DB;border:1px solid #35372E;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:10.5px;">Undo</button>` : ''}
+            ${points.length > 0 ? `<button id="btn-clear-transect" type="button" style="background:#2A2C24;color:#C56A5A;border:1px solid #35372E;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:10.5px;">Clear</button>` : ''}
+          </div>
+        `;
+
+        div.querySelector('#btn-calc-profile')?.addEventListener('click', () => {
+          if (onTransectDrawn && points.length >= 2) {
+            onTransectDrawn(points.map(p => [p.lng, p.lat]));
+          }
+        });
+
+        div.querySelector('#btn-undo-point')?.addEventListener('click', () => {
+          setPoints(prev => prev.slice(0, -1));
+        });
+
+        div.querySelector('#btn-clear-transect')?.addEventListener('click', () => {
+          setPoints([]);
+        });
+
+        return div;
+      },
+    });
+
+    const control = new TransectControl();
+    control.addTo(map);
+    controlRef.current = control;
+
+    return () => {
+      map.removeControl(control);
+      if (controlRef.current === control) controlRef.current = null;
+    };
+  }, [distanceMeters, enabled, map, onTransectDrawn, points]);
+
+  return null;
+}
+
+function ElevationProfilePanel({
+  profileData,
+  onClose,
+  onHoverPoint,
+}: {
+  profileData: any;
+  onClose: () => void;
+  onHoverPoint: (pt: { lat: number; lng: number } | null) => void;
+}) {
+  const summary = profileData.summary;
+  const points = profileData.points;
+
+  const handleExportCSV = () => {
+    const rows = [
+      ['distance_km', 'elevation_m', 'latitude', 'longitude'],
+      ...points.map((p: any) => [p.distance_km, p.elevation_m, p.lat, p.lng])
+    ];
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `elevation_profile_${summary.total_distance_km}km.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 16, bottom: true }} zIndex={1005}>
+      <div className="w-[94vw] max-w-4xl bg-[#1B1D19]/95 backdrop-blur-md border border-[#35372E] rounded-lg shadow-2xl p-4 text-[#EDE8DB] space-y-3 cursor-grab active:cursor-grabbing">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[#35372E] pb-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#06b6d4] animate-pulse"></span>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#EDE8DB]">
+              Topographic Elevation Profile Transect
+            </span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#06b6d4]/20 text-[#22d3ee] border border-[#06b6d4]/40 mono">
+              Copernicus 30m Global DEM
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="text-[11px] px-2.5 py-1 bg-[#22241E] hover:bg-[#2A2C24] border border-[#35372E] rounded text-[#7FA35C] font-semibold cursor-pointer flex items-center gap-1"
+              title="Download CSV of elevation profile"
+            >
+              Export CSV
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-[#8B8C7F] hover:text-[#EDE8DB] p-1 rounded transition cursor-pointer text-sm font-bold"
+              title="Close profile"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Summary Badges Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center text-xs">
+          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
+            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Total Distance</span>
+            <div className="font-bold text-[#EDE8DB] mono mt-0.5">{summary.total_distance_km} km</div>
+          </div>
+          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
+            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Min Elevation</span>
+            <div className="font-bold text-[#22c55e] mono mt-0.5">{summary.min_elevation_m} m</div>
+          </div>
+          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
+            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Max Elevation</span>
+            <div className="font-bold text-[#ef4444] mono mt-0.5">{summary.max_elevation_m} m</div>
+          </div>
+          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
+            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Relief (Δ)</span>
+            <div className="font-bold text-[#06b6d4] mono mt-0.5">{summary.elevation_relief_m} m</div>
+          </div>
+          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
+            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Gain / Loss</span>
+            <div className="font-bold text-[#EDE8DB] mono mt-0.5">+{summary.elevation_gain_m}m / -{summary.elevation_loss_m}m</div>
+          </div>
+          <div className="bg-[#12140F] border border-[#35372E] p-1.5 rounded">
+            <span className="text-[9.5px] text-[#8B8C7F] uppercase font-semibold">Max Grade</span>
+            <div className="font-bold text-[#e67e22] mono mt-0.5">{summary.max_grade_pct}%</div>
+          </div>
+        </div>
+
+        {/* Profile AreaChart */}
+        <div className="h-44 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={points}
+              margin={{ top: 10, right: 15, left: -10, bottom: 0 }}
+              onMouseMove={(e: any) => {
+                if (e && e.activePayload && e.activePayload.length) {
+                  const pt = e.activePayload[0].payload;
+                  onHoverPoint({ lat: pt.lat, lng: pt.lng });
+                }
+              }}
+              onMouseLeave={() => onHoverPoint(null)}
+            >
+              <defs>
+                <linearGradient id="elevGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.6} />
+                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2A2C24" vertical={false} />
+              <XAxis
+                dataKey="distance_km"
+                unit=" km"
+                tick={{ fill: '#8B8C7F', fontSize: 10 }}
+              />
+              <YAxis
+                unit=" m"
+                domain={['dataMin - 10', 'dataMax + 10']}
+                tick={{ fill: '#8B8C7F', fontSize: 10 }}
+              />
+              <RechartsTooltip
+                contentStyle={{
+                  backgroundColor: '#12140F',
+                  border: '1px solid #35372E',
+                  borderRadius: 4,
+                  fontSize: 11,
+                  fontFamily: 'monospace'
+                }}
+                formatter={(val: any) => [`${val} m`, 'Elevation']}
+                labelFormatter={(label: any) => `Distance: ${label} km`}
+              />
+              <Area
+                type="monotone"
+                dataKey="elevation_m"
+                stroke="#22d3ee"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#elevGrad)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </DraggableContainer>
+  );
 }
 
 function SearchLocationMarker({
@@ -1049,6 +1887,144 @@ function SmartSelectHandler({
   return null;
 }
 
+// ────────────────────── Spectral Inspector Interactive Handler ──────────────────────
+function SpectralInspectorHandler({
+  enabled,
+  onInspectClick,
+  inspectedPoint,
+}: {
+  enabled?: boolean;
+  onInspectClick?: (lat: number, lng: number) => void;
+  inspectedPoint?: { lat: number; lng: number } | null;
+}) {
+  const map = useMap();
+  const markerRef = useRef<L.CircleMarker | null>(null);
+
+  useEffect(() => {
+    if (!map || !enabled || !onInspectClick) return;
+
+    const container = map.getContainer();
+    const prevCursor = container.style.cursor;
+    container.style.cursor = 'crosshair';
+
+    const onClick = (e: L.LeafletMouseEvent) => {
+      onInspectClick(e.latlng.lat, e.latlng.lng);
+    };
+
+    map.on('click', onClick);
+
+    return () => {
+      container.style.cursor = prevCursor;
+      map.off('click', onClick);
+    };
+  }, [map, enabled, onInspectClick]);
+
+  // Marker for current inspected point
+  useEffect(() => {
+    if (!map) return;
+
+    if (markerRef.current) {
+      map.removeLayer(markerRef.current);
+      markerRef.current = null;
+    }
+
+    if (inspectedPoint) {
+      const marker = L.circleMarker([inspectedPoint.lat, inspectedPoint.lng], {
+        radius: 8,
+        color: '#EDE8DB',
+        fillColor: '#7FA35C',
+        fillOpacity: 0.9,
+        weight: 2.5,
+      }).addTo(map);
+
+      marker.bindTooltip(
+        `<div style="font-family:monospace;font-size:11px;padding:2px;"><b>Inspected Pixel</b><br/>${inspectedPoint.lat.toFixed(5)}°, ${inspectedPoint.lng.toFixed(5)}°</div>`,
+        { permanent: false, direction: 'top', opacity: 0.95 }
+      );
+
+      markerRef.current = marker;
+    }
+
+    return () => {
+      if (markerRef.current && map) {
+        map.removeLayer(markerRef.current);
+        markerRef.current = null;
+      }
+    };
+  }, [map, inspectedPoint]);
+
+  return null;
+}
+
+// ────────────────────── Pixel Timeline (Historical Disturbance) Interactive Handler ──────────────────────
+function PixelTimelineHandler({
+  enabled,
+  onInspectClick,
+  inspectedPoint,
+}: {
+  enabled?: boolean;
+  onInspectClick?: (lat: number, lng: number) => void;
+  inspectedPoint?: { lat: number; lng: number } | null;
+}) {
+  const map = useMap();
+  const markerRef = useRef<L.CircleMarker | null>(null);
+
+  useEffect(() => {
+    if (!map || !enabled || !onInspectClick) return;
+
+    const container = map.getContainer();
+    const prevCursor = container.style.cursor;
+    container.style.cursor = 'crosshair';
+
+    const onClick = (e: L.LeafletMouseEvent) => {
+      onInspectClick(e.latlng.lat, e.latlng.lng);
+    };
+
+    map.on('click', onClick);
+
+    return () => {
+      container.style.cursor = prevCursor;
+      map.off('click', onClick);
+    };
+  }, [map, enabled, onInspectClick]);
+
+  // Marker for current inspected point
+  useEffect(() => {
+    if (!map) return;
+
+    if (markerRef.current) {
+      map.removeLayer(markerRef.current);
+      markerRef.current = null;
+    }
+
+    if (inspectedPoint) {
+      const marker = L.circleMarker([inspectedPoint.lat, inspectedPoint.lng], {
+        radius: 8,
+        color: '#EDE8DB',
+        fillColor: '#3498db',
+        fillOpacity: 0.9,
+        weight: 2.5,
+      }).addTo(map);
+
+      marker.bindTooltip(
+        `<div style="font-family:monospace;font-size:11px;padding:2px;"><b>5-Year Timeline Target</b><br/>${inspectedPoint.lat.toFixed(5)}°, ${inspectedPoint.lng.toFixed(5)}°</div>`,
+        { permanent: false, direction: 'top', opacity: 0.95 }
+      );
+
+      markerRef.current = marker;
+    }
+
+    return () => {
+      if (markerRef.current && map) {
+        map.removeLayer(markerRef.current);
+        markerRef.current = null;
+      }
+    };
+  }, [map, inspectedPoint]);
+
+  return null;
+}
+
 // ────────────────────── Building Footprints Vector Layer ──────────────────────
 function BuildingFootprintsLayer({
   geojsonData,
@@ -1121,6 +2097,12 @@ export default function MapComponent({
   falseColorUrl,
   ndviUrl,
   classifiedUrl,
+  slopeUrl,
+  elevationUrl,
+  hillshadeUrl,
+  ndbiUrl,
+  mndwiUrl,
+  nbrUrl,
   baselineTrueColorUrl,
   baselineFalseColorUrl,
   baselineNdviUrl,
@@ -1139,18 +2121,31 @@ export default function MapComponent({
   noteMode = false,
   notes = [],
   onNoteAdd,
+  swipeActive: externalSwipeActive,
   onSwipeActiveChange,
   smartSelectMode = false,
   onSmartSelectClick,
+  spectralInspectorMode = false,
+  onSpectralInspectorClick,
+  inspectedSpectralCoord,
+  timelineMode = false,
+  onTimelineClick,
+  inspectedTimelineCoord,
   buildingFootprintsGeoJSON,
   showBuildings = true,
+  transectMode = false,
+  onTransectDrawn,
+  elevationProfileData,
+  onClearElevationProfile,
 }: MapComponentProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [legendOpen, setLegendOpen] = useState(true);
-  const [swipeActive, setSwipeActive] = useState(false);
+  const [swipeActive, setSwipeActive] = useState(externalSwipeActive ?? false);
+  const [isAutoWiping, setIsAutoWiping] = useState(false);
   const [swipeLeft, setSwipeLeft] = useState<string>('true_color');
   const [swipeRight, setSwipeRight] = useState<string>('classified');
   const [aoiCoords, setAoiCoords] = useState<number[][]>(externalAoiCoords);
+  const [hoverTransectPoint, setHoverTransectPoint] = useState<{ lat: number; lng: number } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1158,11 +2153,23 @@ export default function MapComponent({
     setAoiCoords(externalAoiCoords);
   }, [externalAoiCoords]);
 
+  // Sync external swipeActive prop changes
+  useEffect(() => {
+    if (externalSwipeActive !== undefined) {
+      setSwipeActive(externalSwipeActive);
+      if (!externalSwipeActive) {
+        setIsAutoWiping(false);
+      }
+    }
+  }, [externalSwipeActive]);
+
   // Sync initial swipe layers when compareMode changes
   useEffect(() => {
-    setSwipeActive(false);
-    if (onSwipeActiveChange) {
-      onSwipeActiveChange(false);
+    if (externalSwipeActive === undefined) {
+      setSwipeActive(false);
+      if (onSwipeActiveChange) {
+        onSwipeActiveChange(false);
+      }
     }
     if (compareMode) {
       setSwipeLeft('target_classified');
@@ -1171,7 +2178,7 @@ export default function MapComponent({
       setSwipeLeft('true_color');
       setSwipeRight('classified');
     }
-  }, [compareMode, onSwipeActiveChange]);
+  }, [compareMode, onSwipeActiveChange, externalSwipeActive]);
 
   // Wrap onAOIDrawn to also track coords locally for the AOI boundary
   const handleAOIDrawn = useCallback((coords: number[][]) => {
@@ -1183,6 +2190,9 @@ export default function MapComponent({
   const handleToggleSwipe = () => {
     const nextVal = !swipeActive;
     setSwipeActive(nextVal);
+    if (!nextVal) {
+      setIsAutoWiping(false);
+    }
     if (onSwipeActiveChange) {
       onSwipeActiveChange(nextVal);
     }
@@ -1194,6 +2204,12 @@ export default function MapComponent({
     falseColorUrl ||
     ndviUrl ||
     classifiedUrl ||
+    slopeUrl ||
+    elevationUrl ||
+    hillshadeUrl ||
+    ndbiUrl ||
+    mndwiUrl ||
+    nbrUrl ||
     baselineTrueColorUrl ||
     baselineFalseColorUrl ||
     baselineNdviUrl ||
@@ -1212,12 +2228,24 @@ export default function MapComponent({
         baseline_false_color: baselineFalseColorUrl,
         target_ndvi: ndviUrl,
         baseline_ndvi: baselineNdviUrl,
+        slope: slopeUrl,
+        elevation: elevationUrl,
+        hillshade: hillshadeUrl,
+        ndbi: ndbiUrl,
+        mndwi: mndwiUrl,
+        nbr: nbrUrl,
       }
     : {
         true_color: trueColorUrl,
         false_color: falseColorUrl,
         ndvi: ndviUrl,
         classified: classifiedUrl,
+        slope: slopeUrl,
+        elevation: elevationUrl,
+        hillshade: hillshadeUrl,
+        ndbi: ndbiUrl,
+        mndwi: mndwiUrl,
+        nbr: nbrUrl,
       };
 
   // Available layers for swipe dropdowns
@@ -1246,21 +2274,77 @@ export default function MapComponent({
   // Label helpers for swipe
   const layerLabel = (key: string) => {
     const labels: Record<string, string> = {
-      true_color: 'True Color',
-      false_color: 'False Color',
-      ndvi: 'NDVI',
-      classified: 'Classification',
-      target_classified: 'Target Classified',
-      baseline_classified: 'Baseline Classified',
+      true_color: 'True Color (Optical)',
+      false_color: 'False Color (NIR)',
+      ndvi: 'NDVI (Canopy Vigor)',
+      classified: 'Classified LULC',
+      target_classified: 'Target Classified LULC',
+      baseline_classified: 'Baseline Classified LULC',
       target_true_color: 'Target True Color',
       baseline_true_color: 'Baseline True Color',
       target_false_color: 'Target False Color',
       baseline_false_color: 'Baseline False Color',
       target_ndvi: 'Target NDVI',
       baseline_ndvi: 'Baseline NDVI',
+      slope: 'Topographic Slope',
+      elevation: 'Copernicus 30m DEM',
+      hillshade: '3D Terrain Hillshade',
+      ndbi: 'NDBI (Built-Up)',
+      mndwi: 'MNDWI (Water Body)',
+      nbr: 'NBR (Burn Severity)',
     };
     return labels[key] || key;
   };
+
+  // Preset comparison pairs
+  const swipePresets = [
+    {
+      id: 'baseline_vs_target',
+      name: 'Baseline vs Current',
+      left: 'baseline_classified',
+      right: 'target_classified',
+      available: !!(layerUrls.baseline_classified && layerUrls.target_classified),
+      badge: '⏳ Temporal',
+    },
+    {
+      id: 'sat_vs_lulc',
+      name: 'Satellite vs LULC',
+      left: compareMode ? (layerUrls.target_true_color ? 'target_true_color' : 'true_color') : 'true_color',
+      right: compareMode ? (layerUrls.target_classified ? 'target_classified' : 'classified') : 'classified',
+      available: !!(
+        (layerUrls.target_true_color || layerUrls.true_color) &&
+        (layerUrls.target_classified || layerUrls.classified)
+      ),
+      badge: '🛰️ Sat vs LULC',
+    },
+    {
+      id: 'ndvi_change',
+      name: 'Canopy Change',
+      left: 'baseline_ndvi',
+      right: 'target_ndvi',
+      available: !!(layerUrls.baseline_ndvi && layerUrls.target_ndvi),
+      badge: '🌱 NDVI Change',
+    },
+    {
+      id: 'sat_vs_terrain',
+      name: 'Optical vs Terrain',
+      left: compareMode ? (layerUrls.target_true_color ? 'target_true_color' : 'true_color') : 'true_color',
+      right: layerUrls.hillshade ? 'hillshade' : 'slope',
+      available: !!(
+        (layerUrls.target_true_color || layerUrls.true_color) &&
+        (layerUrls.hillshade || layerUrls.slope)
+      ),
+      badge: '🏔️ Sat vs DEM',
+    },
+    {
+      id: 'water_vs_urban',
+      name: 'Water vs Urban',
+      left: 'mndwi',
+      right: 'ndbi',
+      available: !!(layerUrls.mndwi && layerUrls.ndbi),
+      badge: '💧 Water vs NDBI',
+    },
+  ];
 
   // Determine if swipe mode can be activated (need at least 2 layers)
   const canSwipe = availableLayers.length >= 2;
@@ -1276,7 +2360,7 @@ export default function MapComponent({
   return (
     <div
       ref={containerRef}
-      className={`geo-map-shell relative w-full h-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl ${isFullscreen ? 'bg-slate-950' : ''}`}
+      className={`geo-map-shell relative w-full h-full overflow-hidden ${isFullscreen ? 'bg-slate-950' : ''}`}
     >
       <MapContainer
         center={mapCenter}
@@ -1321,26 +2405,55 @@ export default function MapComponent({
 
         {/* Dynamic GEE Imagery Overlays — only shown when swipe is NOT active */}
         {!swipeActive && activeLayer === 'true_color' && currentTrueColorUrl && (
-          <TileLayer key="true_color" url={currentTrueColorUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Sentinel-2" />
+          <TileLayer key={currentTrueColorUrl} url={currentTrueColorUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Sentinel-2" />
         )}
         {!swipeActive && activeLayer === 'false_color' && currentFalseColorUrl && (
-          <TileLayer key="false_color" url={currentFalseColorUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Sentinel-2 False Color" />
+          <TileLayer key={currentFalseColorUrl} url={currentFalseColorUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Sentinel-2 False Color" />
         )}
         {!swipeActive && activeLayer === 'ndvi' && currentNdviUrl && (
-          <TileLayer key="ndvi" url={currentNdviUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Sentinel-2 NDVI" />
+          <TileLayer key={currentNdviUrl} url={currentNdviUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Sentinel-2 NDVI" />
         )}
         {!swipeActive && activeLayer === 'classified' && currentClassifiedUrl && (
-          <TileLayer key="classified" url={currentClassifiedUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Classifier" />
+          <TileLayer key={currentClassifiedUrl} url={currentClassifiedUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Classifier" />
         )}
-
-        {/* AOI Boundary Outline — always on top */}
-        <AOIBoundary coords={aoiCoords} />
+        {!swipeActive && activeLayer === 'slope' && slopeUrl && (
+          <TileLayer key={slopeUrl} url={slopeUrl} opacity={opacity} zIndex={400} attribution="Copernicus DEM Slope" />
+        )}
+        {!swipeActive && activeLayer === 'elevation' && elevationUrl && (
+          <TileLayer key={elevationUrl} url={elevationUrl} opacity={opacity} zIndex={400} attribution="Copernicus DEM Elevation" />
+        )}
+        {!swipeActive && activeLayer === 'hillshade' && hillshadeUrl && (
+          <TileLayer key={hillshadeUrl} url={hillshadeUrl} opacity={opacity} zIndex={400} attribution="Copernicus DEM Hillshade" />
+        )}
+        {!swipeActive && activeLayer === 'ndbi' && ndbiUrl && (
+          <TileLayer key={ndbiUrl} url={ndbiUrl} opacity={opacity} zIndex={400} attribution="Sentinel-2 NDBI Built-Up" />
+        )}
+        {!swipeActive && activeLayer === 'mndwi' && mndwiUrl && (
+          <TileLayer key={mndwiUrl} url={mndwiUrl} opacity={opacity} zIndex={400} attribution="Sentinel-2 MNDWI Water" />
+        )}
+        {!swipeActive && activeLayer === 'nbr' && nbrUrl && (
+          <TileLayer key={nbrUrl} url={nbrUrl} opacity={opacity} zIndex={400} attribution="Sentinel-2 NBR Burn Ratio" />
+        )}
 
         {/* Building Footprints Vector Layer */}
         <BuildingFootprintsLayer geojsonData={buildingFootprintsGeoJSON} visible={showBuildings} />
 
         {/* Smart Select (SAM) interactive click handler */}
         <SmartSelectHandler enabled={smartSelectMode} onSmartSelectClick={onSmartSelectClick} />
+
+        {/* Spectral Inspector interactive click handler & marker */}
+        <SpectralInspectorHandler
+          enabled={spectralInspectorMode}
+          onInspectClick={onSpectralInspectorClick}
+          inspectedPoint={inspectedSpectralCoord}
+        />
+
+        {/* Pixel Timeline (Historical Disturbance Tracker) interactive click handler & marker */}
+        <PixelTimelineHandler
+          enabled={timelineMode}
+          onInspectClick={onTimelineClick}
+          inspectedPoint={inspectedTimelineCoord}
+        />
 
         <SearchLocationMarker location={searchLocation} onSetAOI={onSetAOIAtPoint} />
 
@@ -1358,8 +2471,14 @@ export default function MapComponent({
 
         <MeasurementTool enabled={measurementMode} />
 
-        {/* Drawing Controls */}
-        <DrawControl onAOIDrawn={handleAOIDrawn} />
+        <ElevationTransectTool
+          enabled={transectMode}
+          onTransectDrawn={onTransectDrawn}
+          hoverPoint={hoverTransectPoint}
+        />
+
+        {/* Unified AOI Drawing & Boundary Controls */}
+        <DrawControl coords={aoiCoords} onAOIDrawn={handleAOIDrawn} />
 
         {/* Coordinate Readout */}
         <CoordinateDisplay />
@@ -1378,6 +2497,8 @@ export default function MapComponent({
             leftLabel={layerLabel(swipeLeft)}
             rightLabel={layerLabel(swipeRight)}
             opacity={opacity}
+            isAutoWiping={isAutoWiping}
+            onToggleAutoWipe={() => setIsAutoWiping((v) => !v)}
           />
         )}
       </MapContainer>
@@ -1436,63 +2557,131 @@ export default function MapComponent({
         </div>
       </DraggableContainer>
 
-      {/* ── Draggable Swipe Comparison Toggle (top-center) ── */}
+      {/* ── Draggable Swipe Comparison Bar (top-center) ── */}
       {canSwipe && (
         <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 12 }} zIndex={1003}>
-          <div className="flex items-center gap-2 bg-slate-950/92 backdrop-blur-md border border-slate-700/80 rounded-xl px-3 py-1.5 shadow-2xl cursor-grab active:cursor-grabbing">
-            {/* Grip handle */}
-            <div className="flex flex-col gap-0.5 justify-center opacity-40 hover:opacity-80 transition-opacity cursor-grab active:cursor-grabbing select-none mr-1">
-              <div className="flex gap-0.5">
-                <div className="w-1 h-1 rounded-full bg-slate-400" />
-                <div className="w-1 h-1 rounded-full bg-slate-400" />
+          <div className="flex flex-col gap-1.5 bg-[#1A1C16]/95 backdrop-blur-md border border-[#35372E] rounded-xl p-2 shadow-2xl cursor-grab active:cursor-grabbing max-w-[92vw]">
+            {/* Top controls row */}
+            <div className="flex items-center gap-2">
+              {/* Grip handle */}
+              <div className="flex flex-col gap-0.5 justify-center opacity-40 hover:opacity-80 transition-opacity select-none mr-0.5">
+                <div className="flex gap-0.5">
+                  <div className="w-1 h-1 rounded-full bg-[#8B8C7F]" />
+                  <div className="w-1 h-1 rounded-full bg-[#8B8C7F]" />
+                </div>
+                <div className="flex gap-0.5">
+                  <div className="w-1 h-1 rounded-full bg-[#8B8C7F]" />
+                  <div className="w-1 h-1 rounded-full bg-[#8B8C7F]" />
+                </div>
               </div>
-              <div className="flex gap-0.5">
-                <div className="w-1 h-1 rounded-full bg-slate-400" />
-                <div className="w-1 h-1 rounded-full bg-slate-400" />
-              </div>
-              <div className="flex gap-0.5">
-                <div className="w-1 h-1 rounded-full bg-slate-400" />
-                <div className="w-1 h-1 rounded-full bg-slate-400" />
-              </div>
+
+              {swipeActive ? (
+                <>
+                  <div className="flex items-center gap-1.5">
+                    {/* Left layer select */}
+                    <div className="flex items-center gap-1 bg-[#22241E] border border-[#35372E] rounded px-2 py-0.5">
+                      <span className="w-2 h-2 rounded-full bg-[#7FA35C]" />
+                      <select
+                        value={swipeLeft}
+                        onChange={(e) => setSwipeLeft(e.target.value)}
+                        className="bg-transparent text-[11px] text-[#EDE8DB] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
+                      >
+                        {availableLayers.map(([key]) => (
+                          <option key={key} value={key} className="bg-[#1A1C16] text-[#EDE8DB]">
+                            {layerLabel(key)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <span className="text-[#8B8C7F] text-[10px] font-bold px-0.5 uppercase tracking-wider">vs</span>
+
+                    {/* Right layer select */}
+                    <div className="flex items-center gap-1 bg-[#22241E] border border-[#35372E] rounded px-2 py-0.5">
+                      <span className="w-2 h-2 rounded-full bg-[#4A90E2]" />
+                      <select
+                        value={swipeRight}
+                        onChange={(e) => setSwipeRight(e.target.value)}
+                        className="bg-transparent text-[11px] text-[#EDE8DB] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
+                      >
+                        {availableLayers.map(([key]) => (
+                          <option key={key} value={key} className="bg-[#1A1C16] text-[#EDE8DB]">
+                            {layerLabel(key)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Auto-Wipe animation toggle button */}
+                  <button
+                    onClick={() => setIsAutoWiping((v) => !v)}
+                    title={isAutoWiping ? "Pause automated curtain wipe" : "Start cinematic auto-wipe animation"}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded text-[10.5px] font-semibold transition cursor-pointer ${
+                      isAutoWiping
+                        ? 'bg-[#7FA35C]/25 text-[#7FA35C] border border-[#7FA35C]/60 shadow-lg'
+                        : 'bg-[#22241E] hover:bg-[#2A2C24] text-[#EDE8DB] border border-[#35372E]'
+                    }`}
+                  >
+                    {isAutoWiping ? (
+                      <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#7FA35C] animate-ping" />
+                        <span>Pause Wipe</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>▶</span>
+                        <span>Auto-Wipe</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Exit Swipe button */}
+                  <button
+                    onClick={handleToggleSwipe}
+                    className="flex items-center gap-1 px-2 py-1 rounded text-[10.5px] font-semibold bg-[#22241E] hover:bg-[#c0392b]/20 hover:text-[#e74c3c] text-[#8B8C7F] border border-[#35372E] transition cursor-pointer"
+                  >
+                    ✕ Exit
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={handleToggleSwipe}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-[#EDE8DB] bg-[#22241E] hover:bg-[#2A2C24] border border-[#7FA35C]/50 transition cursor-pointer shadow-lg"
+                >
+                  <span className="text-[#7FA35C]">⚡</span>
+                  <span>Split-Screen Swipe Curtain</span>
+                </button>
+              )}
             </div>
+
+            {/* Presets Row (visible when swipe is active) */}
             {swipeActive && (
-              <div className="flex items-center gap-1.5 mr-1">
-                <select
-                  value={swipeLeft}
-                  onChange={(e) => setSwipeLeft(e.target.value)}
-                  className="bg-slate-900 border border-slate-700 rounded-md text-[10px] text-slate-200 font-semibold px-2 py-0.5 outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
-                >
-                  {availableLayers.map(([key]) => (
-                    <option key={key} value={key}>{layerLabel(key)}</option>
-                  ))}
-                </select>
-                <span className="text-slate-500 text-[10px] font-bold">vs</span>
-                <select
-                  value={swipeRight}
-                  onChange={(e) => setSwipeRight(e.target.value)}
-                  className="bg-slate-900 border border-slate-700 rounded-md text-[10px] text-slate-200 font-semibold px-2 py-0.5 outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
-                >
-                  {availableLayers.map(([key]) => (
-                    <option key={key} value={key}>{layerLabel(key)}</option>
-                  ))}
-                </select>
+              <div className="flex items-center gap-1 pt-1 border-t border-[#35372E]/60 overflow-x-auto pb-0.5">
+                <span className="text-[9.5px] text-[#8B8C7F] uppercase tracking-wider font-semibold mr-1 shrink-0">
+                  Presets:
+                </span>
+                {swipePresets.filter((p) => p.available).map((preset) => {
+                  const isActive = swipeLeft === preset.left && swipeRight === preset.right;
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() => {
+                        setSwipeLeft(preset.left);
+                        setSwipeRight(preset.right);
+                      }}
+                      className={`text-[10px] px-2 py-0.5 rounded transition shrink-0 cursor-pointer font-medium ${
+                        isActive
+                          ? 'bg-[#7FA35C] text-[#12140F] font-bold shadow-md'
+                          : 'bg-[#22241E] hover:bg-[#2A2C24] text-[#EDE8DB] border border-[#35372E]'
+                      }`}
+                    >
+                      {preset.badge} {preset.name}
+                    </button>
+                  );
+                })}
               </div>
             )}
-            <button
-              onClick={handleToggleSwipe}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                swipeActive
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 hover:bg-blue-500'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M12 3v18" />
-                <path d="M8 7l-4 5 4 5" />
-                <path d="M16 7l4 5-4 5" />
-              </svg>
-              {swipeActive ? 'Exit Compare' : 'Swipe Compare'}
-            </button>
           </div>
         </DraggableContainer>
       )}
@@ -1638,6 +2827,17 @@ export default function MapComponent({
             )}
           </div>
         </DraggableContainer>
+      )}
+
+      {/* ── Elevation Profile Transect Drawer / Panel ── */}
+      {elevationProfileData && (
+        <ElevationProfilePanel
+          profileData={elevationProfileData}
+          onClose={() => {
+            if (onClearElevationProfile) onClearElevationProfile();
+          }}
+          onHoverPoint={setHoverTransectPoint}
+        />
       )}
     </div>
   );
