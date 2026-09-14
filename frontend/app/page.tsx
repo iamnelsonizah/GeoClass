@@ -55,6 +55,7 @@ import DashboardCharts, { SpectralData } from '../components/DashboardCharts';
 import { DraggableContainer } from '../components/DraggableContainer';
 import { SpectralInspectorPanel, SpectralPixelData } from '../components/SpectralInspectorPanel';
 import { PixelTimelinePanel, PixelTimelineData } from '../components/PixelTimelinePanel';
+import { parseVectorFile } from '../lib/vectorParsers';
 
 // Dynamically import the map component to avoid SSR errors with Leaflet
 const MapComponent = dynamic(() => import('../components/MapComponent'), {
@@ -534,6 +535,7 @@ export default function Home() {
   const [seasonalFilter, setSeasonalFilter] = useState<'all' | 'dry' | 'wet'>('all');
   const [showAtmosphericConfig, setShowAtmosphericConfig] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [isImportingVector, setIsImportingVector] = useState(false);
 
   // Dual-Sidebar Architecture & Folding States
   const [leftRailCollapsed, setLeftRailCollapsed] = useState(false);
@@ -1538,37 +1540,30 @@ export default function Home() {
     }
   };
 
-  // Handle GeoJSON File Upload
-  const handleGeoJSONUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Vector File Upload (GeoJSON, KML, KMZ, Shapefile .zip, GPX)
+  const handleVectorUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsImportingVector(true);
+    setErrorMessage(null);
     try {
-      const text = await file.text();
-      const geojson = JSON.parse(text);
-      let coordinates: number[][] = [];
-
-      if (geojson.type === "Feature" && geojson.geometry?.type === "Polygon") {
-        coordinates = geojson.geometry.coordinates[0];
-      } else if (geojson.type === "Polygon") {
-        coordinates = geojson.coordinates[0];
-      } else if (geojson.type === "FeatureCollection") {
-        const firstFeature = geojson.features[0];
-        if (firstFeature?.geometry?.type === "Polygon") {
-          coordinates = firstFeature.geometry.coordinates[0];
-        }
-      }
-
-      if (coordinates.length > 0) {
-        handleAOIDrawn(coordinates);
-        setSuccessMessage(`Imported AOI from "${file.name}" with ${coordinates.length} vertices.`);
+      const result = await parseVectorFile(file);
+      if (result.coordinates && result.coordinates.length >= 3) {
+        handleAOIDrawn(result.coordinates);
+        const detailInfo = result.info ? ` (${result.info})` : '';
+        setSuccessMessage(
+          `Imported ${result.format} AOI from "${file.name}" with ${result.coordinates.length} vertices${detailInfo}.`
+        );
       } else {
-        throw new Error("Could not find a valid Polygon geometry inside the uploaded GeoJSON.");
+        throw new Error(`Could not extract valid polygon coordinates from "${file.name}".`);
       }
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to parse GeoJSON file.");
+      setErrorMessage(err.message || "Failed to parse vector file.");
+    } finally {
+      setIsImportingVector(false);
+      e.target.value = '';
     }
-    e.target.value = '';
   };
 
   // Fetch Sentinel-2 Tile Layers
@@ -2342,11 +2337,28 @@ export default function Home() {
 
 
 
-                {/* GeoJSON File Ingestion */}
-                <label className="flex items-center justify-center gap-2 w-full py-2 px-3 border border-dashed border-[#383B44] hover:border-[#99aa38]/60 rounded bg-[#18191D]/60 hover:bg-[#18191D] text-xs text-neutral-300 hover:text-white transition cursor-pointer mt-1">
-                  <Upload className="w-3.5 h-3.5 text-[#c0d45a]" />
-                  <span>Import GeoJSON AOI</span>
-                  <input type="file" accept=".geojson,.json" onChange={handleGeoJSONUpload} className="sr-only" />
+                {/* Vector File Ingestion (GeoJSON, KML, KMZ, Shapefile .zip, GPX) */}
+                <label className={`flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-[#383B44] hover:border-[#99aa38]/60 rounded bg-[#18191D]/60 hover:bg-[#18191D] text-neutral-300 hover:text-white transition cursor-pointer mt-1 ${isImportingVector ? 'opacity-60 pointer-events-none' : ''}`}>
+                  <div className="flex items-center gap-2">
+                    {isImportingVector ? (
+                      <Loader2 className="w-3.5 h-3.5 text-[#c0d45a] animate-spin" />
+                    ) : (
+                      <Upload className="w-3.5 h-3.5 text-[#c0d45a]" />
+                    )}
+                    <span className="text-xs font-medium">
+                      {isImportingVector ? 'Parsing Vector File...' : 'Import AOI Vector Boundary'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-neutral-400 font-mono mt-0.5">
+                    GeoJSON • KML / KMZ • Shapefile (.zip) • GPX
+                  </span>
+                  <input
+                    type="file"
+                    accept=".geojson,.json,.kml,.kmz,.zip,.gpx"
+                    onChange={handleVectorUpload}
+                    disabled={isImportingVector}
+                    className="sr-only"
+                  />
                 </label>
 
                 {coords.length > 0 && (
