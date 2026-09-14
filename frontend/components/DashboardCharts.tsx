@@ -315,7 +315,7 @@ function StatCard({
         <p className="text-[10.5px] text-[#69706A] uppercase tracking-wider font-semibold print:text-slate-600 truncate">
           {label}
         </p>
-        <p className="text-lg font-bold text-[#202522] mt-0.5 print:text-slate-900 font-mono tabular-nums">
+        <p className="text-lg font-bold text-[#1A1D23] mt-0.5 print:text-slate-900 font-mono tabular-nums">
           {value}
           {suffix && <span className="text-xs font-medium text-[#69706A] ml-1">{suffix}</span>}
         </p>
@@ -421,8 +421,8 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-2.5 rounded shadow-xl text-[#202522] font-sans print:hidden">
-        <p className="text-xs font-semibold flex items-center gap-2 text-[#202522]">
+      <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-2.5 rounded shadow-xl text-[#1A1D23] font-sans print:hidden">
+        <p className="text-xs font-semibold flex items-center gap-2 text-[#1A1D23]">
           <span
             className="w-2.5 h-2.5 rounded-xs"
             style={{ backgroundColor: data.color }}
@@ -431,18 +431,18 @@ const CustomTooltip = ({ active, payload }: any) => {
         </p>
         <p className="text-[11px] mt-1 text-[#69706A]">
           Area:{' '}
-          <span className="text-[#202522] font-mono font-medium">
+          <span className="text-[#1A1D23] font-mono font-medium">
             {data.area?.toLocaleString() ?? '--'} ha
           </span>
         </p>
         <p className="text-[11px] text-[#69706A]">
           Share:{' '}
-          <span className="text-[#202522] font-mono font-medium">{data.value}%</span>
+          <span className="text-[#1A1D23] font-mono font-medium">{data.value}%</span>
         </p>
         {data.pixelCount != null && (
           <p className="text-[11px] text-[#69706A]">
             Pixels:{' '}
-            <span className="text-[#202522] font-mono font-medium">
+            <span className="text-[#1A1D23] font-mono font-medium">
               {data.pixelCount.toLocaleString()}
             </span>
           </p>
@@ -612,7 +612,7 @@ export default function DashboardCharts({
           label="Dominant Class"
           value={`${dominantClass}`}
           suffix={`${dominantPct}%`}
-          accentClass="bg-[#F3DFD3] border-[#C96B3C]/40 text-[#C96B3C]"
+          accentClass="bg-[#F3DFD3] border-[#D9622B]/40 text-[#D9622B]"
           icon={
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -646,9 +646,9 @@ export default function DashboardCharts({
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#C96B3C]"></span>
-              <span className="text-xs font-semibold text-[#202522] uppercase tracking-wider">Geospatial Analysis Suite</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FAF9F5] text-[#C96B3C] border border-[#D8D5CA] font-mono">
+              <span className="w-2 h-2 rounded-full bg-[#D9622B]"></span>
+              <span className="text-xs font-semibold text-[#1A1D23] uppercase tracking-wider">Geospatial Analysis Suite</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FAF9F5] text-[#D9622B] border border-[#D8D5CA] font-mono">
                 Multispectral Inference Engine
               </span>
             </div>
@@ -667,13 +667,13 @@ export default function DashboardCharts({
               disabled={extractingBuildings}
               className={`px-2.5 py-1.5 rounded text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shadow-xs ${
                 buildingStats
-                  ? 'bg-[#F3DFD3] hover:bg-[#E9CBBB] text-[#C96B3C] border border-[#C96B3C]/50 font-semibold'
-                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA]'
+                  ? 'bg-[#F3DFD3] hover:bg-[#E9CBBB] text-[#D9622B] border border-[#D9622B]/50 font-semibold'
+                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#1A1D23] border border-[#D8D5CA]'
               }`}
             >
               {extractingBuildings ? (
                 <>
-                  <span className="w-3 h-3 rounded-full border border-t-[#C96B3C] animate-spin"></span>
+                  <span className="w-3 h-3 rounded-full border border-t-[#D9622B] animate-spin"></span>
                   <span>Extracting Footprints...</span>
                 </>
               ) : (
@@ -695,7 +695,7 @@ export default function DashboardCharts({
               className={`px-2.5 py-1.5 rounded text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shadow-xs ${
                 superResData
                   ? 'bg-[#DDE9EB] hover:bg-[#CCE0E3] text-[#416B73] border border-[#416B73]/50 font-semibold'
-                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA]'
+                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#1A1D23] border border-[#D8D5CA]'
               }`}
             >
               {loadingSuperRes ? (
@@ -722,7 +722,7 @@ export default function DashboardCharts({
               className={`px-2.5 py-1.5 rounded text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shadow-xs ${
                 waterDynamicsData
                   ? 'bg-[#DDE9EB] hover:bg-[#CCE0E3] text-[#416B73] border border-[#416B73]/50 font-semibold'
-                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA]'
+                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#1A1D23] border border-[#D8D5CA]'
               }`}
             >
               {loadingWaterDynamics ? (
@@ -749,7 +749,7 @@ export default function DashboardCharts({
               className={`px-2.5 py-1.5 rounded text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shadow-xs ${
                 canopyHeightData
                   ? 'bg-[#E4E9DF] hover:bg-[#D3DDD0] text-[#6F8060] border border-[#6F8060]/50 font-semibold'
-                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA]'
+                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#1A1D23] border border-[#D8D5CA]'
               }`}
             >
               {loadingCanopyHeight ? (
@@ -775,13 +775,13 @@ export default function DashboardCharts({
               disabled={loadingTerrain}
               className={`px-2.5 py-1.5 rounded text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shadow-xs ${
                 terrainData
-                  ? 'bg-[#F3DFD3] hover:bg-[#E9CBBB] text-[#C96B3C] border border-[#C96B3C]/50 font-semibold'
-                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA]'
+                  ? 'bg-[#F3DFD3] hover:bg-[#E9CBBB] text-[#D9622B] border border-[#D9622B]/50 font-semibold'
+                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#1A1D23] border border-[#D8D5CA]'
               }`}
             >
               {loadingTerrain ? (
                 <>
-                  <span className="w-3 h-3 rounded-full border border-t-[#C96B3C] animate-spin"></span>
+                  <span className="w-3 h-3 rounded-full border border-t-[#D9622B] animate-spin"></span>
                   <span>Analyzing Terrain...</span>
                 </>
               ) : (
@@ -803,7 +803,7 @@ export default function DashboardCharts({
               className={`px-2.5 py-1.5 rounded text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shadow-xs ${
                 spectralData
                   ? 'bg-[#DDE9EB] hover:bg-[#CCE0E3] text-[#416B73] border border-[#416B73]/50 font-semibold'
-                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA]'
+                  : 'bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#1A1D23] border border-[#D8D5CA]'
               }`}
             >
               {loadingSpectral ? (
@@ -925,8 +925,8 @@ export default function DashboardCharts({
                 <Radar
                   name="Coverage %"
                   dataKey="coverage"
-                  stroke="#C96B3C"
-                  fill="#C96B3C"
+                  stroke="#D9622B"
+                  fill="#D9622B"
                   fillOpacity={0.2}
                   strokeWidth={1.5}
                   animationDuration={1000}
@@ -940,8 +940,8 @@ export default function DashboardCharts({
                     fontSize: 12,
                     fontFamily: 'IBM Plex Sans, sans-serif',
                   }}
-                  labelStyle={{ color: '#202522', fontWeight: 600 }}
-                  itemStyle={{ color: '#C96B3C' }}
+                  labelStyle={{ color: '#1A1D23', fontWeight: 600 }}
+                  itemStyle={{ color: '#D9622B' }}
                 />
               </RadarChart>
             </ResponsiveContainer>
@@ -975,7 +975,7 @@ export default function DashboardCharts({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#D8D5CA] pb-2.5">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#202522] uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#1A1D23] uppercase tracking-wider">
                   Multispectral LULC Transition Matrix
                 </span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E4E9DF] text-[#6F8060] border border-[#6F8060]/40 font-mono">
@@ -988,7 +988,7 @@ export default function DashboardCharts({
             </div>
             
             <div className="flex items-center gap-2 text-xs font-mono">
-              <span className={`px-2 py-0.5 rounded border ${transitionData.net_changes.urban_ha >= 0 ? 'bg-[#F3DFD3] border-[#C96B3C]/40 text-[#C96B3C]' : 'bg-[#E4E9DF] border-[#6F8060]/40 text-[#6F8060]'}`}>
+              <span className={`px-2 py-0.5 rounded border ${transitionData.net_changes.urban_ha >= 0 ? 'bg-[#F3DFD3] border-[#D9622B]/40 text-[#D9622B]' : 'bg-[#E4E9DF] border-[#6F8060]/40 text-[#6F8060]'}`}>
                 Urban: {transitionData.net_changes.urban_ha >= 0 ? '+' : ''}{transitionData.net_changes.urban_ha} ha
               </span>
               <span className={`px-2 py-0.5 rounded border ${transitionData.net_changes.forest_ha < 0 ? 'bg-[#FBEBEA] border-[#A84E42]/40 text-[#A84E42]' : 'bg-[#E4E9DF] border-[#6F8060]/40 text-[#6F8060]'}`}>
@@ -1006,7 +1006,7 @@ export default function DashboardCharts({
               return (
                 <div key={key} className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
                   <div className="text-[10px] uppercase font-semibold text-[#69706A] truncate">{traj.label}</div>
-                  <div className={`text-sm font-bold font-mono mt-1 ${isAlert && traj.area_ha > 0 ? 'text-[#C96B3C]' : isGood ? 'text-[#6F8060]' : 'text-[#202522]'}`}>
+                  <div className={`text-sm font-bold font-mono mt-1 ${isAlert && traj.area_ha > 0 ? 'text-[#D9622B]' : isGood ? 'text-[#6F8060]' : 'text-[#1A1D23]'}`}>
                     {traj.area_ha} ha
                   </div>
                 </div>
@@ -1024,12 +1024,12 @@ export default function DashboardCharts({
               {transitionData.matrix.slice(0, 8).map((flow, i) => (
                 <div key={i} className="px-3 py-1.5 flex items-center justify-between text-xs hover:bg-[#F4F1E8] transition-colors">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-[#202522]">{flow.from_class}</span>
+                    <span className="font-semibold text-[#1A1D23]">{flow.from_class}</span>
                     <span className="text-[#8A908A]">→</span>
-                    <span className="font-semibold text-[#202522]">{flow.to_class}</span>
+                    <span className="font-semibold text-[#1A1D23]">{flow.to_class}</span>
                     <span className={`text-[9.5px] px-1 rounded uppercase font-mono ${
                       flow.trajectory === 'stable' ? 'bg-[#E4E9DF] text-[#6F8060]' :
-                      flow.trajectory === 'urbanization' ? 'bg-[#F3DFD3] text-[#C96B3C]' :
+                      flow.trajectory === 'urbanization' ? 'bg-[#F3DFD3] text-[#D9622B]' :
                       flow.trajectory === 'deforestation' ? 'bg-[#FBEBEA] text-[#A84E42]' :
                       'bg-[#E9E6DC] text-[#69706A]'
                     }`}>
@@ -1037,7 +1037,7 @@ export default function DashboardCharts({
                     </span>
                   </div>
                   <div className="font-mono tabular-nums text-right">
-                    <span className="text-[#202522] font-medium">{flow.area_ha} ha</span>
+                    <span className="text-[#1A1D23] font-medium">{flow.area_ha} ha</span>
                     <span className="text-[10.5px] text-[#69706A] ml-1.5">({flow.pct_of_source}%)</span>
                   </div>
                 </div>
@@ -1053,7 +1053,7 @@ export default function DashboardCharts({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#D8D5CA] pb-2.5">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#416B73]"></span>
-              <span className="text-xs font-bold text-[#202522] uppercase tracking-wider">
+              <span className="text-xs font-bold text-[#1A1D23] uppercase tracking-wider">
                 Sentinel-2 4× Super-Resolution ({superResData.super_resolution_m}m Synthetic)
               </span>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#DDE9EB] text-[#416B73] border border-[#416B73]/40 font-mono">
@@ -1068,7 +1068,7 @@ export default function DashboardCharts({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2.5 rounded">
               <div className="text-[10.5px] text-[#69706A] uppercase font-semibold">Native Resolution</div>
-              <div className="text-base font-bold text-[#202522] font-mono mt-1">{superResData.native_resolution_m}m / px</div>
+              <div className="text-base font-bold text-[#1A1D23] font-mono mt-1">{superResData.native_resolution_m}m / px</div>
               <div className="text-[10px] text-[#69706A]">Sentinel-2 Multispectral</div>
             </div>
 
@@ -1086,13 +1086,13 @@ export default function DashboardCharts({
 
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2.5 rounded">
               <div className="text-[10.5px] text-[#69706A] uppercase font-semibold">SSIM Index</div>
-              <div className="text-base font-bold text-[#202522] font-mono mt-1">{superResData.metrics.structural_similarity_ssim}</div>
+              <div className="text-base font-bold text-[#1A1D23] font-mono mt-1">{superResData.metrics.structural_similarity_ssim}</div>
               <div className="text-[10px] text-[#69706A]">Structural similarity</div>
             </div>
           </div>
 
           {superResData.warning && (
-            <div className="text-[11px] text-[#C96B3C] bg-[#F3DFD3] border border-[#C96B3C]/30 p-2 rounded">
+            <div className="text-[11px] text-[#D9622B] bg-[#F3DFD3] border border-[#D9622B]/30 p-2 rounded">
               {superResData.warning}
             </div>
           )}
@@ -1106,7 +1106,7 @@ export default function DashboardCharts({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#416B73]"></span>
-                <span className="text-xs font-bold text-[#202522] uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#1A1D23] uppercase tracking-wider">
                   Hydrological Dynamics & Seasonal Water Extent
                 </span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#DDE9EB] text-[#416B73] border border-[#416B73]/40 font-mono">
@@ -1121,14 +1121,14 @@ export default function DashboardCharts({
             <div className="flex items-center gap-2 text-xs font-mono">
               <span className={`px-2 py-0.5 rounded border ${
                 waterDynamicsData.flood_risk.rating === 'High' ? 'bg-[#FBEBEA] border-[#A84E42]/40 text-[#A84E42]' :
-                waterDynamicsData.flood_risk.rating === 'Moderate' ? 'bg-[#F3DFD3] border-[#C96B3C]/40 text-[#C96B3C]' :
+                waterDynamicsData.flood_risk.rating === 'Moderate' ? 'bg-[#F3DFD3] border-[#D9622B]/40 text-[#D9622B]' :
                 'bg-[#E4E9DF] border-[#6F8060]/40 text-[#6F8060]'
               }`}>
                 Flood Risk: {waterDynamicsData.flood_risk.rating} ({waterDynamicsData.flood_risk.score})
               </span>
               <span className={`px-2 py-0.5 rounded border ${
                 waterDynamicsData.drought_vulnerability.rating === 'Severe' ? 'bg-[#FBEBEA] border-[#A84E42]/40 text-[#A84E42]' :
-                waterDynamicsData.drought_vulnerability.rating === 'Moderate' ? 'bg-[#F3DFD3] border-[#C96B3C]/40 text-[#C96B3C]' :
+                waterDynamicsData.drought_vulnerability.rating === 'Moderate' ? 'bg-[#F3DFD3] border-[#D9622B]/40 text-[#D9622B]' :
                 'bg-[#E4E9DF] border-[#6F8060]/40 text-[#6F8060]'
               }`}>
                 Drought: {waterDynamicsData.drought_vulnerability.rating} ({waterDynamicsData.drought_vulnerability.score})
@@ -1140,7 +1140,7 @@ export default function DashboardCharts({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
               <span className="text-[10px] text-[#69706A] uppercase font-semibold">Mean Extent</span>
-              <div className="text-sm font-bold text-[#202522] font-mono mt-0.5">{waterDynamicsData.mean_water_extent_ha} ha</div>
+              <div className="text-sm font-bold text-[#1A1D23] font-mono mt-0.5">{waterDynamicsData.mean_water_extent_ha} ha</div>
             </div>
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
               <span className="text-[10px] text-[#69706A] uppercase font-semibold">Permanent Water</span>
@@ -1152,7 +1152,7 @@ export default function DashboardCharts({
             </div>
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
               <span className="text-[10px] text-[#69706A] uppercase font-semibold">Peak High / Low</span>
-              <div className="text-sm font-bold text-[#202522] font-mono mt-0.5">{waterDynamicsData.max_water_extent_ha} / {waterDynamicsData.min_water_extent_ha} ha</div>
+              <div className="text-sm font-bold text-[#1A1D23] font-mono mt-0.5">{waterDynamicsData.max_water_extent_ha} / {waterDynamicsData.min_water_extent_ha} ha</div>
             </div>
           </div>
 
@@ -1193,7 +1193,7 @@ export default function DashboardCharts({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#6F8060]"></span>
-                <span className="text-xs font-bold text-[#202522] uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#1A1D23] uppercase tracking-wider">
                   Canopy Height & Above-Ground Biomass Carbon
                 </span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E4E9DF] text-[#6F8060] border border-[#6F8060]/40 font-mono">
@@ -1209,7 +1209,7 @@ export default function DashboardCharts({
               <span className="px-2 py-0.5 rounded border bg-[#E4E9DF] border-[#6F8060]/40 text-[#6F8060]">
                 Mean: {canopyHeightData.mean_canopy_height_m}m
               </span>
-              <span className="px-2 py-0.5 rounded border bg-[#F3DFD3] border-[#C96B3C]/40 text-[#C96B3C]">
+              <span className="px-2 py-0.5 rounded border bg-[#F3DFD3] border-[#D9622B]/40 text-[#D9622B]">
                 Old-Growth (&gt;25m): {canopyHeightData.old_growth_area_ha} ha
               </span>
             </div>
@@ -1219,7 +1219,7 @@ export default function DashboardCharts({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2.5 rounded">
               <div className="text-[10.5px] text-[#69706A] uppercase font-semibold">Biomass Density</div>
-              <div className="text-base font-bold text-[#202522] font-mono mt-0.5">
+              <div className="text-base font-bold text-[#1A1D23] font-mono mt-0.5">
                 {canopyHeightData.biomass_and_carbon.biomass_density_mg_ha} <span className="text-xs font-normal text-[#69706A]">Mg / ha</span>
               </div>
             </div>
@@ -1249,7 +1249,7 @@ export default function DashboardCharts({
                 <BarChart data={canopyHeightData.height_strata_distribution} layout="vertical" margin={{ top: 0, right: 20, left: 70, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E9E6DC" horizontal={false} />
                   <XAxis type="number" unit="%" tick={{ fill: '#69706A', fontSize: 10 }} />
-                  <YAxis type="category" dataKey="stratum" tick={{ fill: '#202522', fontSize: 9.5 }} width={80} />
+                  <YAxis type="category" dataKey="stratum" tick={{ fill: '#1A1D23', fontSize: 9.5 }} width={80} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#FAF9F5',
@@ -1274,11 +1274,11 @@ export default function DashboardCharts({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#D8D5CA] pb-2.5">
             <div>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#C96B3C]"></span>
-                <span className="text-xs font-bold text-[#202522] uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-[#D9622B]"></span>
+                <span className="text-xs font-bold text-[#1A1D23] uppercase tracking-wider">
                   Topographic & Slope Stability Engine
                 </span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#F3DFD3] text-[#C96B3C] border border-[#C96B3C]/40 font-mono">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#F3DFD3] text-[#D9622B] border border-[#D9622B]/40 font-mono">
                   {terrainData.source || "Copernicus 30m GLO-30"}
                 </span>
               </div>
@@ -1291,12 +1291,12 @@ export default function DashboardCharts({
               <span className={`px-2 py-0.5 rounded border ${
                 terrainData.hazard_cross_matrix.vulnerability_rating === 'Critical' ? 'bg-[#FBEBEA] border-[#A84E42]/40 text-[#A84E42]' :
                 terrainData.hazard_cross_matrix.vulnerability_rating === 'High' ? 'bg-[#FBEBEA] border-[#A84E42]/30 text-[#A84E42]' :
-                terrainData.hazard_cross_matrix.vulnerability_rating === 'Moderate' ? 'bg-[#F3DFD3] border-[#C96B3C]/30 text-[#C96B3C]' :
+                terrainData.hazard_cross_matrix.vulnerability_rating === 'Moderate' ? 'bg-[#F3DFD3] border-[#D9622B]/30 text-[#D9622B]' :
                 'bg-[#E4E9DF] border-[#6F8060]/30 text-[#6F8060]'
               }`}>
                 Erosion Hazard: {terrainData.hazard_cross_matrix.vulnerability_rating} ({terrainData.hazard_cross_matrix.vulnerability_score}/100)
               </span>
-              <span className="px-2 py-0.5 rounded border bg-[#F4F1E8] border-[#D8D5CA] text-[#202522]">
+              <span className="px-2 py-0.5 rounded border bg-[#F4F1E8] border-[#D8D5CA] text-[#1A1D23]">
                 Relief: {terrainData.elevation.relief_m}m
               </span>
             </div>
@@ -1306,31 +1306,31 @@ export default function DashboardCharts({
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
               <span className="text-[10px] text-[#69706A] uppercase font-semibold">Min Elev</span>
-              <div className="text-sm font-bold text-[#202522] font-mono mt-0.5">{terrainData.elevation.min_m} m</div>
+              <div className="text-sm font-bold text-[#1A1D23] font-mono mt-0.5">{terrainData.elevation.min_m} m</div>
               <span className="text-[9.5px] text-[#69706A]">Above sea level</span>
             </div>
 
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
               <span className="text-[10px] text-[#69706A] uppercase font-semibold">Max Elev</span>
-              <div className="text-sm font-bold text-[#202522] font-mono mt-0.5">{terrainData.elevation.max_m} m</div>
+              <div className="text-sm font-bold text-[#1A1D23] font-mono mt-0.5">{terrainData.elevation.max_m} m</div>
               <span className="text-[9.5px] text-[#69706A]">Peak summit</span>
             </div>
 
-            <div className="bg-[#F4F1E8] border border-[#C96B3C]/30 p-2 rounded">
-              <span className="text-[10px] text-[#C96B3C] uppercase font-semibold">Relief</span>
-              <div className="text-sm font-bold text-[#C96B3C] font-mono mt-0.5">{terrainData.elevation.relief_m} m</div>
+            <div className="bg-[#F4F1E8] border border-[#D9622B]/30 p-2 rounded">
+              <span className="text-[10px] text-[#D9622B] uppercase font-semibold">Relief</span>
+              <div className="text-sm font-bold text-[#D9622B] font-mono mt-0.5">{terrainData.elevation.relief_m} m</div>
               <span className="text-[9.5px] text-[#69706A]">Vertical delta</span>
             </div>
 
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
               <span className="text-[10px] text-[#69706A] uppercase font-semibold">Mean Slope</span>
-              <div className="text-sm font-bold text-[#202522] font-mono mt-0.5">{terrainData.slope.mean_deg}°</div>
+              <div className="text-sm font-bold text-[#1A1D23] font-mono mt-0.5">{terrainData.slope.mean_deg}°</div>
               <span className="text-[9.5px] text-[#69706A]">Average grade</span>
             </div>
 
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
               <span className="text-[10px] text-[#69706A] uppercase font-semibold">Max Slope</span>
-              <div className="text-sm font-bold text-[#202522] font-mono mt-0.5">{terrainData.slope.max_deg}°</div>
+              <div className="text-sm font-bold text-[#1A1D23] font-mono mt-0.5">{terrainData.slope.max_deg}°</div>
               <span className="text-[9.5px] text-[#69706A]">Steepest grade</span>
             </div>
 
@@ -1356,12 +1356,12 @@ export default function DashboardCharts({
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: tier.color }}></span>
-                      <span className="font-semibold text-[#202522]">{tier.name}</span>
+                      <span className="font-semibold text-[#1A1D23]">{tier.name}</span>
                       <span className="text-[10.5px] text-[#69706A] hidden sm:inline">: {tier.hazard}</span>
                     </div>
                     <div className="font-mono tabular-nums text-right flex items-center gap-3">
-                      <span className="text-[#202522] font-medium">{tier.area_ha.toLocaleString()} ha</span>
-                      <span className="w-12 text-right text-[#C96B3C] font-semibold">{tier.percentage}%</span>
+                      <span className="text-[#1A1D23] font-medium">{tier.area_ha.toLocaleString()} ha</span>
+                      <span className="w-12 text-right text-[#D9622B] font-semibold">{tier.percentage}%</span>
                     </div>
                   </div>
                   {/* Progress bar */}
@@ -1417,21 +1417,21 @@ export default function DashboardCharts({
                 <span className="text-[11px] font-semibold text-[#454B46] uppercase tracking-wider">
                   LULC x Slope Hazard Cross-Analysis
                 </span>
-                <span className="text-[10px] text-[#C96B3C] font-mono font-semibold">Geotechnical Insights</span>
+                <span className="text-[10px] text-[#D9622B] font-mono font-semibold">Geotechnical Insights</span>
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="bg-[#FAF9F5] border border-[#A84E42]/30 p-2 rounded">
                   <div className="text-[9.5px] text-[#A84E42] uppercase font-semibold">High Erosion Risk</div>
-                  <div className="text-sm font-bold text-[#202522] font-mono mt-0.5">
+                  <div className="text-sm font-bold text-[#1A1D23] font-mono mt-0.5">
                     {terrainData.hazard_cross_matrix.high_erosion_bare_ground_ha} ha
                   </div>
                   <div className="text-[9px] text-[#69706A]">Bare/Scrub &gt;= 25°</div>
                 </div>
 
-                <div className="bg-[#FAF9F5] border border-[#C96B3C]/30 p-2 rounded">
-                  <div className="text-[9.5px] text-[#C96B3C] uppercase font-semibold">Urban Slope Risk</div>
-                  <div className="text-sm font-bold text-[#202522] font-mono mt-0.5">
+                <div className="bg-[#FAF9F5] border border-[#D9622B]/30 p-2 rounded">
+                  <div className="text-[9.5px] text-[#D9622B] uppercase font-semibold">Urban Slope Risk</div>
+                  <div className="text-sm font-bold text-[#1A1D23] font-mono mt-0.5">
                     {terrainData.hazard_cross_matrix.urban_slope_risk_ha} ha
                   </div>
                   <div className="text-[9px] text-[#69706A]">Built-up &gt;= 15°</div>
@@ -1439,7 +1439,7 @@ export default function DashboardCharts({
 
                 <div className="bg-[#FAF9F5] border border-[#416B73]/30 p-2 rounded">
                   <div className="text-[9.5px] text-[#416B73] uppercase font-semibold">Retention Basins</div>
-                  <div className="text-sm font-bold text-[#202522] font-mono mt-0.5">
+                  <div className="text-sm font-bold text-[#1A1D23] font-mono mt-0.5">
                     {terrainData.hazard_cross_matrix.flat_inundation_basin_ha} ha
                   </div>
                   <div className="text-[9px] text-[#69706A]">Low gradient &lt;= 3°</div>
@@ -1450,7 +1450,7 @@ export default function DashboardCharts({
               <div className="space-y-1 pt-1 border-t border-[#D8D5CA]">
                 {terrainData.hazard_cross_matrix.geotechnical_notes.map((note, idx) => (
                   <div key={idx} className="flex items-start gap-1.5 text-[11px] text-[#454B46]">
-                    <span className="text-[#C96B3C] font-bold mt-0.5">•</span>
+                    <span className="text-[#D9622B] font-bold mt-0.5">•</span>
                     <span>{note}</span>
                   </div>
                 ))}
@@ -1467,7 +1467,7 @@ export default function DashboardCharts({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#416B73]" />
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#202522]">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#1A1D23]">
                   Multispectral Indices Explorer (Sentinel-2 Band Math)
                 </h3>
               </div>
@@ -1480,7 +1480,7 @@ export default function DashboardCharts({
               <span className="px-2 py-0.5 rounded border border-[#416B73]/30 bg-[#416B73]/10 text-[#416B73] mono text-[10px] font-semibold">
                 S2 SR Band Math (B2–B12)
               </span>
-              <span className="px-2 py-0.5 rounded border border-[#D8D5CA] bg-[#F4F1E8] text-[#202522] mono text-[10px]">
+              <span className="px-2 py-0.5 rounded border border-[#D8D5CA] bg-[#F4F1E8] text-[#1A1D23] mono text-[10px]">
                 AOI: {spectralData.total_area_ha?.toLocaleString() ?? '--'} ha
               </span>
             </div>
@@ -1491,15 +1491,15 @@ export default function DashboardCharts({
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-3 rounded space-y-2.5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
-                  <div className="text-xs font-bold text-[#C96B3C] flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#C96B3C]" />
+                  <div className="text-xs font-bold text-[#D9622B] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#D9622B]" />
                     <span>NDBI (Built-Up Index)</span>
                   </div>
                   {onSelectLayer && (
                     <button
                       type="button"
                       onClick={() => onSelectLayer('ndbi')}
-                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA] transition cursor-pointer font-medium"
+                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#1A1D23] border border-[#D8D5CA] transition cursor-pointer font-medium"
                     >
                       View Layer
                     </button>
@@ -1510,13 +1510,13 @@ export default function DashboardCharts({
                 <div className="grid grid-cols-2 gap-2 text-center mt-2.5">
                   <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-1.5 rounded">
                     <div className="text-[9px] text-[#69706A] uppercase font-semibold">Mean NDBI</div>
-                    <div className="text-sm font-bold text-[#202522] mono mt-0.5">
+                    <div className="text-sm font-bold text-[#1A1D23] mono mt-0.5">
                       {spectralData.ndbi.mean > 0 ? `+${spectralData.ndbi.mean}` : spectralData.ndbi.mean}
                     </div>
                   </div>
-                  <div className="bg-[#FAF9F5] border border-[#C96B3C]/30 p-1.5 rounded">
-                    <div className="text-[9px] text-[#C96B3C] uppercase font-semibold">Built Footprint</div>
-                    <div className="text-sm font-bold text-[#202522] mono mt-0.5">
+                  <div className="bg-[#FAF9F5] border border-[#D9622B]/30 p-1.5 rounded">
+                    <div className="text-[9px] text-[#D9622B] uppercase font-semibold">Built Footprint</div>
+                    <div className="text-sm font-bold text-[#1A1D23] mono mt-0.5">
                       {spectralData.ndbi.built_area_ha} ha
                     </div>
                   </div>
@@ -1526,11 +1526,11 @@ export default function DashboardCharts({
               <div>
                 <div className="flex justify-between text-[10px] text-[#69706A] mb-1">
                   <span>Built-up / Impervious</span>
-                  <span className="text-[#202522] mono font-bold">{spectralData.ndbi.built_percentage}%</span>
+                  <span className="text-[#1A1D23] mono font-bold">{spectralData.ndbi.built_percentage}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-[#E9E6DC] rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#C96B3C]"
+                    className="h-full rounded-full bg-[#D9622B]"
                     style={{ width: `${Math.min(100, Math.max(0, spectralData.ndbi.built_percentage))}%` }}
                   />
                 </div>
@@ -1552,7 +1552,7 @@ export default function DashboardCharts({
                     <button
                       type="button"
                       onClick={() => onSelectLayer('mndwi')}
-                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA] transition cursor-pointer font-medium"
+                      className="text-[9.5px] px-2 py-0.5 rounded bg-[#FAF9F5] hover:bg-[#E9E6DC] text-[#1A1D23] border border-[#D8D5CA] transition cursor-pointer font-medium"
                     >
                       View Layer
                     </button>
@@ -1563,13 +1563,13 @@ export default function DashboardCharts({
                 <div className="grid grid-cols-2 gap-2 text-center mt-2.5">
                   <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-1.5 rounded">
                     <div className="text-[9px] text-[#69706A] uppercase font-semibold">Mean MNDWI</div>
-                    <div className="text-sm font-bold text-[#202522] mono mt-0.5">
+                    <div className="text-sm font-bold text-[#1A1D23] mono mt-0.5">
                       {spectralData.mndwi.mean > 0 ? `+${spectralData.mndwi.mean}` : spectralData.mndwi.mean}
                     </div>
                   </div>
                   <div className="bg-[#FAF9F5] border border-[#416B73]/30 p-1.5 rounded">
                     <div className="text-[9px] text-[#416B73] uppercase font-semibold">Water Extent</div>
-                    <div className="text-sm font-bold text-[#202522] mono mt-0.5">
+                    <div className="text-sm font-bold text-[#1A1D23] mono mt-0.5">
                       {spectralData.mndwi.water_area_ha} ha
                     </div>
                   </div>
@@ -1579,7 +1579,7 @@ export default function DashboardCharts({
               <div>
                 <div className="flex justify-between text-[10px] text-[#69706A] mb-1">
                   <span>Open Water Bodies</span>
-                  <span className="text-[#202522] mono font-bold">{spectralData.mndwi.water_percentage}%</span>
+                  <span className="text-[#1A1D23] mono font-bold">{spectralData.mndwi.water_percentage}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-[#E9E6DC] rounded-full overflow-hidden">
                   <div

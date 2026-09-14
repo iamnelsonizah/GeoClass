@@ -89,7 +89,7 @@ export function SpectralInspectorPanel({
           key: 'NDBI',
           name: 'Built-Up Index',
           val: data.indices.ndbi,
-          color: data.indices.ndbi > 0.0 ? '#C96B3C' : '#8A908A',
+          color: data.indices.ndbi > 0.0 ? '#D9622B' : '#8A908A',
           note: 'Urban / Impervious',
         },
         {
@@ -126,16 +126,16 @@ export function SpectralInspectorPanel({
   return (
     <DraggableContainer
       defaultPosition={{ x: 20, y: 80 }}
-      className="w-[490px] max-w-[calc(100vw-32px)] bg-[#FAF9F5] border border-[#D8D5CA] shadow-xl rounded overflow-hidden text-[#202522] z-[1200] select-none"
+      className="w-[490px] max-w-[calc(100vw-32px)] bg-[#FAF9F5] border border-[#D8D5CA] shadow-xl rounded overflow-hidden text-[#1A1D23] z-[1200] select-none"
     >
       {/* Header / Drag handle */}
       <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#F4F1E8] border-b border-[#D8D5CA] cursor-move">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded bg-[#FAF9F5] flex items-center justify-center border border-[#D8D5CA]">
-            <Activity className="w-3.5 h-3.5 text-[#C96B3C]" />
+            <Activity className="w-3.5 h-3.5 text-[#D9622B]" />
           </div>
           <div>
-            <div className="text-xs font-semibold tracking-wide flex items-center gap-2 text-[#202522]">
+            <div className="text-xs font-semibold tracking-wide flex items-center gap-2 text-[#1A1D23]">
               <span>Spectral Band Inspector</span>
               <span className="text-[9.5px] px-1.5 py-0.5 rounded bg-[#FAF9F5] text-[#69706A] border border-[#D8D5CA] font-mono">
                 Sentinel-2 SR
@@ -149,14 +149,14 @@ export function SpectralInspectorPanel({
             <button
               onClick={handleExportCSV}
               title="Export Spectral Curve as CSV"
-              className="p-1 hover:bg-[#E9E6DC] rounded text-[#69706A] hover:text-[#202522] transition-colors cursor-pointer"
+              className="p-1 hover:bg-[#E9E6DC] rounded text-[#69706A] hover:text-[#1A1D23] transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
             </button>
           )}
           <button
             onClick={onClose}
-            className="p-1 hover:bg-[#E9E6DC] rounded text-[#69706A] hover:text-[#202522] transition-colors cursor-pointer"
+            className="p-1 hover:bg-[#E9E6DC] rounded text-[#69706A] hover:text-[#1A1D23] transition-colors cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -167,7 +167,7 @@ export function SpectralInspectorPanel({
       <div className="p-3.5 space-y-3">
         {loading && (
           <div className="flex flex-col items-center justify-center py-10 space-y-2">
-            <div className="w-6 h-6 border-2 border-[#C96B3C] border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-[#D9622B] border-t-transparent rounded-full animate-spin" />
             <div className="text-xs text-[#69706A]">Sampling 10-band spectral profile...</div>
           </div>
         )}
@@ -178,10 +178,10 @@ export function SpectralInspectorPanel({
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2.5 rounded flex items-center justify-between">
               <div className="space-y-0.5">
                 <div className="text-[9.5px] text-[#69706A] uppercase tracking-wider font-semibold flex items-center gap-1">
-                  <Crosshair className="w-3 h-3 text-[#C96B3C]" />
+                  <Crosshair className="w-3 h-3 text-[#D9622B]" />
                   <span>Inspected Coordinate</span>
                 </div>
-                <div className="text-xs font-mono font-bold text-[#202522]">
+                <div className="text-xs font-mono font-bold text-[#1A1D23]">
                   {data.coordinate.lat.toFixed(5)}° N, {data.coordinate.lng.toFixed(5)}° E
                 </div>
               </div>
@@ -215,8 +215,8 @@ export function SpectralInspectorPanel({
             {/* Spectral Reflectance Curve Chart */}
             <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-2.5 rounded">
               <div className="flex items-center justify-between mb-1.5">
-                <div className="text-[10.5px] font-semibold text-[#202522] flex items-center gap-1.5">
-                  <Layers className="w-3 h-3 text-[#C96B3C]" />
+                <div className="text-[10.5px] font-semibold text-[#1A1D23] flex items-center gap-1.5">
+                  <Layers className="w-3 h-3 text-[#D9622B]" />
                   <span>Spectral Reflectance Curve (B2 to B12)</span>
                 </div>
                 <div className="text-[9px] text-[#69706A] font-mono">λ: 490nm to 2190nm</div>
@@ -246,18 +246,18 @@ export function SpectralInspectorPanel({
                         if (active && payload && payload.length) {
                           const pt: SpectralBandPoint = payload[0].payload;
                           return (
-                            <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-2 rounded shadow-md text-xs space-y-1 text-[#202522]">
+                            <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-2 rounded shadow-md text-xs space-y-1 text-[#1A1D23]">
                               <div className="font-bold flex items-center gap-1.5">
                                 <span
                                   className="w-2 h-2 rounded-full"
                                   style={{ backgroundColor: pt.color }}
                                 />
-                                <span className="text-[#202522]">
+                                <span className="text-[#1A1D23]">
                                   {pt.band} ({pt.name}) • {pt.center_nm} nm
                                 </span>
                               </div>
                               <div className="text-[#454B46] font-mono">
-                                Reflectance: <span className="font-bold text-[#202522]">{(pt.reflectance * 100).toFixed(2)}%</span> ({pt.reflectance.toFixed(4)})
+                                Reflectance: <span className="font-bold text-[#1A1D23]">{(pt.reflectance * 100).toFixed(2)}%</span> ({pt.reflectance.toFixed(4)})
                               </div>
                               <div className="text-[10px] text-[#69706A] max-w-56">{pt.desc}</div>
                             </div>
@@ -280,7 +280,7 @@ export function SpectralInspectorPanel({
                       }}
                       activeDot={{
                         r: 5,
-                        fill: '#C96B3C',
+                        fill: '#D9622B',
                         stroke: '#FAF9F5',
                         strokeWidth: 2,
                       }}
@@ -302,7 +302,7 @@ export function SpectralInspectorPanel({
                     className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded hover:border-[#BCB8AA] transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-[#202522]">{c.key}</span>
+                      <span className="text-[10px] font-bold text-[#1A1D23]">{c.key}</span>
                       <span className="text-[9px] text-[#69706A] font-mono">{c.note}</span>
                     </div>
                     <div

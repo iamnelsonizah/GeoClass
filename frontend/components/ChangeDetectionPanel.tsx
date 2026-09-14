@@ -89,18 +89,18 @@ export function ChangeDetectionPanel({
   return (
     <DraggableContainer
       defaultPosition={{ x: 380, y: 70 }}
-      className="w-[360px] sm:w-[440px] bg-[#FAF9F5] border border-[#D8D5CA] rounded shadow-xl overflow-hidden z-[45] font-sans text-[#202522]"
+      className="w-[360px] sm:w-[440px] bg-[#FAF9F5] border border-[#D8D5CA] rounded shadow-xl overflow-hidden z-[45] font-sans text-[#1A1D23]"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-[#F4F1E8] border-b border-[#D8D5CA] cursor-grab active:cursor-grabbing">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#C96B3C]">
-            <History className="w-4 h-4 text-[#C96B3C]" />
+          <div className="p-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#D9622B]">
+            <History className="w-4 h-4 text-[#D9622B]" />
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-[#202522] flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-[#1A1D23] flex items-center gap-1.5">
               <span>Disturbance & Trend Breaks</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#FAF9F5] text-[#C96B3C] border border-[#D8D5CA]">
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#FAF9F5] text-[#D9622B] border border-[#D8D5CA]">
                 LandTrendr
               </span>
             </h3>
@@ -111,7 +111,7 @@ export function ChangeDetectionPanel({
         <button
           type="button"
           onClick={onClose}
-          className="p-1 rounded text-[#69706A] hover:text-[#202522] hover:bg-[#E9E6DC] transition cursor-pointer"
+          className="p-1 rounded text-[#69706A] hover:text-[#1A1D23] hover:bg-[#E9E6DC] transition cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -126,7 +126,7 @@ export function ChangeDetectionPanel({
               <select
                 value={selectedIndex}
                 onChange={(e) => setSelectedIndex(e.target.value as any)}
-                className="w-full text-xs px-2.5 py-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#202522] focus:outline-none focus:border-[#C96B3C]"
+                className="w-full text-xs px-2.5 py-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#1A1D23] focus:outline-none focus:border-[#D9622B]"
               >
                 <option value="nbr">NBR (Canopy Loss & Fire)</option>
                 <option value="ndvi">NDVI (Vegetation Decline)</option>
@@ -138,7 +138,7 @@ export function ChangeDetectionPanel({
               <select
                 value={selectedSensitivity}
                 onChange={(e) => setSelectedSensitivity(e.target.value as any)}
-                className="w-full text-xs px-2.5 py-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#202522] focus:outline-none focus:border-[#C96B3C]"
+                className="w-full text-xs px-2.5 py-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#1A1D23] focus:outline-none focus:border-[#D9622B]"
               >
                 <option value="low">Low (Significant Events)</option>
                 <option value="moderate">Moderate (Balanced)</option>
@@ -153,7 +153,7 @@ export function ChangeDetectionPanel({
               <select
                 value={startYear}
                 onChange={(e) => setStartYear(parseInt(e.target.value))}
-                className="w-full text-xs px-2.5 py-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#202522] focus:outline-none focus:border-[#C96B3C]"
+                className="w-full text-xs px-2.5 py-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#1A1D23] focus:outline-none focus:border-[#D9622B]"
               >
                 {[2018, 2019, 2020, 2021].map((yr) => (
                   <option key={yr} value={yr}>{yr}</option>
@@ -165,7 +165,7 @@ export function ChangeDetectionPanel({
               <select
                 value={endYear}
                 onChange={(e) => setEndYear(parseInt(e.target.value))}
-                className="w-full text-xs px-2.5 py-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#202522] focus:outline-none focus:border-[#C96B3C]"
+                className="w-full text-xs px-2.5 py-1.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[#1A1D23] focus:outline-none focus:border-[#D9622B]"
               >
                 {[2022, 2023, 2024, 2025].map((yr) => (
                   <option key={yr} value={yr}>{yr}</option>
@@ -178,7 +178,7 @@ export function ChangeDetectionPanel({
             type="button"
             onClick={() => onAnalyze(selectedIndex, selectedSensitivity, startYear, endYear)}
             disabled={loading}
-            className="w-full mt-1 py-2 px-3 rounded bg-[#C96B3C] hover:bg-[#AD5630] text-white text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-50 shadow-sm"
+            className="w-full mt-1 py-2 px-3 rounded bg-[#D9622B] hover:bg-[#AD5630] text-white text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-50 shadow-sm"
           >
             {loading ? (
               <>
@@ -233,8 +233,8 @@ export function ChangeDetectionPanel({
             {/* Annual Disturbance Bar Chart */}
             <div className="p-3 rounded bg-[#FAF9F5] border border-[#D8D5CA]">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-xs font-semibold text-[#202522] flex items-center gap-1.5">
-                  <TrendingDown className="w-3.5 h-3.5 text-[#C96B3C]" />
+                <div className="text-xs font-semibold text-[#1A1D23] flex items-center gap-1.5">
+                  <TrendingDown className="w-3.5 h-3.5 text-[#D9622B]" />
                   <span>Annual Disturbance Inception (Hectares)</span>
                 </div>
                 <span className="text-[10px] text-[#69706A] font-mono">
@@ -262,8 +262,8 @@ export function ChangeDetectionPanel({
                         if (active && payload && payload.length) {
                           const item = payload[0].payload;
                           return (
-                            <div className="p-2 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-xs shadow-md font-mono text-[#202522]">
-                              <div className="text-[#202522] font-semibold">{item.year} Disturbance</div>
+                            <div className="p-2 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-xs shadow-md font-mono text-[#1A1D23]">
+                              <div className="text-[#1A1D23] font-semibold">{item.year} Disturbance</div>
                               <div className="text-[#A84E42] mt-0.5">{item.disturbed_ha} hectares</div>
                               <div className="text-[#69706A] text-[10px]">{item.percentage}% of AOI</div>
                             </div>
@@ -284,7 +284,7 @@ export function ChangeDetectionPanel({
 
             {/* LandTrendr Onset Year Color Ramp Legend */}
             <div className="p-3 rounded bg-[#F4F1E8] border border-[#D8D5CA]">
-              <div className="text-xs font-semibold text-[#202522] mb-2 flex items-center justify-between">
+              <div className="text-xs font-semibold text-[#1A1D23] mb-2 flex items-center justify-between">
                 <span>Disturbance Onset Year Legend</span>
                 <span className="text-[10px] text-[#69706A] font-mono">Earliest Break Year</span>
               </div>
@@ -292,7 +292,7 @@ export function ChangeDetectionPanel({
                 {Object.entries(data.color_ramp).map(([year, hex]) => (
                   <div key={year} className="flex items-center gap-1.5 text-xs p-1 rounded bg-[#FAF9F5] border border-[#D8D5CA]">
                     <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: hex }} />
-                    <span className="text-[#202522] font-mono text-[11px]">{year}</span>
+                    <span className="text-[#1A1D23] font-mono text-[11px]">{year}</span>
                     <span className="text-[#69706A] text-[10px] ml-auto font-mono">
                       {data.annual_breakdown[year]?.disturbed_ha || 0} ha
                     </span>
@@ -309,8 +309,8 @@ export function ChangeDetectionPanel({
                   onClick={() => onSelectLayer('change_year')}
                   className={`py-2 px-2.5 rounded text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer border ${
                     activeLayer === 'change_year'
-                      ? 'bg-[#C96B3C] text-white border-[#AD5630] shadow-sm'
-                      : 'bg-[#F4F1E8] text-[#454B46] hover:text-[#202522] border-[#D8D5CA] hover:bg-[#E9E6DC]'
+                      ? 'bg-[#D9622B] text-white border-[#AD5630] shadow-sm'
+                      : 'bg-[#F4F1E8] text-[#454B46] hover:text-[#1A1D23] border-[#D8D5CA] hover:bg-[#E9E6DC]'
                   }`}
                 >
                   <Layers className="w-3.5 h-3.5" />
@@ -321,8 +321,8 @@ export function ChangeDetectionPanel({
                   onClick={() => onSelectLayer('change_magnitude')}
                   className={`py-2 px-2.5 rounded text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer border ${
                     activeLayer === 'change_magnitude'
-                      ? 'bg-[#C96B3C] text-white border-[#AD5630] shadow-sm'
-                      : 'bg-[#F4F1E8] text-[#454B46] hover:text-[#202522] border-[#D8D5CA] hover:bg-[#E9E6DC]'
+                      ? 'bg-[#D9622B] text-white border-[#AD5630] shadow-sm'
+                      : 'bg-[#F4F1E8] text-[#454B46] hover:text-[#1A1D23] border-[#D8D5CA] hover:bg-[#E9E6DC]'
                   }`}
                 >
                   <Flame className="w-3.5 h-3.5" />

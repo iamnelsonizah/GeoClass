@@ -214,17 +214,17 @@ export function STACBrowserModal({
 
   return (
     <div className="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded w-full max-w-5xl h-[88vh] max-h-[850px] shadow-xl flex flex-col overflow-hidden text-[#202522] animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded w-full max-w-5xl h-[88vh] max-h-[850px] shadow-xl flex flex-col overflow-hidden text-[#1A1D23] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Top Header */}
         <div className="flex items-center justify-between px-5 py-3.5 bg-[#F4F1E8] border-b border-[#D8D5CA]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-[#FAF9F5] border border-[#D8D5CA] flex items-center justify-center text-[#C96B3C]">
+            <div className="w-8 h-8 rounded bg-[#FAF9F5] border border-[#D8D5CA] flex items-center justify-center text-[#D9622B]">
               <Database className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold tracking-tight text-[#202522]">STAC Catalog Browser</h3>
+                <h3 className="text-sm font-semibold tracking-tight text-[#1A1D23]">STAC Catalog Browser</h3>
                 <span className="text-[10px] px-2 py-0.5 rounded bg-[#FAF9F5] text-[#454B46] font-mono border border-[#D8D5CA]">
                   Earth Engine Open EO
                 </span>
@@ -236,7 +236,7 @@ export function STACBrowserModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded text-[#69706A] hover:text-[#202522] hover:bg-[#FAF9F5] transition cursor-pointer"
+            className="p-1.5 rounded text-[#69706A] hover:text-[#1A1D23] hover:bg-[#FAF9F5] transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -247,7 +247,7 @@ export function STACBrowserModal({
           {/* Collections Selector */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[#69706A] text-[11px] mr-1 flex items-center gap-1 font-medium">
-              <Satellite className="w-3.5 h-3.5 text-[#C96B3C]" /> Constellations:
+              <Satellite className="w-3.5 h-3.5 text-[#D9622B]" /> Constellations:
             </span>
             {AVAILABLE_COLLECTIONS.map(col => {
               const active = selectedCollections.includes(col.id);
@@ -257,13 +257,13 @@ export function STACBrowserModal({
                   onClick={() => handleCollectionToggle(col.id)}
                   className={`px-2.5 py-1 rounded text-[11px] font-medium transition border flex items-center gap-1.5 cursor-pointer ${
                     active
-                      ? 'bg-[#F3DFD3] border-[#C96B3C] text-[#202522]'
-                      : 'bg-[#FAF9F5] border-[#D8D5CA] text-[#69706A] hover:text-[#202522]'
+                      ? 'bg-[#F3DFD3] border-[#D9622B] text-[#1A1D23]'
+                      : 'bg-[#FAF9F5] border-[#D8D5CA] text-[#69706A] hover:text-[#1A1D23]'
                   }`}
                 >
                   <span
                     className="w-1.5 h-1.5 rounded-full"
-                    style={{ backgroundColor: active ? '#C96B3C' : '#8A908A' }}
+                    style={{ backgroundColor: active ? '#D9622B' : '#8A908A' }}
                   />
                   {col.name} ({col.res})
                 </button>
@@ -279,14 +279,14 @@ export function STACBrowserModal({
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="bg-transparent text-[11px] text-[#202522] focus:outline-none cursor-pointer"
+                className="bg-transparent text-[11px] text-[#1A1D23] focus:outline-none cursor-pointer"
               />
               <span className="text-[#8A908A] text-[10px]">to</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="bg-transparent text-[11px] text-[#202522] focus:outline-none cursor-pointer"
+                className="bg-transparent text-[11px] text-[#1A1D23] focus:outline-none cursor-pointer"
               />
             </div>
 
@@ -299,7 +299,7 @@ export function STACBrowserModal({
                 max="100"
                 value={maxCloud}
                 onChange={e => setMaxCloud(Number(e.target.value))}
-                className="w-10 bg-transparent text-[11px] text-right text-[#202522] focus:outline-none"
+                className="w-10 bg-transparent text-[11px] text-right text-[#1A1D23] focus:outline-none"
               />
               <span className="text-[10px] text-[#8A908A]">%</span>
             </div>
@@ -307,7 +307,7 @@ export function STACBrowserModal({
             <button
               onClick={handleSearch}
               disabled={loading}
-              className="px-3.5 py-1 rounded bg-[#C96B3C] hover:bg-[#AD5630] text-white font-medium text-[11px] flex items-center gap-1.5 transition shadow-none disabled:opacity-50 cursor-pointer"
+              className="px-3.5 py-1 rounded bg-[#D9622B] hover:bg-[#AD5630] text-white font-medium text-[11px] flex items-center gap-1.5 transition shadow-none disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -336,7 +336,7 @@ export function STACBrowserModal({
                 <button
                   onClick={() => setFilterType('all')}
                   className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${
-                    filterType === 'all' ? 'bg-[#FAF9F5] border border-[#D8D5CA] text-[#202522] font-semibold' : 'text-[#69706A] hover:text-[#202522]'
+                    filterType === 'all' ? 'bg-[#FAF9F5] border border-[#D8D5CA] text-[#1A1D23] font-semibold' : 'text-[#69706A] hover:text-[#1A1D23]'
                   }`}
                 >
                   All
@@ -344,7 +344,7 @@ export function STACBrowserModal({
                 <button
                   onClick={() => setFilterType('optical')}
                   className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${
-                    filterType === 'optical' ? 'bg-[#FAF9F5] border border-[#D8D5CA] text-[#202522] font-semibold' : 'text-[#69706A] hover:text-[#202522]'
+                    filterType === 'optical' ? 'bg-[#FAF9F5] border border-[#D8D5CA] text-[#1A1D23] font-semibold' : 'text-[#69706A] hover:text-[#1A1D23]'
                   }`}
                 >
                   Optical
@@ -352,7 +352,7 @@ export function STACBrowserModal({
                 <button
                   onClick={() => setFilterType('radar')}
                   className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${
-                    filterType === 'radar' ? 'bg-[#FAF9F5] border border-[#D8D5CA] text-[#202522] font-semibold' : 'text-[#69706A] hover:text-[#202522]'
+                    filterType === 'radar' ? 'bg-[#FAF9F5] border border-[#D8D5CA] text-[#1A1D23] font-semibold' : 'text-[#69706A] hover:text-[#1A1D23]'
                   }`}
                 >
                   Radar
@@ -370,8 +370,8 @@ export function STACBrowserModal({
             {/* Empty or loading state */}
             {!loading && filteredScenes.length === 0 && !error && (
               <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-[#69706A]">
-                <Satellite className="w-10 h-10 mb-2 opacity-40 text-[#C96B3C]" />
-                <p className="text-xs font-medium text-[#202522]">No granules found for the specified criteria.</p>
+                <Satellite className="w-10 h-10 mb-2 opacity-40 text-[#D9622B]" />
+                <p className="text-xs font-medium text-[#1A1D23]">No granules found for the specified criteria.</p>
                 <p className="text-[11px] mt-1 max-w-xs text-[#8A908A]">
                   Try expanding the date range, increasing maximum cloud cover, or selecting more constellations.
                 </p>
@@ -392,7 +392,7 @@ export function STACBrowserModal({
                     onClick={() => setSelectedScene(scene)}
                     className={`p-3 rounded cursor-pointer transition border ${
                       isSelected
-                        ? 'bg-[#F3DFD3] border-[#C96B3C]'
+                        ? 'bg-[#F3DFD3] border-[#D9622B]'
                         : 'bg-[#FAF9F5] border-[#D8D5CA] hover:bg-[#F4F1E8]'
                     }`}
                   >
@@ -413,7 +413,7 @@ export function STACBrowserModal({
                           {scene.resolution_m}m GSD
                         </span>
                       </div>
-                      <span className="text-[11px] text-[#202522] font-mono font-medium">
+                      <span className="text-[11px] text-[#1A1D23] font-mono font-medium">
                         {getSceneDisplayDate(scene)}
                       </span>
                     </div>
@@ -441,7 +441,7 @@ export function STACBrowserModal({
                           e.stopPropagation();
                           handleApplyScene(scene);
                         }}
-                        className="px-2 py-0.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#C96B3C] hover:border-[#C96B3C] hover:text-white text-[#202522] flex items-center gap-1 transition cursor-pointer"
+                        className="px-2 py-0.5 rounded bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#D9622B] hover:border-[#D9622B] hover:text-white text-[#1A1D23] flex items-center gap-1 transition cursor-pointer"
                       >
                         Load <ArrowRight className="w-2.5 h-2.5" />
                       </button>
@@ -461,14 +461,14 @@ export function STACBrowserModal({
                     <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A908A]">
                       Granule Details
                     </span>
-                    <h4 className="text-sm font-semibold text-[#202522] mt-0.5">
+                    <h4 className="text-sm font-semibold text-[#1A1D23] mt-0.5">
                       {selectedScene.platform}
                     </h4>
                     <p className="text-[11px] font-mono text-[#69706A] truncate max-w-[280px]">
                       {selectedScene.id}
                     </p>
                   </div>
-                  <span className="px-2 py-1 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[11px] font-mono text-[#202522]">
+                  <span className="px-2 py-1 rounded bg-[#FAF9F5] border border-[#D8D5CA] text-[11px] font-mono text-[#1A1D23]">
                     {selectedScene.resolution_m}m
                   </span>
                 </div>
@@ -477,19 +477,19 @@ export function STACBrowserModal({
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="p-2.5 rounded bg-[#FAF9F5] border border-[#D8D5CA]">
                     <span className="text-[10px] text-[#8A908A] block">Acquisition Date</span>
-                    <span className="text-[12px] font-mono text-[#202522] mt-0.5 block">
+                    <span className="text-[12px] font-mono text-[#1A1D23] mt-0.5 block">
                       {getSceneFullDatetime(selectedScene)}
                     </span>
                   </div>
                   <div className="p-2.5 rounded bg-[#FAF9F5] border border-[#D8D5CA]">
                     <span className="text-[10px] text-[#8A908A] block">Collection Asset</span>
-                    <span className="text-[12px] font-mono text-[#202522] mt-0.5 block truncate">
+                    <span className="text-[12px] font-mono text-[#1A1D23] mt-0.5 block truncate">
                       {selectedScene.collection}
                     </span>
                   </div>
                   <div className="p-2.5 rounded bg-[#FAF9F5] border border-[#D8D5CA]">
                     <span className="text-[10px] text-[#8A908A] block">Cloud Screening</span>
-                    <span className="text-[12px] font-mono text-[#202522] mt-0.5 block">
+                    <span className="text-[12px] font-mono text-[#1A1D23] mt-0.5 block">
                       {selectedScene.cloud_cover !== null && selectedScene.cloud_cover !== undefined
                         ? `${selectedScene.cloud_cover.toFixed(2)}%`
                         : 'N/A (SAR Microwave)'}
@@ -497,7 +497,7 @@ export function STACBrowserModal({
                   </div>
                   <div className="p-2.5 rounded bg-[#FAF9F5] border border-[#D8D5CA]">
                     <span className="text-[10px] text-[#8A908A] block">Spectral Bands</span>
-                    <span className="text-[12px] font-mono text-[#202522] mt-0.5 block">
+                    <span className="text-[12px] font-mono text-[#1A1D23] mt-0.5 block">
                       {(selectedScene.bands || []).length} available
                     </span>
                   </div>
@@ -505,7 +505,7 @@ export function STACBrowserModal({
 
                 {/* Available Spectral Channels */}
                 <div>
-                  <span className="text-[11px] font-medium text-[#202522] block mb-1.5">
+                  <span className="text-[11px] font-medium text-[#1A1D23] block mb-1.5">
                     Available Sensor Channels
                   </span>
                   <div className="flex flex-wrap gap-1">
@@ -523,14 +523,14 @@ export function STACBrowserModal({
                 {/* Additional Properties Table */}
                 {selectedScene.properties && Object.keys(selectedScene.properties).length > 0 && (
                   <div>
-                    <span className="text-[11px] font-medium text-[#202522] block mb-1.5">
+                    <span className="text-[11px] font-medium text-[#1A1D23] block mb-1.5">
                       Metadata Attributes
                     </span>
                     <div className="rounded bg-[#FAF9F5] border border-[#D8D5CA] p-2.5 divide-y divide-[#D8D5CA] text-[10px] font-mono">
                       {Object.entries(selectedScene.properties).map(([k, v]) => (
                         <div key={k} className="py-1 flex justify-between gap-2">
                           <span className="text-[#8A908A] truncate">{k}:</span>
-                          <span className="text-[#202522] truncate text-right">
+                          <span className="text-[#1A1D23] truncate text-right">
                             {typeof v === 'number' ? v.toFixed(2) : String(v)}
                           </span>
                         </div>
@@ -543,7 +543,7 @@ export function STACBrowserModal({
                 <div className="pt-2">
                   <button
                     onClick={() => handleApplyScene(selectedScene)}
-                    className="w-full py-2.5 rounded bg-[#C96B3C] hover:bg-[#AD5630] text-white font-medium text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+                    className="w-full py-2.5 rounded bg-[#D9622B] hover:bg-[#AD5630] text-white font-medium text-xs flex items-center justify-center gap-2 transition cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4 text-white" />
                     Apply Scene to Classification Workflow
@@ -555,7 +555,7 @@ export function STACBrowserModal({
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center text-[#8A908A]">
-                <Info className="w-8 h-8 mb-2 opacity-40 text-[#C96B3C]" />
+                <Info className="w-8 h-8 mb-2 opacity-40 text-[#D9622B]" />
                 <p className="text-xs text-[#69706A]">Select a scene from the list to view telemetry and band properties.</p>
               </div>
             )}

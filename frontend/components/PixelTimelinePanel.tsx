@@ -131,16 +131,16 @@ export function PixelTimelinePanel({
   return (
     <DraggableContainer
       defaultPosition={{ x: 28, y: 72 }}
-      className="w-[540px] max-w-[calc(100vw-32px)] bg-[#FAF9F5] border border-[#D8D5CA] shadow-xl rounded overflow-hidden text-[#202522] z-[1200] select-none"
+      className="w-[540px] max-w-[calc(100vw-32px)] bg-[#FAF9F5] border border-[#D8D5CA] shadow-xl rounded overflow-hidden text-[#1A1D23] z-[1200] select-none"
     >
       {/* Header / Drag handle */}
       <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#F4F1E8] border-b border-[#D8D5CA] cursor-move">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded bg-[#FAF9F5] flex items-center justify-center border border-[#D8D5CA]">
-            <History className="w-3.5 h-3.5 text-[#C96B3C]" />
+            <History className="w-3.5 h-3.5 text-[#D9622B]" />
           </div>
           <div>
-            <div className="text-xs font-semibold tracking-wide flex items-center gap-2 text-[#202522]">
+            <div className="text-xs font-semibold tracking-wide flex items-center gap-2 text-[#1A1D23]">
               <span>Pixel Historical Timeline</span>
               <span className="text-[9.5px] px-1.5 py-0.5 rounded bg-[#FAF9F5] text-[#69706A] border border-[#D8D5CA] font-mono">
                 5-Year S2 Series
@@ -154,14 +154,14 @@ export function PixelTimelinePanel({
             <button
               onClick={handleExportCSV}
               title="Export 5-Year Time Series as CSV"
-              className="p-1 hover:bg-[#E9E6DC] rounded text-[#69706A] hover:text-[#202522] transition-colors cursor-pointer"
+              className="p-1 hover:bg-[#E9E6DC] rounded text-[#69706A] hover:text-[#1A1D23] transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
             </button>
           )}
           <button
             onClick={onClose}
-            className="p-1 hover:bg-[#E9E6DC] rounded text-[#69706A] hover:text-[#202522] transition-colors cursor-pointer"
+            className="p-1 hover:bg-[#E9E6DC] rounded text-[#69706A] hover:text-[#1A1D23] transition-colors cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -172,8 +172,8 @@ export function PixelTimelinePanel({
       <div className="p-3.5 space-y-3">
         {loading && (
           <div className="flex flex-col items-center justify-center py-12 space-y-2.5">
-            <div className="w-7 h-7 border-2 border-[#C96B3C] border-t-transparent rounded-full animate-spin" />
-            <div className="text-xs font-medium text-[#202522]">Extracting 5-year multi-index satellite series...</div>
+            <div className="w-7 h-7 border-2 border-[#D9622B] border-t-transparent rounded-full animate-spin" />
+            <div className="text-xs font-medium text-[#1A1D23]">Extracting 5-year multi-index satellite series...</div>
             <div className="text-[10px] text-[#69706A]">Sampling cloud-masked Sentinel-2 surface reflectance</div>
           </div>
         )}
@@ -184,10 +184,10 @@ export function PixelTimelinePanel({
             <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2.5 rounded flex items-center justify-between">
               <div className="space-y-0.5">
                 <div className="text-[9.5px] text-[#69706A] uppercase tracking-wider font-semibold flex items-center gap-1">
-                  <Crosshair className="w-3 h-3 text-[#C96B3C]" />
+                  <Crosshair className="w-3 h-3 text-[#D9622B]" />
                   <span>Inspected Pixel</span>
                 </div>
-                <div className="text-xs font-mono font-bold text-[#202522]">
+                <div className="text-xs font-mono font-bold text-[#1A1D23]">
                   {data.coordinates.lat.toFixed(5)}° N, {data.coordinates.lng.toFixed(5)}° E
                 </div>
               </div>
@@ -217,7 +217,7 @@ export function PixelTimelinePanel({
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
                 <div className="text-[9px] text-[#69706A] uppercase tracking-wider font-semibold flex items-center gap-1">
-                  <Activity className="w-2.5 h-2.5 text-[#C96B3C]" />
+                  <Activity className="w-2.5 h-2.5 text-[#D9622B]" />
                   <span>Net NDVI Δ</span>
                 </div>
                 <div
@@ -228,7 +228,7 @@ export function PixelTimelinePanel({
                         ? '#6F8060'
                         : data.trajectory.net_change_ndvi < -0.05
                         ? '#A84E42'
-                        : '#202522',
+                        : '#1A1D23',
                   }}
                 >
                   {data.trajectory.net_change_ndvi > 0 ? '+' : ''}
@@ -258,10 +258,10 @@ export function PixelTimelinePanel({
 
               <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-2 rounded">
                 <div className="text-[9px] text-[#69706A] uppercase tracking-wider font-semibold flex items-center gap-1">
-                  <Calendar className="w-2.5 h-2.5 text-[#C96B3C]" />
+                  <Calendar className="w-2.5 h-2.5 text-[#D9622B]" />
                   <span>Time Span</span>
                 </div>
-                <div className="text-xs font-mono font-bold text-[#202522] mt-0.5">
+                <div className="text-xs font-mono font-bold text-[#1A1D23] mt-0.5">
                   {data.timeframe.start_year} to {data.timeframe.end_year}
                 </div>
                 <div className="text-[8.5px] text-[#69706A]">
@@ -273,8 +273,8 @@ export function PixelTimelinePanel({
             {/* Time-Series Chart Box */}
             <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-2.5 rounded">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-[10.5px] font-semibold text-[#202522] flex items-center gap-1.5">
-                  <Layers className="w-3 h-3 text-[#C96B3C]" />
+                <div className="text-[10.5px] font-semibold text-[#1A1D23] flex items-center gap-1.5">
+                  <Layers className="w-3 h-3 text-[#D9622B]" />
                   <span>Multi-Spectral Index Time-Series</span>
                 </div>
 
@@ -314,7 +314,7 @@ export function PixelTimelinePanel({
                     onClick={() => toggleIndex('ndbi')}
                     className={`px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition-all cursor-pointer ${
                       visibleIndices.ndbi
-                        ? 'bg-[#F3DFD3] text-[#C96B3C] border border-[#C96B3C]'
+                        ? 'bg-[#F3DFD3] text-[#D9622B] border border-[#D9622B]'
                         : 'bg-[#E9E6DC] text-[#69706A] border border-[#D8D5CA]'
                     }`}
                   >
@@ -353,9 +353,9 @@ export function PixelTimelinePanel({
                         const dist = disturbanceMap.get(pt.period);
 
                         return (
-                          <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-2.5 rounded shadow-xl text-xs space-y-1.5 max-w-[240px] text-[#202522]">
+                          <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-2.5 rounded shadow-xl text-xs space-y-1.5 max-w-[240px] text-[#1A1D23]">
                             <div className="flex items-center justify-between border-b border-[#D8D5CA] pb-1">
-                              <span className="font-bold text-[#202522] font-mono">{pt.period}</span>
+                              <span className="font-bold text-[#1A1D23] font-mono">{pt.period}</span>
                               <span className="text-[9px] text-[#69706A]">{pt.start_date}</span>
                             </div>
 
@@ -363,7 +363,7 @@ export function PixelTimelinePanel({
                               {visibleIndices.ndvi && (
                                 <div className="flex justify-between items-center text-[10.5px]">
                                   <span className="text-[#6F8060] font-medium">NDVI:</span>
-                                  <span className="font-mono font-bold text-[#202522]">
+                                  <span className="font-mono font-bold text-[#1A1D23]">
                                     {pt.ndvi !== null ? pt.ndvi.toFixed(3) : 'N/A'}
                                   </span>
                                 </div>
@@ -371,7 +371,7 @@ export function PixelTimelinePanel({
                               {visibleIndices.mndwi && (
                                 <div className="flex justify-between items-center text-[10.5px]">
                                   <span className="text-[#416B73] font-medium">MNDWI:</span>
-                                  <span className="font-mono font-bold text-[#202522]">
+                                  <span className="font-mono font-bold text-[#1A1D23]">
                                     {pt.mndwi !== null ? pt.mndwi.toFixed(3) : 'N/A'}
                                   </span>
                                 </div>
@@ -379,15 +379,15 @@ export function PixelTimelinePanel({
                               {visibleIndices.nbr && (
                                 <div className="flex justify-between items-center text-[10.5px]">
                                   <span className="text-[#B68A3A] font-medium">NBR:</span>
-                                  <span className="font-mono font-bold text-[#202522]">
+                                  <span className="font-mono font-bold text-[#1A1D23]">
                                     {pt.nbr !== null ? pt.nbr.toFixed(3) : 'N/A'}
                                   </span>
                                 </div>
                               )}
                               {visibleIndices.ndbi && (
                                 <div className="flex justify-between items-center text-[10.5px]">
-                                  <span className="text-[#C96B3C] font-medium">NDBI:</span>
-                                  <span className="font-mono font-bold text-[#202522]">
+                                  <span className="text-[#D9622B] font-medium">NDBI:</span>
+                                  <span className="font-mono font-bold text-[#1A1D23]">
                                     {pt.ndbi !== null ? pt.ndbi.toFixed(3) : 'N/A'}
                                   </span>
                                 </div>
@@ -465,10 +465,10 @@ export function PixelTimelinePanel({
                       <Line
                         type="monotone"
                         dataKey="ndbi"
-                        stroke="#C96B3C"
+                        stroke="#D9622B"
                         strokeWidth={1.5}
-                        dot={{ r: 2, fill: '#C96B3C', stroke: '#FAF9F5', strokeWidth: 1 }}
-                        activeDot={{ r: 4.5, fill: '#C96B3C', stroke: '#FAF9F5', strokeWidth: 2 }}
+                        dot={{ r: 2, fill: '#D9622B', stroke: '#FAF9F5', strokeWidth: 1 }}
+                        activeDot={{ r: 4.5, fill: '#D9622B', stroke: '#FAF9F5', strokeWidth: 2 }}
                         name="NDBI (Built)"
                         connectNulls
                       />
@@ -490,7 +490,7 @@ export function PixelTimelinePanel({
                     <span className="w-2 h-0.5 bg-[#B68A3A] inline-block" /> NBR
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="w-2 h-0.5 bg-[#C96B3C] inline-block" /> NDBI
+                    <span className="w-2 h-0.5 bg-[#D9622B] inline-block" /> NDBI
                   </span>
                 </div>
                 <div className="text-[#69706A] font-mono">Quarterly Composites</div>

@@ -2507,14 +2507,14 @@ export default function Home() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-[#C96B3C]">
-                <polygon points="12 2 2 7 12 12 22 7 12 2" fill="#C96B3C" />
-                <polyline points="2 17 12 22 22 17" stroke="#C96B3C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                <polyline points="2 12 12 17 22 12" stroke="#C96B3C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-[#D9622B]">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" fill="#D9622B" />
+                <polyline points="2 17 12 22 22 17" stroke="#D9622B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                <polyline points="2 12 12 17 22 12" stroke="#D9622B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
               </svg>
             </div>
             <div className="flex items-center">
-              <span className="font-sans text-base font-bold tracking-tight text-[#202522]">GeoClass</span>
+              <span className="font-sans text-base font-bold tracking-tight text-[#1A1D23]">GeoClass</span>
               <span className="hidden xl:inline-block text-xs text-[#69706A] font-normal border-l border-[#D8D5CA] pl-3 ml-3">
                 Earth Observation & Land Cover Analysis
               </span>
@@ -2527,28 +2527,28 @@ export default function Home() {
           <button 
             type="button"
             onClick={() => { setLeftRailCollapsed(false); setPhase1Open(true); }}
-            className="pb-1 border-b-2 border-[#C96B3C] text-[#C96B3C] font-semibold cursor-pointer transition"
+            className="pb-1 border-b-2 border-[#D9622B] text-[#D9622B] font-semibold cursor-pointer transition"
           >
             Projects
           </button>
           <button 
             type="button"
             onClick={() => { setLeftRailCollapsed(false); setPhase2Open(true); }}
-            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#202522] cursor-pointer transition"
+            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#1A1D23] cursor-pointer transition"
           >
             Imagery
           </button>
           <button 
             type="button"
             onClick={() => { setLeftRailCollapsed(false); setPhase3Open(true); }}
-            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#202522] cursor-pointer transition"
+            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#1A1D23] cursor-pointer transition"
           >
             Classification
           </button>
           <button 
             type="button"
             onClick={() => { setAnalyticsExpanded(true); }}
-            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#202522] cursor-pointer transition"
+            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#1A1D23] cursor-pointer transition"
           >
             Analytics
           </button>
@@ -2558,7 +2558,7 @@ export default function Home() {
         <div className="flex items-center gap-4">
           <button
             type="button"
-            className="text-[#69706A] hover:text-[#202522] transition cursor-pointer p-1"
+            className="text-[#69706A] hover:text-[#1A1D23] transition cursor-pointer p-1"
             title="Search"
           >
             <Search className="w-4 h-4" />
@@ -2566,7 +2566,7 @@ export default function Home() {
 
           <button
             type="button"
-            className="text-[#69706A] hover:text-[#202522] transition cursor-pointer p-1 relative"
+            className="text-[#69706A] hover:text-[#1A1D23] transition cursor-pointer p-1 relative"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
@@ -2576,7 +2576,7 @@ export default function Home() {
             <div className="w-7 h-7 rounded-full bg-[#2D4A34] text-white flex items-center justify-center text-[11px] font-bold">
               NI
             </div>
-            <span className="text-xs font-semibold text-[#202522] hidden md:inline">Nelson Izah</span>
+            <span className="text-xs font-semibold text-[#1A1D23] hidden md:inline">Nelson Izah</span>
             <ChevronDown className="w-3.5 h-3.5 text-[#69706A]" />
           </div>
         </div>
@@ -2588,8 +2588,8 @@ export default function Home() {
         <div className="flex items-center gap-6 overflow-x-auto py-0.5">
           <div>
             <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">STATUS</div>
-            <div className="flex items-center gap-1.5 font-medium text-[#202522]">
-              <span className={`w-2 h-2 rounded-full ${geeConnected === false ? 'bg-[#A84E42]' : 'bg-[#4B8055]'}`}></span>
+            <div className="flex items-center gap-1.5 font-medium text-[#1A1D23]">
+              <span className={`w-2 h-2 rounded-full ${geeConnected === false ? 'bg-[#A84E42]' : 'bg-[#D9622B]'}`}></span>
               <span>{loadingMapId ? 'Preparing imagery' : loadingClassify ? 'Classifying' : geeConnected === false ? 'Disconnected' : 'Ready'}</span>
             </div>
           </div>
@@ -2597,7 +2597,7 @@ export default function Home() {
           {coords.length > 0 && (
             <div>
               <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">AOI AREA</div>
-              <div className="font-mono text-[#202522] font-medium">
+              <div className="font-mono text-[#1A1D23] font-medium">
                 {calculateAOIArea(coords).toFixed(1)} ha
               </div>
             </div>
@@ -2605,23 +2605,23 @@ export default function Home() {
 
           <div>
             <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">DATE WINDOW</div>
-            <div className="font-mono text-[#202522] font-medium">{startDate} → {endDate}</div>
+            <div className="font-mono text-[#1A1D23] font-medium">{startDate} → {endDate}</div>
           </div>
 
           <div>
             <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">CLOUD COVER</div>
-            <div className="font-mono text-[#202522] font-medium">{cloudCover}% Max</div>
+            <div className="font-mono text-[#1A1D23] font-medium">{cloudCover}% Max</div>
           </div>
 
           <div>
             <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">ACTIVE LAYERS</div>
-            <div className="font-mono text-[#202522] font-medium">{readyLayersCount > 0 ? readyLayersCount : 6} / {layerStack.length}</div>
+            <div className="font-mono text-[#1A1D23] font-medium">{readyLayersCount > 0 ? readyLayersCount : 6} / {layerStack.length}</div>
           </div>
 
           {processingTime !== null && (
             <div>
               <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">EXEC TIME</div>
-              <div className="font-mono text-[#202522] font-medium">{processingTime}s</div>
+              <div className="font-mono text-[#1A1D23] font-medium">{processingTime}s</div>
             </div>
           )}
         </div>
@@ -2630,7 +2630,7 @@ export default function Home() {
           <button 
             type="button"
             onClick={() => setAnalyticsExpanded(!analyticsExpanded)}
-            className="p-1 hover:bg-[#F4F1E8] rounded text-[#69706A] hover:text-[#202522] transition cursor-pointer"
+            className="p-1 hover:bg-[#F4F1E8] rounded text-[#69706A] hover:text-[#1A1D23] transition cursor-pointer"
             title="Toggle Analytics Drawer"
           >
             <LayoutGrid className="w-4 h-4" />
@@ -2657,8 +2657,8 @@ export default function Home() {
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-[#202522]" />
-                  <span className="text-[13px] font-bold text-[#202522] tracking-tight">Area of Interest</span>
+                  <Target className="w-4 h-4 text-[#1A1D23]" />
+                  <span className="text-[13px] font-bold text-[#1A1D23] tracking-tight">Area of Interest</span>
                 </div>
               </div>
 
@@ -2679,11 +2679,11 @@ export default function Home() {
                     }
                   }}
                   placeholder="Search place, region, coordinates..."
-                  className="w-full pl-8.5 pr-8 py-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg text-xs text-[#202522] placeholder:text-[#8A908A] focus:outline-none focus:border-[#C96B3C] shadow-2xs transition"
+                  className="w-full pl-8.5 pr-8 py-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg text-xs text-[#1A1D23] placeholder:text-[#8A908A] focus:outline-none focus:border-[#D9622B] shadow-2xs transition"
                   aria-label="Search geographic location"
                 />
                 {locationLoading && (
-                  <Loader2 className="w-3.5 h-3.5 text-[#C96B3C] animate-spin absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Loader2 className="w-3.5 h-3.5 text-[#D9622B] animate-spin absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 )}
 
                 {/* Autocomplete dropdown suggestions */}
@@ -2694,7 +2694,7 @@ export default function Home() {
                         key={sug.id}
                         type="button"
                         onClick={() => selectLocation(sug)}
-                        className="w-full text-left px-3 py-2 hover:bg-[#F4F1E8] text-[#202522] border-b border-[#D8D5CA]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
+                        className="w-full text-left px-3 py-2 hover:bg-[#F4F1E8] text-[#1A1D23] border-b border-[#D8D5CA]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
                       >
                         <span className="truncate pr-2 font-medium">{sug.label}</span>
                         <span className="text-[10px] mono text-[#69706A] shrink-0">
@@ -2710,7 +2710,7 @@ export default function Home() {
               {(coords.length > 0 || selectedLocation) && (
                 <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl p-3 flex items-start justify-between shadow-2xs">
                   <div className="flex items-start gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-[#C96B3C] flex items-center justify-center text-white flex-shrink-0 shadow-none mt-0.5">
+                    <div className="w-7 h-7 rounded-lg bg-[#D9622B] flex items-center justify-center text-white flex-shrink-0 shadow-none mt-0.5">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="12 2 2 7 12 12 22 7 12 2" />
                         <polyline points="2 17 12 22 22 17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -2718,7 +2718,7 @@ export default function Home() {
                       </svg>
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-[#202522]">
+                      <div className="text-xs font-bold text-[#1A1D23]">
                         {selectedLocation?.label ? selectedLocation.label.split(',')[0] : `${calculateAOIArea(coords).toFixed(1)} ha Active AOI`}
                       </div>
                       <div className="text-[10.5px] font-mono text-[#69706A] mt-0.5">
@@ -2748,7 +2748,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={saveCurrentArea}
-                      className="text-[#8A908A] hover:text-[#202522] p-1 transition cursor-pointer"
+                      className="text-[#8A908A] hover:text-[#1A1D23] p-1 transition cursor-pointer"
                       title="AOI Actions"
                     >
                       <MoreVertical className="w-3.5 h-3.5" />
@@ -2758,12 +2758,12 @@ export default function Home() {
               )}
 
               {/* Vector File Ingestion (GeoJSON, KML, KMZ, Shapefile .zip, GPX) */}
-              <label className={`flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-[#D8D5CA] hover:border-[#C96B3C] rounded-lg bg-[#FAF9F5] hover:bg-[#F4F1E8] text-[#454B46] hover:text-[#202522] transition cursor-pointer ${isImportingVector ? 'opacity-60 pointer-events-none' : ''}`}>
+              <label className={`flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-[#D8D5CA] hover:border-[#D9622B] rounded-lg bg-[#FAF9F5] hover:bg-[#F4F1E8] text-[#454B46] hover:text-[#1A1D23] transition cursor-pointer ${isImportingVector ? 'opacity-60 pointer-events-none' : ''}`}>
                 <div className="flex items-center gap-2">
                   {isImportingVector ? (
-                    <Loader2 className="w-3.5 h-3.5 text-[#C96B3C] animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 text-[#D9622B] animate-spin" />
                   ) : (
-                    <Upload className="w-3.5 h-3.5 text-[#C96B3C]" />
+                    <Upload className="w-3.5 h-3.5 text-[#D9622B]" />
                   )}
                   <span className="text-[11.5px] font-medium">
                     {isImportingVector ? 'Parsing Vector File...' : 'Import AOI Vector Boundary'}
@@ -2789,8 +2789,8 @@ export default function Home() {
                 onClick={() => setPhase2Open(!phase2Open)}
               >
                 <div className="flex items-center gap-2">
-                  <Satellite className="w-4 h-4 text-[#202522]" />
-                  <span className="text-[13px] font-bold text-[#202522] tracking-tight">Satellite Imagery</span>
+                  <Satellite className="w-4 h-4 text-[#1A1D23]" />
+                  <span className="text-[13px] font-bold text-[#1A1D23] tracking-tight">Satellite Imagery</span>
                   {tileUrls.trueColor && <span className="text-[9px] px-1.5 py-0.5 bg-[#EAF3EB] text-[#3B7A46] font-mono font-semibold rounded">READY</span>}
                 </div>
                 <span className="text-[#69706A]">
@@ -2814,7 +2814,7 @@ export default function Home() {
                         <select
                           value={selectedSensor}
                           onChange={(e) => setSelectedSensor(e.target.value as any)}
-                          className="w-full px-3 py-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg text-xs text-[#202522] font-medium focus:outline-none focus:border-[#C96B3C] shadow-2xs cursor-pointer"
+                          className="w-full px-3 py-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg text-xs text-[#1A1D23] font-medium focus:outline-none focus:border-[#D9622B] shadow-2xs cursor-pointer"
                         >
                           <option value="sentinel_2">Sentinel-2 (10m, Optical)</option>
                           <option value="landsat">Landsat 8/9 (30m, Optical)</option>
@@ -2829,7 +2829,7 @@ export default function Home() {
                         <div className="flex items-center gap-2.5">
                           <Box className="w-4 h-4 text-[#69706A] flex-shrink-0" />
                           <div>
-                            <div className="text-xs font-bold text-[#202522]">Browse STAC Catalog</div>
+                            <div className="text-xs font-bold text-[#1A1D23]">Browse STAC Catalog</div>
                             <div className="text-[10px] text-[#69706A]">Sentinel-2 · Copernicus</div>
                           </div>
                         </div>
@@ -2840,25 +2840,25 @@ export default function Home() {
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[10.5px] font-medium text-[#69706A] mb-1">Start date</label>
-                          <div className="flex items-center gap-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2.5 py-1.5 text-xs text-[#202522] shadow-2xs">
+                          <div className="flex items-center gap-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2.5 py-1.5 text-xs text-[#1A1D23] shadow-2xs">
                             <Calendar className="w-3.5 h-3.5 text-[#8A908A] flex-shrink-0" />
                             <input
                               type="date"
                               value={startDate}
                               onChange={(e) => updateTargetStartDate(e.target.value)}
-                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#202522]"
+                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#1A1D23]"
                             />
                           </div>
                         </div>
                         <div>
                           <label className="block text-[10.5px] font-medium text-[#69706A] mb-1">End date</label>
-                          <div className="flex items-center gap-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2.5 py-1.5 text-xs text-[#202522] shadow-2xs">
+                          <div className="flex items-center gap-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2.5 py-1.5 text-xs text-[#1A1D23] shadow-2xs">
                             <Calendar className="w-3.5 h-3.5 text-[#8A908A] flex-shrink-0" />
                             <input
                               type="date"
                               value={endDate}
                               onChange={(e) => setEndDate(e.target.value)}
-                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#202522]"
+                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#1A1D23]"
                             />
                           </div>
                         </div>
@@ -2868,7 +2868,7 @@ export default function Home() {
                       <div>
                         <div className="flex justify-between text-[11px] font-medium text-[#69706A] mb-1">
                           <span>Cloud cover (max)</span>
-                          <span className="font-mono text-[#202522] font-semibold">{cloudCover}%</span>
+                          <span className="font-mono text-[#1A1D23] font-semibold">{cloudCover}%</span>
                         </div>
                         <input
                           type="range"
@@ -2876,7 +2876,7 @@ export default function Home() {
                           max="100"
                           value={cloudCover}
                           onChange={(e) => setCloudCover(parseInt(e.target.value))}
-                          className="w-full accent-[#C96B3C] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
+                          className="w-full accent-[#D9622B] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
                         />
                       </div>
 
@@ -2885,7 +2885,7 @@ export default function Home() {
                         <span className="text-[11px] font-medium text-[#69706A]">Temporal comparison</span>
                         <div
                           onClick={() => setCompareMode(!compareMode)}
-                          className={`w-8 h-4.5 rounded-full p-0.5 cursor-pointer transition ${compareMode ? 'bg-[#C96B3C]' : 'bg-[#D8D5CA]'}`}
+                          className={`w-8 h-4.5 rounded-full p-0.5 cursor-pointer transition ${compareMode ? 'bg-[#D9622B]' : 'bg-[#D8D5CA]'}`}
                         >
                           <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-xs transform transition ${compareMode ? 'translate-x-3.5' : 'translate-x-0'}`} />
                         </div>
@@ -2927,7 +2927,7 @@ export default function Home() {
                               type="checkbox"
                               checked={showAtmosphericConfig}
                               onChange={() => {}}
-                              className="accent-[#C96B3C] rounded cursor-pointer pointer-events-none"
+                              className="accent-[#D9622B] rounded cursor-pointer pointer-events-none"
                             />
                             <span className="text-[11px] font-medium">Atmospheric & Cloud Controls</span>
                           </div>
@@ -2955,7 +2955,7 @@ export default function Home() {
                                 type="checkbox"
                                 checked={maskShadows}
                                 onChange={(e) => setMaskShadows(e.target.checked)}
-                                className="accent-[#C96B3C] cursor-pointer"
+                                className="accent-[#D9622B] cursor-pointer"
                               />
                             </div>
                           </div>
@@ -2967,16 +2967,16 @@ export default function Home() {
                         type="button"
                         onClick={fetchSatelliteImagery}
                         disabled={loadingMapId}
-                        className="w-full mt-2 py-2 bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#F4F1E8] text-[#202522] rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
+                        className="w-full mt-2 py-2 bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#F4F1E8] text-[#1A1D23] rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
                       >
                         {loadingMapId ? (
                           <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C96B3C]" />
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D9622B]" />
                             <span>Fetching satellite imagery...</span>
                           </>
                         ) : (
                           <>
-                            <Layers className="w-4 h-4 text-[#C96B3C]" />
+                            <Layers className="w-4 h-4 text-[#D9622B]" />
                             <span>Fetch satellite imagery</span>
                           </>
                         )}
@@ -2994,8 +2994,8 @@ export default function Home() {
                 onClick={() => setPhase3Open(!phase3Open)}
               >
                 <div className="flex items-center gap-2">
-                  <Network className="w-4 h-4 text-[#202522]" />
-                  <span className="text-[13px] font-bold text-[#202522] tracking-tight">Classification</span>
+                  <Network className="w-4 h-4 text-[#1A1D23]" />
+                  <span className="text-[13px] font-bold text-[#1A1D23] tracking-tight">Classification</span>
                   <span className="px-1.5 py-0.2 rounded-full bg-[#EAE7DE] text-[10px] font-mono text-[#69706A] font-semibold">03</span>
                 </div>
                 <span className="text-[#69706A]">
@@ -3018,7 +3018,7 @@ export default function Home() {
                         <select
                           value={modelType}
                           onChange={(e) => setModelType(e.target.value as any)}
-                          className="w-full px-3 py-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg text-xs text-[#202522] font-medium focus:outline-none focus:border-[#C96B3C] shadow-2xs cursor-pointer"
+                          className="w-full px-3 py-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg text-xs text-[#1A1D23] font-medium focus:outline-none focus:border-[#D9622B] shadow-2xs cursor-pointer"
                         >
                           <option value="deep_learning">Deep Learning Spatial U-Net (GeoAI)</option>
                           <option value="random_forest">Smile Random Forest (On-the-Fly)</option>
@@ -3041,7 +3041,7 @@ export default function Home() {
                             <div>
                               <div className="flex justify-between text-[11px] text-[#69706A] mb-1">
                                 <span>Decision trees</span>
-                                <span className="font-mono text-[#202522] font-semibold">{numTrees}</span>
+                                <span className="font-mono text-[#1A1D23] font-semibold">{numTrees}</span>
                               </div>
                               <input
                                 type="range"
@@ -3050,13 +3050,13 @@ export default function Home() {
                                 step="10"
                                 value={numTrees}
                                 onChange={(e) => setNumTrees(parseInt(e.target.value))}
-                                className="w-full accent-[#C96B3C] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
+                                className="w-full accent-[#D9622B] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
                               />
                             </div>
                             <div>
                               <div className="flex justify-between text-[11px] text-[#69706A] mb-1">
                                 <span>Samples per class</span>
-                                <span className="font-mono text-[#202522] font-semibold">{samplePoints} px</span>
+                                <span className="font-mono text-[#1A1D23] font-semibold">{samplePoints} px</span>
                               </div>
                               <input
                                 type="range"
@@ -3065,7 +3065,7 @@ export default function Home() {
                                 step="25"
                                 value={samplePoints}
                                 onChange={(e) => setSamplePoints(parseInt(e.target.value))}
-                                className="w-full accent-[#C96B3C] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
+                                className="w-full accent-[#D9622B] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
                               />
                             </div>
                           </div>
@@ -3077,12 +3077,12 @@ export default function Home() {
                         <Layers className="w-4 h-4 text-[#69706A] mt-0.5 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-[#202522]">Sentinel-1 & SAR Fusion</span>
+                            <span className="text-xs font-bold text-[#1A1D23]">Sentinel-1 & SAR Fusion</span>
                             <input
                               type="checkbox"
                               checked={useSarFusion}
                               onChange={(e) => setUseSarFusion(e.target.checked)}
-                              className="accent-[#C96B3C] rounded cursor-pointer"
+                              className="accent-[#D9622B] rounded cursor-pointer"
                             />
                           </div>
                           <div className="text-[10px] text-[#69706A] mt-0.5">Fuse S1 + S2. 10m resolution. Custom bands.</div>
@@ -3094,16 +3094,16 @@ export default function Home() {
                         type="button"
                         onClick={runClassification}
                         disabled={loadingClassify}
-                        className="w-full mt-2 py-2 bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#F4F1E8] text-[#202522] rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
+                        className="w-full mt-2 py-2 bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#F4F1E8] text-[#1A1D23] rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
                       >
                         {loadingClassify ? (
                           <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C96B3C]" />
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D9622B]" />
                             <span>Classifying satellite imagery...</span>
                           </>
                         ) : (
                           <>
-                            <Sparkles className="w-3.5 h-3.5 text-[#C96B3C]" />
+                            <Sparkles className="w-3.5 h-3.5 text-[#D9622B]" />
                             <span>Analyze & Classify Land Cover</span>
                           </>
                         )}
@@ -3235,7 +3235,7 @@ export default function Home() {
               type="button"
               onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
               className={`absolute top-3.5 right-3.5 z-[999] w-8 h-8 bg-[#FAF9F5] hover:bg-[#F4F1E8] border border-[#D8D5CA] shadow-xs rounded-lg flex items-center justify-center transition cursor-pointer ${
-                !rightRailCollapsed ? 'text-[#C96B3C] border-[#C96B3C]/40' : 'text-[#202522]'
+                !rightRailCollapsed ? 'text-[#D9622B] border-[#D9622B]/40' : 'text-[#1A1D23]'
               }`}
               title={rightRailCollapsed ? "Open layers panel" : "Close layers panel"}
             >
@@ -3581,17 +3581,17 @@ export default function Home() {
 
             {/* AOI Guidance Empty State */}
             {coords.length === 0 && !dismissedInvite && !selectedLocation && !locationQuery.trim() && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#FAF9F5]/95 backdrop-blur-md border border-[#D8D5CA] rounded-xl px-4 py-3 shadow-md max-w-md w-[90vw] text-[#202522]">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#FAF9F5]/95 backdrop-blur-md border border-[#D8D5CA] rounded-xl px-4 py-3 shadow-md max-w-md w-[90vw] text-[#1A1D23]">
                 <button
                   type="button"
                   onClick={() => setDismissedInvite(true)}
-                  className="absolute top-2.5 right-2.5 text-[#8A908A] hover:text-[#202522] p-1 transition cursor-pointer"
+                  className="absolute top-2.5 right-2.5 text-[#8A908A] hover:text-[#1A1D23] p-1 transition cursor-pointer"
                   title="Dismiss guide"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
-                <div className="text-xs font-bold text-[#202522] flex items-center gap-1.5 mb-1">
-                  <span className="w-2 h-2 rounded-full bg-[#C96B3C]"></span>
+                <div className="text-xs font-bold text-[#1A1D23] flex items-center gap-1.5 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-[#D9622B]"></span>
                   Define Area of Interest
                 </div>
                 <div className="text-xs text-[#69706A] leading-relaxed">
@@ -3605,19 +3605,19 @@ export default function Home() {
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[#8A908A] font-semibold text-[11px] uppercase tracking-wider">LAT</span>
-                  <span className="text-[#202522] font-mono font-medium text-[11.5px]">{mapCenter[0].toFixed(5)}°</span>
+                  <span className="text-[#1A1D23] font-mono font-medium text-[11.5px]">{mapCenter[0].toFixed(5)}°</span>
                   <span className="text-[#8A908A] font-semibold text-[11px] uppercase tracking-wider ml-1">LNG</span>
-                  <span className="text-[#202522] font-mono font-medium text-[11.5px]">{mapCenter[1].toFixed(5)}°</span>
+                  <span className="text-[#1A1D23] font-mono font-medium text-[11.5px]">{mapCenter[1].toFixed(5)}°</span>
                 </div>
                 <span className="text-[#D8D5CA]">|</span>
                 <div className="hidden sm:flex items-center gap-1">
                   <span className="text-[#8A908A]">GSD:</span>
-                  <span className="text-[#202522] font-mono">10m / px</span>
+                  <span className="text-[#1A1D23] font-mono">10m / px</span>
                 </div>
                 <span className="text-[#D8D5CA] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1">
                   <span className="text-[#8A908A]">Sensor:</span>
-                  <span className="text-[#202522] font-medium">Sentinel-2 MSI</span>
+                  <span className="text-[#1A1D23] font-medium">Sentinel-2 MSI</span>
                 </div>
                 <span className="text-[#D8D5CA] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1.5 font-mono text-[11px]">
@@ -3625,9 +3625,9 @@ export default function Home() {
                   {cursorCoords ? (
                     <>
                       <span className="text-[#4B8055] font-medium">Lat</span>
-                      <span className="text-[#202522]">{cursorCoords.lat.toFixed(6)}°</span>
+                      <span className="text-[#1A1D23]">{cursorCoords.lat.toFixed(6)}°</span>
                       <span className="text-[#4B8055] font-medium ml-1">Lng</span>
-                      <span className="text-[#202522]">{cursorCoords.lng.toFixed(6)}°</span>
+                      <span className="text-[#1A1D23]">{cursorCoords.lng.toFixed(6)}°</span>
                     </>
                   ) : (
                     <span className="text-[#8A908A] italic font-sans text-[11px]">Move cursor over map</span>
@@ -3639,7 +3639,7 @@ export default function Home() {
                 {aoiAreaHa ? (
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#4B8055]"></span>
-                    <span className="text-[#202522] font-medium font-mono">{aoiAreaHa.toFixed(1)} ha AOI</span>
+                    <span className="text-[#1A1D23] font-medium font-mono">{aoiAreaHa.toFixed(1)} ha AOI</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 text-[#8A908A]">
@@ -3796,7 +3796,7 @@ export default function Home() {
           {/* ---------- Map Status Bar (IBM Plex Mono) ---------- */}
           <div className="flex items-center justify-between px-4 py-1.5 bg-[#FAF9F5] border-t border-b border-[#D8D5CA] text-[11px] font-mono text-[#454B46] select-none z-20">
             <div className="flex items-center gap-3 overflow-x-auto">
-              <span className="font-semibold text-[#202522]">{selectedSensor === 'sentinel_2' ? 'Sentinel-2' : 'Landsat 8/9'}</span>
+              <span className="font-semibold text-[#1A1D23]">{selectedSensor === 'sentinel_2' ? 'Sentinel-2' : 'Landsat 8/9'}</span>
               <span className="text-[#8A908A]">·</span>
               <span>{selectedSensor === 'sentinel_2' ? '10m' : '30m'}</span>
               <span className="text-[#8A908A]">·</span>
@@ -3851,19 +3851,19 @@ export default function Home() {
               <div className="flex items-center gap-6">
                 <button
                   type="button"
-                  className="text-xs font-semibold text-[#202522] border-b-2 border-[#C96B3C] pb-1 cursor-pointer"
+                  className="text-xs font-semibold text-[#1A1D23] border-b-2 border-[#D9622B] pb-1 cursor-pointer"
                 >
                   Classification Analysis
                 </button>
                 <button
                   type="button"
-                  className="text-xs font-medium text-[#69706A] hover:text-[#202522] pb-1 cursor-pointer transition"
+                  className="text-xs font-medium text-[#69706A] hover:text-[#1A1D23] pb-1 cursor-pointer transition"
                 >
                   Statistics
                 </button>
                 <button
                   type="button"
-                  className="text-xs font-medium text-[#69706A] hover:text-[#202522] pb-1 cursor-pointer transition"
+                  className="text-xs font-medium text-[#69706A] hover:text-[#1A1D23] pb-1 cursor-pointer transition"
                 >
                   Metadata
                 </button>
@@ -3876,16 +3876,16 @@ export default function Home() {
                       type="button"
                       onClick={triggerPdfBriefing}
                       disabled={generatingPdf}
-                      className="px-2.5 py-1 bg-transparent hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#202522] rounded text-xs cursor-pointer flex items-center gap-1.5 transition"
+                      className="px-2.5 py-1 bg-transparent hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded text-xs cursor-pointer flex items-center gap-1.5 transition"
                     >
                       {generatingPdf ? (
                         <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C96B3C]" />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#D9622B]" />
                           <span>Generating Briefing...</span>
                         </>
                       ) : (
                         <>
-                          <FileText className="w-3.5 h-3.5 text-[#C96B3C]" />
+                          <FileText className="w-3.5 h-3.5 text-[#D9622B]" />
                           <span>Executive Briefing PDF</span>
                         </>
                       )}
@@ -3893,7 +3893,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={printReport}
-                      className="px-2.5 py-1 bg-transparent hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#202522] rounded text-xs cursor-pointer flex items-center gap-1.5"
+                      className="px-2.5 py-1 bg-transparent hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded text-xs cursor-pointer flex items-center gap-1.5"
                     >
                       <Printer className="w-3.5 h-3.5 text-[#69706A]" /> Print report
                     </button>
@@ -3902,7 +3902,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setAnalyticsExpanded(!analyticsExpanded)}
-                  className="p-1 text-[#69706A] hover:text-[#202522] transition cursor-pointer ml-2"
+                  className="p-1 text-[#69706A] hover:text-[#1A1D23] transition cursor-pointer ml-2"
                   title={analyticsExpanded ? "Collapse Analysis" : "Expand Analysis"}
                 >
                   {analyticsExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
@@ -4046,14 +4046,14 @@ export default function Home() {
         {/* ---------- Right rail (Layers, Tools & Export) ---------- */}
         <aside className={`rail rail-right ${rightRailCollapsed ? 'collapsed' : ''}`} aria-label="Layers and analysis controls">
           <div className="rail-header bg-[#FAF9F5] border-b border-[#D8D5CA]">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#202522]">
-              <Layers className="w-4 h-4 text-[#C96B3C]" />
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#1A1D23]">
+              <Layers className="w-4 h-4 text-[#D9622B]" />
               <span>Layers & Tools</span>
             </div>
             <button
               type="button"
               onClick={() => setRightRailCollapsed(true)}
-              className="p-1 rounded text-[#69706A] hover:text-[#202522] hover:bg-[#F4F1E8] transition cursor-pointer"
+              className="p-1 rounded text-[#69706A] hover:text-[#1A1D23] hover:bg-[#F4F1E8] transition cursor-pointer"
               title="Collapse layers panel"
             >
               <PanelRightClose className="w-4 h-4" />
@@ -4069,7 +4069,7 @@ export default function Home() {
               >
                 <div className="flex items-center gap-2">
                   <img src="/layer-thumbnails/header_icon.png" alt="" className="w-5 h-5 object-contain flex-shrink-0" />
-                  <span className="text-[13.5px] font-bold text-[#202522] tracking-tight">Satellite Layers</span>
+                  <span className="text-[13.5px] font-bold text-[#1A1D23] tracking-tight">Satellite Layers</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-[#69706A] font-semibold">
@@ -4106,7 +4106,7 @@ export default function Home() {
                                 className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-[#D8D5CA]/50 shadow-2xs"
                               />
                               <div className="min-w-0">
-                                <div className="text-xs font-bold text-[#202522] tracking-tight truncate">Base map</div>
+                                <div className="text-xs font-bold text-[#1A1D23] tracking-tight truncate">Base map</div>
                                 <div className="text-[10.5px] text-[#69706A] truncate">Cartographic reference</div>
                               </div>
                             </div>
@@ -4117,7 +4117,7 @@ export default function Home() {
                                   e.stopPropagation();
                                   handleToggleLayer('none');
                                 }}
-                                className="text-[#69706A] hover:text-[#202522] transition-colors p-1 rounded cursor-pointer"
+                                className="text-[#69706A] hover:text-[#1A1D23] transition-colors p-1 rounded cursor-pointer"
                               >
                                 {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4 text-[#8A908A]" />}
                               </button>
@@ -4156,7 +4156,7 @@ export default function Home() {
                                 className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-[#D8D5CA]/50 shadow-2xs"
                               />
                               <div className="min-w-0">
-                                <div className="text-xs font-bold text-[#202522] tracking-tight truncate">{layer.label}</div>
+                                <div className="text-xs font-bold text-[#1A1D23] tracking-tight truncate">{layer.label}</div>
                                 <div className="text-[10.5px] text-[#69706A] truncate">{layer.sub}</div>
                               </div>
                             </div>
@@ -4167,7 +4167,7 @@ export default function Home() {
                                   e.stopPropagation();
                                   handleToggleLayer(layer.key);
                                 }}
-                                className="text-[#69706A] hover:text-[#202522] transition-colors p-1 rounded cursor-pointer"
+                                className="text-[#69706A] hover:text-[#1A1D23] transition-colors p-1 rounded cursor-pointer"
                               >
                                 {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4 text-[#8A908A]" />}
                               </button>
@@ -4195,7 +4195,7 @@ export default function Home() {
                     <div className="p-3 bg-[#F4F1E8] border-t border-[#EFECE3] space-y-2">
                       <div className="flex items-center justify-between text-xs text-[#69706A]">
                         <span className="font-medium text-[11px]">Overlay opacity</span>
-                        <span className="mono text-[#202522] font-semibold text-xs">{Math.round(opacity * 100)}%</span>
+                        <span className="mono text-[#1A1D23] font-semibold text-xs">{Math.round(opacity * 100)}%</span>
                       </div>
                       <input
                         type="range"
@@ -4203,7 +4203,7 @@ export default function Home() {
                         max="100"
                         value={opacity * 100}
                         onChange={(e) => setOpacity(Number(e.target.value) / 100)}
-                        className="w-full accent-[#C96B3C] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
+                        className="w-full accent-[#D9622B] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
                       />
 
                       {/* Confidence toggle */}
@@ -4241,7 +4241,7 @@ export default function Home() {
               >
                 <div className="flex items-center gap-2">
                   <PlusSquare className="w-4 h-4 text-[#69706A]" />
-                  <span className="text-[13.5px] font-bold text-[#202522] tracking-tight">Analysis Tools</span>
+                  <span className="text-[13.5px] font-bold text-[#1A1D23] tracking-tight">Analysis Tools</span>
                 </div>
                 <span className="text-[#69706A]">
                   {phase5Open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -4264,8 +4264,8 @@ export default function Home() {
                           onClick={() => triggerTool('measure')}
                           className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
                             measurementMode
-                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
-                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                              ? 'bg-[#D9622B] text-white border-[#D9622B]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#1A1D23] border-[#D8D5CA]'
                           }`}
                         >
                           <Ruler className="w-3.5 h-3.5" /> Measure
@@ -4275,8 +4275,8 @@ export default function Home() {
                           onClick={() => triggerTool('transect')}
                           className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
                             transectMode
-                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
-                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                              ? 'bg-[#D9622B] text-white border-[#D9622B]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#1A1D23] border-[#D8D5CA]'
                           }`}
                         >
                           <Mountain className="w-3.5 h-3.5" /> Transect
@@ -4286,8 +4286,8 @@ export default function Home() {
                           onClick={() => triggerTool('spectral')}
                           className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
                             spectralInspectorMode
-                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
-                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                              ? 'bg-[#D9622B] text-white border-[#D9622B]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#1A1D23] border-[#D8D5CA]'
                           }`}
                         >
                           <Activity className="w-3.5 h-3.5" /> Spectral
@@ -4297,8 +4297,8 @@ export default function Home() {
                           onClick={() => triggerTool('timeline')}
                           className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
                             timelineMode
-                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
-                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                              ? 'bg-[#D9622B] text-white border-[#D9622B]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#1A1D23] border-[#D8D5CA]'
                           }`}
                         >
                           <History className="w-3.5 h-3.5" /> Timeline
@@ -4308,8 +4308,8 @@ export default function Home() {
                           onClick={() => triggerTool('swipe')}
                           className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
                             swipeActive
-                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
-                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                              ? 'bg-[#D9622B] text-white border-[#D9622B]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#1A1D23] border-[#D8D5CA]'
                           }`}
                         >
                           <Columns2 className="w-3.5 h-3.5" /> Swipe
@@ -4319,8 +4319,8 @@ export default function Home() {
                           onClick={() => triggerTool('notes')}
                           className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
                             noteMode
-                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
-                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                              ? 'bg-[#D9622B] text-white border-[#D9622B]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#1A1D23] border-[#D8D5CA]'
                           }`}
                         >
                           <StickyNote className="w-3.5 h-3.5" /> Notes · {mapNotes.length}
@@ -4332,16 +4332,16 @@ export default function Home() {
                         type="button"
                         onClick={triggerAnalyzeTerrain}
                         disabled={loadingTerrain}
-                        className="w-full py-2 px-2.5 bg-[#F4F1E8] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#202522] rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition font-medium"
+                        className="w-full py-2 px-2.5 bg-[#F4F1E8] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#1A1D23] rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition font-medium"
                       >
                         {loadingTerrain ? (
                           <>
-                            <Loader2 className="w-3.5 h-3.5 text-[#C96B3C] animate-spin" />
+                            <Loader2 className="w-3.5 h-3.5 text-[#D9622B] animate-spin" />
                             <span>Analyzing DEM...</span>
                           </>
                         ) : (
                           <>
-                            <Mountain className="w-3.5 h-3.5 text-[#C96B3C]" />
+                            <Mountain className="w-3.5 h-3.5 text-[#D9622B]" />
                             <span>{terrainData ? "Refresh Terrain & Slope" : "Analyze Terrain & Slope"}</span>
                           </>
                         )}
@@ -4352,16 +4352,16 @@ export default function Home() {
                         type="button"
                         onClick={triggerAnalyzeSpectral}
                         disabled={loadingSpectral}
-                        className="w-full py-2 px-2.5 bg-[#F4F1E8] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#202522] rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition font-medium"
+                        className="w-full py-2 px-2.5 bg-[#F4F1E8] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#1A1D23] rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition font-medium"
                       >
                         {loadingSpectral ? (
                           <>
-                            <Loader2 className="w-3.5 h-3.5 text-[#C96B3C] animate-spin" />
+                            <Loader2 className="w-3.5 h-3.5 text-[#D9622B] animate-spin" />
                             <span>Computing Band Math...</span>
                           </>
                         ) : (
                           <>
-                            <Activity className="w-3.5 h-3.5 text-[#C96B3C]" />
+                            <Activity className="w-3.5 h-3.5 text-[#D9622B]" />
                             <span>{spectralData ? "Refresh Spectral Indices" : "Analyze Spectral Indices"}</span>
                           </>
                         )}
@@ -4384,7 +4384,7 @@ export default function Home() {
               >
                 <div className="flex items-center gap-2">
                   <Download className="w-4 h-4 text-[#69706A]" />
-                  <span className="text-[13.5px] font-bold text-[#202522] tracking-tight">Exports</span>
+                  <span className="text-[13.5px] font-bold text-[#1A1D23] tracking-tight">Exports</span>
                 </div>
                 <span className="text-[#69706A]">
                   {exportsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -4418,7 +4418,7 @@ export default function Home() {
                             <select
                               value={downloadFormat}
                               onChange={(e) => setDownloadFormat(e.target.value as any)}
-                              className="bg-[#F4F1E8] border border-[#D8D5CA] text-[#202522] rounded-lg px-2.5 py-1.5 text-xs flex-1 min-w-0 outline-none font-medium truncate focus:border-[#C96B3C]"
+                              className="bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded-lg px-2.5 py-1.5 text-xs flex-1 min-w-0 outline-none font-medium truncate focus:border-[#D9622B]"
                             >
                               <option value="kmz">KMZ (Google Earth 3D)</option>
                               <option value="kml">KML (Placemark XML)</option>
@@ -4430,10 +4430,10 @@ export default function Home() {
                               type="button"
                               onClick={triggerDownload}
                               disabled={downloading}
-                              className="shrink-0 px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#202522] rounded-lg text-xs cursor-pointer flex items-center gap-1.5 transition font-medium whitespace-nowrap shadow-2xs"
+                              className="shrink-0 px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#1A1D23] rounded-lg text-xs cursor-pointer flex items-center gap-1.5 transition font-medium whitespace-nowrap shadow-2xs"
                               title="Export selected format"
                             >
-                              <Download className="w-3.5 h-3.5 text-[#C96B3C]" />
+                              <Download className="w-3.5 h-3.5 text-[#D9622B]" />
                               <span>{downloading ? 'Saving...' : 'Save'}</span>
                             </button>
                           </div>
@@ -4447,7 +4447,7 @@ export default function Home() {
                             disabled={generatingPdf || !statistics}
                             className={`w-full py-2 px-3 rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-xs ${
                               statistics
-                                ? 'bg-[#C96B3C] hover:bg-[#A84A32] text-white border border-[#A84A32]'
+                                ? 'bg-[#D9622B] hover:bg-[#A84A32] text-white border border-[#A84A32]'
                                 : 'bg-[#F4F1E8] border border-[#D8D5CA] text-[#8A908A] cursor-not-allowed opacity-75'
                             }`}
                             title={statistics ? "Download executive PDF briefing report" : "Run classification first to generate full statistics for the PDF report"}
