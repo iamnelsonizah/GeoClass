@@ -2605,23 +2605,29 @@ export default function MapComponent({
 
   // Fullscreen toggle using the native Fullscreen API
   const toggleFullscreen = useCallback(() => {
-    if (!containerRef.current) return;
+    const target = (containerRef.current?.closest('.map-canvas') || containerRef.current) as HTMLElement;
+    if (!target) return;
 
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+      target.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
     } else {
       document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
     }
   }, []);
 
-  // Listen for fullscreen changes (e.g., user pressing Escape)
+  // Listen for fullscreen toggle and fullscreen changes (e.g., user pressing Escape)
   useEffect(() => {
+    const handleToggle = () => toggleFullscreen();
     const handleChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
+    window.addEventListener('map-toggle-fullscreen', handleToggle);
     document.addEventListener('fullscreenchange', handleChange);
-    return () => document.removeEventListener('fullscreenchange', handleChange);
-  }, []);
+    return () => {
+      window.removeEventListener('map-toggle-fullscreen', handleToggle);
+      document.removeEventListener('fullscreenchange', handleChange);
+    };
+  }, [toggleFullscreen]);
 
   // Label helpers for swipe
   const layerLabel = (key: string) => {
@@ -2914,60 +2920,6 @@ export default function MapComponent({
           />
         )}
       </MapContainer>
-
-      {/* ── Draggable Floating Zoom Controls (bottom-left) ── */}
-      <DraggableContainer defaultPosition={{ x: 16, y: 112, bottom: true }} zIndex={1002}>
-        <div className="flex flex-col items-center gap-1 shadow-md bg-[#FAF9F5]/95 backdrop-blur-md border border-[#D8D5CA] rounded p-1.5 cursor-grab active:cursor-grabbing">
-          {/* Grip handle */}
-          <div className="flex flex-col gap-0.5 justify-center opacity-40 hover:opacity-80 transition-opacity cursor-grab active:cursor-grabbing select-none pb-1 border-b border-[#D8D5CA] w-full items-center">
-            <div className="flex gap-0.5">
-              <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
-              <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
-            </div>
-            <div className="flex gap-0.5">
-              <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
-              <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
-            </div>
-          </div>
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('map-zoom-in'))}
-            className="w-8 h-8 bg-[#F4F1E8] text-[#202522] rounded hover:bg-[#E9E6DC] transition flex items-center justify-center font-bold text-lg cursor-pointer border border-[#D8D5CA]"
-            aria-label="Zoom in"
-          >
-            +
-          </button>
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('map-zoom-out'))}
-            className="w-8 h-8 bg-[#F4F1E8] text-[#202522] rounded hover:bg-[#E9E6DC] transition flex items-center justify-center font-bold text-lg cursor-pointer border border-[#D8D5CA]"
-            aria-label="Zoom out"
-          >
-            −
-          </button>
-          <div className="w-full h-px bg-[#D8D5CA] my-0.5" />
-          <button
-            onClick={toggleFullscreen}
-            className="w-8 h-8 bg-[#F4F1E8] text-[#202522] rounded hover:bg-[#E9E6DC] transition flex items-center justify-center cursor-pointer border border-[#D8D5CA]"
-            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-          >
-            {isFullscreen ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8 3v3a2 2 0 0 1-2 2H3" />
-                <path d="M21 8h-3a2 2 0 0 1-2-2V3" />
-                <path d="M3 16h3a2 2 0 0 1 2 2v3" />
-                <path d="M16 21v-3a2 2 0 0 1 2-2h3" />
-              </svg>
-            ) : (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8 3H5a2 2 0 0 0-2 2v3" />
-                <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
-                <path d="M3 16v3a2 2 0 0 0 2 2h3" />
-                <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
-              </svg>
-            )}
-          </button>
-        </div>
-      </DraggableContainer>
 
       {/* ── Draggable Swipe Comparison Bar (top-center) ── */}
       {canSwipe && (
