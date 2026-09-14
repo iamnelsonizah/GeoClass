@@ -2506,15 +2506,13 @@ export default function Home() {
       <header className="topbar bg-[#FAF9F5] border-b border-[#D8D5CA] px-5 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-[#D9622B]">
-                <polygon points="12 2 2 7 12 12 22 7 12 2" fill="#D9622B" />
-                <polyline points="2 17 12 22 22 17" stroke="#D9622B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                <polyline points="2 12 12 17 22 12" stroke="#D9622B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </svg>
-            </div>
             <div className="flex items-center">
-              <span className="font-sans text-base font-bold tracking-tight text-[#1A1D23]">GeoClass</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src="/geoclass-logo.png" 
+                alt="GeoClass" 
+                className="h-7 w-auto mix-blend-multiply object-contain select-none"
+              />
               <span className="hidden xl:inline-block text-xs text-[#69706A] font-normal border-l border-[#D8D5CA] pl-3 ml-3">
                 Earth Observation & Land Cover Analysis
               </span>
