@@ -43,13 +43,15 @@ export default function SignupPage() {
         <div className="w-full max-w-md bg-[#101C18] border border-[#26332E] rounded-[4px] p-8 space-y-6">
           
           <div className="text-center space-y-3">
-            <Link href="/" className="inline-block">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src="/geoclass-logo.png" 
-                alt="GeoClass" 
-                className="h-8 w-auto mx-auto object-contain brightness-110 contrast-125"
-              />
+            <Link href="/" className="inline-flex items-center gap-2.5 mx-auto">
+              <svg width="26" height="22" viewBox="0 0 28 22" fill="none">
+                <path d="M14 2L2 19H26L14 2Z" stroke="#B7F36B" strokeWidth="2.2" strokeLinejoin="round" />
+                <path d="M8 14L14 7L20 14" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span className="font-sans text-[20px] font-bold tracking-[-0.02em] text-[#F1F3EF]">
+                GeoClass
+              </span>
             </Link>
             <div className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-[#B7F36B]">
               <Shield className="w-3 h-3 text-[#B7F36B]" />
