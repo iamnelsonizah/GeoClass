@@ -1057,6 +1057,41 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   box-shadow: 0 2px 8px rgba(32, 37, 34, 0.12) !important;
 }
 
+/* Base Layers Control Switcher */
+.leaflet-control-layers {
+  background: #ffffff !important;
+  border: 1px solid var(--gc-line) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(26, 29, 35, 0.12) !important;
+  padding: 8px 12px !important;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif !important;
+}
+
+.leaflet-control-layers-toggle {
+  background-color: #ffffff !important;
+  border-radius: 6px !important;
+  border: 1px solid var(--gc-line) !important;
+  box-shadow: 0 2px 6px rgba(26, 29, 35, 0.08) !important;
+}
+
+.leaflet-control-layers-base label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 4px 2px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--gc-ink-900) !important;
+  cursor: pointer !important;
+}
+
+.leaflet-control-layers-base input[type="radio"] {
+  accent-color: #2563EB;
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;

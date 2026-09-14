@@ -807,9 +807,9 @@ function Minimap() {
       // Draw viewport rectangle
       const bounds = map.getBounds();
       rectRef.current = L.rectangle(bounds, {
-        color: '#3b82f6',
+        color: '#D9622B',
         weight: 2,
-        fillColor: '#3b82f6',
+        fillColor: '#D9622B',
         fillOpacity: 0.15,
         interactive: false,
       }).addTo(minimap);
@@ -2763,20 +2763,32 @@ export default function MapComponent({
 
         {/* Base Layers */}
         <LayersControl position="topright">
-          <LayersControl.BaseLayer checked name="Reference Map">
+          <LayersControl.BaseLayer name="Reference Map">
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              subdomains="abcd"
               maxZoom={19}
-              className="geo-reference-tiles"
             />
           </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Satellite Imagery">
-            <TileLayer
-              attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              maxZoom={19}
-            />
+          <LayersControl.BaseLayer checked name="Satellite Imagery">
+            <LayerGroup>
+              <TileLayer
+                attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={19}
+              />
+              <TileLayer
+                attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={19}
+              />
+              <TileLayer
+                attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={19}
+              />
+            </LayerGroup>
           </LayersControl.BaseLayer>
           <LayersControl.BaseLayer name="Dark Streets">
             <LayerGroup>
