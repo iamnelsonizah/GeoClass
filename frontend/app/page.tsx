@@ -435,6 +435,7 @@ export default function Home() {
   const [coords, setCoords] = useState<number[][]>([]);
   const [aoiAreaHa, setAoiAreaHa] = useState<number | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([37.7749, -122.4194]);
+  const [cursorCoords, setCursorCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [mapZoom, setMapZoom] = useState<number>(10);
   const [savedAreas, setSavedAreas] = useState<SavedArea[]>(SAVED_AREAS);
   const [areaSearch, setAreaSearch] = useState('');
@@ -3048,6 +3049,20 @@ export default function Home() {
                   <span className="text-neutral-500">Sensor:</span>
                   <span className="text-neutral-200">Sentinel-2 MSI</span>
                 </div>
+                <span className="text-[#3D4537] hidden md:inline">|</span>
+                <div className="hidden md:flex items-center gap-1.5 font-mono text-[11px]">
+                  <span className="text-neutral-500 font-sans">Cursor:</span>
+                  {cursorCoords ? (
+                    <>
+                      <span className="text-[#4B6445] font-medium">Lat</span>
+                      <span className="text-[#E0DCD3]">{cursorCoords.lat.toFixed(6)}°</span>
+                      <span className="text-[#4B6445] font-medium ml-1">Lng</span>
+                      <span className="text-[#E0DCD3]">{cursorCoords.lng.toFixed(6)}°</span>
+                    </>
+                  ) : (
+                    <span className="text-neutral-500 italic font-sans text-[11px]">Move cursor over map</span>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-3">
@@ -3072,6 +3087,7 @@ export default function Home() {
             {/* Leaflet Map */}
             <MapComponent
               onAOIDrawn={handleAOIDrawn}
+              onCursorMove={setCursorCoords}
               aoiCoords={coords}
               trueColorUrl={tileUrls.trueColor}
               falseColorUrl={tileUrls.falseColor}

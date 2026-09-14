@@ -176,6 +176,7 @@ interface MapComponentProps {
   onTransectDrawn?: (coords: number[][], startLocation?: string, endLocation?: string) => void;
   elevationProfileData?: any;
   onClearElevationProfile?: () => void;
+  onCursorMove?: (coords: { lat: number; lng: number } | null) => void;
 }
 
 interface MapNote {
@@ -483,56 +484,20 @@ function MapController({ center, zoom }: { center: [number, number]; zoom: numbe
   return null;
 }
 
-// ──────────────────────────── Coordinate Display ────────────────────────────────
-// Floating lat/lng readout that follows the mouse cursor position
-function CoordinateDisplay() {
+// ──────────────────────────── Coordinate Tracker ────────────────────────────────
+// Tracks live mouse position over map and emits lat/lng coordinates to parent
+function CoordinateTracker({ onCursorMove }: { onCursorMove?: (coords: { lat: number; lng: number } | null) => void }) {
   const map = useMap();
-  const controlRef = useRef<L.Control | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const CoordControl = L.Control.extend({
-      options: { position: 'bottomleft' as L.ControlPosition },
-      onAdd() {
-        const div = L.DomUtil.create('div', 'leaflet-coord-display');
-        div.innerHTML = `<span style="opacity:0.5">Move cursor over map</span>`;
-        div.style.cssText = `
-          background: rgba(2, 6, 23, 0.85);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(51, 65, 85, 0.6);
-          border-radius: 8px;
-          padding: 5px 10px;
-          font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-          font-size: 11px;
-          color: #94a3b8;
-          pointer-events: none;
-          user-select: none;
-          min-width: 200px;
-          text-align: center;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        `;
-        containerRef.current = div;
-        return div;
-      },
-    });
-
-    controlRef.current = new CoordControl();
-    map.addControl(controlRef.current);
+    if (!onCursorMove) return;
 
     const onMouseMove = (e: L.LeafletMouseEvent) => {
-      if (containerRef.current) {
-        const { lat, lng } = e.latlng;
-        containerRef.current.innerHTML = `
-          <span style="color:#60a5fa">Lat</span> ${lat.toFixed(6)}° &nbsp;
-          <span style="color:#60a5fa">Lng</span> ${lng.toFixed(6)}°
-        `;
-      }
+      onCursorMove({ lat: e.latlng.lat, lng: e.latlng.lng });
     };
 
     const onMouseOut = () => {
-      if (containerRef.current) {
-        containerRef.current.innerHTML = `<span style="opacity:0.5">Move cursor over map</span>`;
-      }
+      onCursorMove(null);
     };
 
     map.on('mousemove', onMouseMove);
@@ -541,9 +506,8 @@ function CoordinateDisplay() {
     return () => {
       map.off('mousemove', onMouseMove);
       map.off('mouseout', onMouseOut);
-      if (controlRef.current) map.removeControl(controlRef.current);
     };
-  }, [map]);
+  }, [map, onCursorMove]);
 
   return null;
 }
@@ -2300,6 +2264,7 @@ export default function MapComponent({
   onTransectDrawn,
   elevationProfileData,
   onClearElevationProfile,
+  onCursorMove,
 }: MapComponentProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
@@ -2652,8 +2617,8 @@ export default function MapComponent({
         {/* Unified AOI Drawing & Boundary Controls */}
         <DrawControl coords={aoiCoords} onAOIDrawn={handleAOIDrawn} />
 
-        {/* Coordinate Readout */}
-        <CoordinateDisplay />
+        {/* Coordinate Readout Tracker */}
+        <CoordinateTracker onCursorMove={onCursorMove} />
 
         {/* Scale Bar */}
         <ScaleBar />
