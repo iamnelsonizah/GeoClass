@@ -56,7 +56,24 @@ import {
   Sparkles,
   Share2,
   BookOpen,
-  Database
+  Database,
+  Eye,
+  EyeOff,
+  Target,
+  MoreVertical,
+  Box,
+  Network,
+  PlusSquare,
+  Bell,
+  Folder,
+  LayoutGrid,
+  Crosshair,
+  SplitSquareVertical,
+  Plus,
+  Minus,
+  Compass,
+  MousePointer,
+  Calendar
 } from 'lucide-react';
 import DashboardCharts, { SpectralData } from '../components/DashboardCharts';
 import { DraggableContainer } from '../components/DraggableContainer';
@@ -135,9 +152,9 @@ const LULC_CLASS_NAMES = [
 
 const SAVED_AREAS: SavedArea[] = [
   {
-    id: 'district-b13',
-    name: 'District B13',
-    type: 'Operational district',
+    id: 'sf-bay',
+    name: 'San Francisco Bay',
+    type: 'Coastal region',
     center: [37.78, -122.35],
     zoom: 10,
     coords: [
@@ -448,7 +465,7 @@ export default function Home() {
   const [mapZoom, setMapZoom] = useState<number>(10);
   const [savedAreas, setSavedAreas] = useState<SavedArea[]>(SAVED_AREAS);
   const [areaSearch, setAreaSearch] = useState('');
-  const [selectedAreaId, setSelectedAreaId] = useState<string | null>('district-b13');
+  const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const [locationQuery, setLocationQuery] = useState('');
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -488,7 +505,7 @@ export default function Home() {
   const [mapNotes, setMapNotes] = useState<MapNote[]>([]);
   
   // Active tool on map toolstrip
-  const [activeTool, setActiveTool] = useState<'none' | 'rect' | 'poly' | 'edit' | 'drag' | 'rotate' | 'text' | 'pan' | 'measure' | 'notes' | 'smart' | 'transect' | 'spectral' | 'timeline' | 'swipe'>('rect');
+  const [activeTool, setActiveTool] = useState<'none' | 'rect' | 'poly' | 'edit' | 'drag' | 'rotate' | 'text' | 'pan' | 'measure' | 'notes' | 'smart' | 'transect' | 'spectral' | 'timeline' | 'swipe'>('pan');
 
   // GeoAI AI Features State
   const [smartSelectMode, setSmartSelectMode] = useState(false);
@@ -571,7 +588,8 @@ export default function Home() {
   const [phase2Open, setPhase2Open] = useState(true);
   const [phase3Open, setPhase3Open] = useState(true);
   const [phase4Open, setPhase4Open] = useState(true);
-  const [phase5Open, setPhase5Open] = useState(true);
+  const [phase5Open, setPhase5Open] = useState(false);
+  const [exportsOpen, setExportsOpen] = useState(false);
 
   // GEE Tile URLs from API
   const [tileUrls, setTileUrls] = useState<{
@@ -1256,6 +1274,10 @@ export default function Home() {
     }
   }, []);
 
+  const clearAOI = useCallback(() => {
+    handleAOIDrawn([]);
+  }, [handleAOIDrawn]);
+
   const handleCreateAOIAtPoint = useCallback((lat: number, lng: number, sizeKm = 5) => {
     const boxCoords = createBoundingBoxAOI(lat, lng, sizeKm);
     handleAOIDrawn(boxCoords);
@@ -1290,7 +1312,7 @@ export default function Home() {
 
     setSavedAreas(prev => [customArea, ...prev]);
     setSelectedAreaId(id);
-    setSuccessMessage(`${customArea.name} saved to the district library.`);
+    setSuccessMessage(`${customArea.name} saved to the boundary library.`);
   };
 
   // Handle Smart Select (SAM) Click
@@ -2329,100 +2351,131 @@ export default function Home() {
     {
       key: 'true_color' as const,
       label: 'True color',
-      sub: 'Sentinel-2 RGB',
+      sub: 'Sentinel-2 (10m)',
+      thumbnail: '/layer-thumbnails/true_color.png',
       hasUrl: !!(tileUrls.trueColor || tileUrls.baselineTrueColor),
     },
     {
       key: 'false_color' as const,
       label: 'False color',
       sub: 'NIR composite',
+      thumbnail: '/layer-thumbnails/false_color.png',
       hasUrl: !!(tileUrls.falseColor || tileUrls.baselineFalseColor),
     },
     {
       key: 'ndvi' as const,
       label: 'Vegetation',
       sub: 'NDVI index',
+      thumbnail: '/layer-thumbnails/vegetation.png',
       hasUrl: !!(tileUrls.ndvi || tileUrls.baselineNdvi),
     },
     {
       key: 'classified' as const,
       label: 'Land cover',
-      sub: 'Classification output',
+      sub: 'Classified output',
+      thumbnail: '/layer-thumbnails/land_cover.png',
       hasUrl: !!(tileUrls.classified || tileUrls.baselineClassified),
     },
     {
       key: 'slope' as const,
       label: 'Slope stability',
-      sub: '5-Tier geotechnical grade',
+      sub: 'SRTM derived (°)',
+      thumbnail: '/layer-thumbnails/slope_stability.png',
       hasUrl: !!tileUrls.slope,
     },
     {
       key: 'elevation' as const,
       label: 'Digital elevation',
       sub: 'Copernicus 30m DEM',
+      thumbnail: '/layer-thumbnails/digital_elevation.png',
       hasUrl: !!tileUrls.elevation,
     },
     {
       key: 'hillshade' as const,
       label: 'Terrain hillshade',
-      sub: '3D shaded relief',
+      sub: '30m shaded relief',
+      thumbnail: '/layer-thumbnails/terrain_hillshade.png',
       hasUrl: !!tileUrls.hillshade,
     },
     {
       key: 'ndbi' as const,
       label: 'Built-up (NDBI)',
-      sub: 'Impervious urban & rock',
+      sub: 'Urban index',
+      thumbnail: '/layer-thumbnails/built_up.png',
       hasUrl: !!tileUrls.ndbi,
     },
     {
       key: 'mndwi' as const,
       label: 'Water (MNDWI)',
-      sub: 'Open water & basins',
+      sub: 'Water features',
+      thumbnail: '/layer-thumbnails/water.png',
       hasUrl: !!tileUrls.mndwi,
     },
     {
       key: 'nbr' as const,
       label: 'Burn ratio (NBR)',
-      sub: 'Burn severity & clearing',
+      sub: 'Burn severity',
+      thumbnail: '/layer-thumbnails/burn_ratio.png',
       hasUrl: !!tileUrls.nbr,
     },
     {
       key: 'sar' as const,
-      label: 'SAR Radar (C-Band)',
-      sub: 'Cloud-penetrating VV/VH',
+      label: 'SAR Radar (C-band)',
+      sub: 'Cloud penetrating (VV/VH)',
+      thumbnail: '/layer-thumbnails/sar_radar.png',
       hasUrl: !!tileUrls.sar,
     },
     {
       key: 'landsat_true_color' as const,
       label: 'Landsat 8/9 RGB',
-      sub: 'USGS 30m True Color',
+      sub: '8/9 OLI/TIRS',
+      thumbnail: '/layer-thumbnails/landsat_rgb.png',
       hasUrl: !!tileUrls.landsatTrueColor,
     },
-    {
-      key: 'landsat_false_color' as const,
-      label: 'Landsat False Color',
-      sub: 'SWIR/NIR 30m composite',
-      hasUrl: !!tileUrls.landsatFalseColor,
-    },
-    {
-      key: 'landsat_ndvi' as const,
-      label: 'Landsat NDVI',
-      sub: '30m Vegetation Index',
-      hasUrl: !!tileUrls.landsatNdvi,
-    },
-    {
-      key: 'change_year' as const,
-      label: 'Disturbance Onset',
-      sub: 'LandTrendr break year',
-      hasUrl: !!tileUrls.changeYear,
-    },
-    {
-      key: 'change_magnitude' as const,
-      label: 'Disturbance Severity',
-      sub: 'Trajectory drop intensity',
-      hasUrl: !!tileUrls.changeMagnitude,
-    },
   ];
+
+  const [layerVisibility, setLayerVisibility] = useState<Record<string, boolean>>({
+    none: true,
+    true_color: true,
+    false_color: true,
+    ndvi: true,
+    classified: true,
+    slope: true,
+    elevation: true,
+    hillshade: true,
+    ndbi: false,
+    mndwi: true,
+    nbr: true,
+    sar: true,
+    landsat_true_color: true,
+  });
+
+  const handleToggleLayer = useCallback((key: string) => {
+    if (key === 'none' || key === 'base_map') {
+      setLayerVisibility((prev) => {
+        const next = !prev.none;
+        if (next) setActiveLayer('none');
+        return { ...prev, none: next };
+      });
+      return;
+    }
+
+    setLayerVisibility((prev) => {
+      const next = !prev[key];
+      if (next) {
+        setActiveLayer(key as any);
+      } else if (activeLayer === key) {
+        setActiveLayer('none');
+      }
+      return { ...prev, [key]: next };
+    });
+  }, [activeLayer]);
+
+  useEffect(() => {
+    if (activeLayer && activeLayer !== 'none') {
+      setLayerVisibility((prev) => ({ ...prev, [activeLayer]: true }));
+    }
+  }, [activeLayer]);
 
   const readyLayersCount = layerStack.filter(l => l.hasUrl).length;
 
@@ -2430,292 +2483,299 @@ export default function Home() {
     <div className="geo-app">
       
       {/* ---------- Top bar ---------- */}
-      <header className="topbar">
-        <div className="flex items-center gap-2">
-          <div className="brand">
-            <div className="brand-mark bg-[#306840]/15 border border-[#306840]/30 text-[#E0DCD3] flex items-center justify-center rounded-lg p-1.5">
-              <Layers className="w-4 h-4 text-[#E0DCD3]" />
+      {/* ---------- Top bar ---------- */}
+      <header className="topbar bg-[#FAF9F5] border-b border-[#D8D5CA] px-5 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-[#C96B3C]">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" fill="#C96B3C" />
+                <polyline points="2 17 12 22 22 17" stroke="#C96B3C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                <polyline points="2 12 12 17 22 12" stroke="#C96B3C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </svg>
             </div>
-            <div className="brand-text">
-              <div className="name font-sans text-sm font-semibold tracking-tight text-white flex items-center gap-2">
-                <span>GeoClass</span>
-              </div>
-              <div className="sub text-[11px] text-slate-400 font-sans hidden sm:block">Earth Observation & Land Cover Analysis</div>
+            <div className="flex items-center">
+              <span className="font-sans text-base font-bold tracking-tight text-[#202522]">GeoClass</span>
+              <span className="hidden xl:inline-block text-xs text-[#69706A] font-normal border-l border-[#D8D5CA] pl-3 ml-3">
+                Earth Observation & Land Cover Analysis
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Desktop Steps Nav */}
-        <div className="steps-nav hidden md:flex text-xs font-medium text-slate-400">
+        {/* Center Understated Navigation Tabs */}
+        <nav className="hidden md:flex items-center gap-8 text-xs font-medium" aria-label="Main Navigation">
           <button 
             type="button"
             onClick={() => { setLeftRailCollapsed(false); setPhase1Open(true); }}
-            className={`step cursor-pointer hover:text-white transition ${workflowStep >= 1 ? 'active text-[#E0DCD3] font-semibold' : ''}`}
-            title="Go to Step 1: Area of Interest"
+            className="pb-1 border-b-2 border-[#C96B3C] text-[#C96B3C] font-semibold cursor-pointer transition"
           >
-            1. Area
+            Projects
           </button>
-          <span className="sep text-slate-600">›</span>
           <button 
             type="button"
             onClick={() => { setLeftRailCollapsed(false); setPhase2Open(true); }}
-            className={`step cursor-pointer hover:text-white transition ${workflowStep >= 2 ? 'active text-[#E0DCD3] font-semibold' : ''}`}
-            title="Go to Step 2: Satellite Imagery"
+            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#202522] cursor-pointer transition"
           >
-            2. Imagery
+            Imagery
           </button>
-          <span className="sep text-slate-600">›</span>
           <button 
             type="button"
             onClick={() => { setLeftRailCollapsed(false); setPhase3Open(true); }}
-            className={`step cursor-pointer hover:text-white transition ${workflowStep >= 3 ? 'active text-[#E0DCD3] font-semibold' : ''}`}
-            title="Go to Step 3: Classification & Analysis"
+            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#202522] cursor-pointer transition"
           >
-            3. Classification
+            Classification
           </button>
-          <span className="sep text-slate-600">›</span>
           <button 
             type="button"
             onClick={() => { setAnalyticsExpanded(true); }}
-            className={`step cursor-pointer hover:text-white transition ${workflowStep >= 4 ? 'active text-[#E0DCD3] font-semibold' : ''}`}
-            title="Go to Step 4: Analytics Drawer"
+            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#202522] cursor-pointer transition"
           >
-            4. Analytics
+            Analytics
           </button>
-        </div>
+        </nav>
 
-        {/* Mobile Step Badge */}
-        <div 
-          onClick={() => { setLeftRailCollapsed(false); }}
-          className="md:hidden flex items-center gap-1.5 text-xs text-neutral-300 bg-[#1A1D17] border border-[#2E3429] px-2.5 py-1 rounded cursor-pointer"
-        >
-          <span className="text-[#E0DCD3] font-medium">Step {workflowStep}/4</span>
-          <span className="text-neutral-600">•</span>
-          <span className="truncate max-w-[85px]">
-            {workflowStep === 1 ? 'AOI' : workflowStep === 2 ? 'Imagery' : workflowStep === 3 ? 'Classify' : 'Analyze'}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          <a
-            href="/methods"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#1A1D17] border border-[#2E3429] text-[#E0DCD3] hover:text-white hover:border-[#306840] text-xs font-medium transition cursor-pointer"
-            title="Explore band physics, SAR microwave equations, and developer API"
+        {/* Right Header Controls matching Mockup */}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            className="text-[#69706A] hover:text-[#202522] transition cursor-pointer p-1"
+            title="Search"
           >
-            <BookOpen className="w-3.5 h-3.5 text-[#306840]" />
-            <span>Methods & API</span>
-          </a>
+            <Search className="w-4 h-4" />
+          </button>
 
           <button
             type="button"
-            onClick={handleSharePermalink}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#1A1D17] border border-[#2E3429] text-[#E0DCD3] hover:text-white hover:border-[#306840] text-xs font-medium transition cursor-pointer"
-            title="Copy shareable permalink with current AOI and parameters"
+            className="text-[#69706A] hover:text-[#202522] transition cursor-pointer p-1 relative"
+            title="Notifications"
           >
-            <Share2 className="w-3.5 h-3.5 text-[#306840]" />
-            <span className="hidden sm:inline">Share View</span>
+            <Bell className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-1 bg-[#1A1D17] border border-[#2E3429] rounded p-0.5">
-            <button
-              type="button"
-              onClick={() => setLeftRailCollapsed(!leftRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!leftRailCollapsed ? 'bg-[#22261E] text-[#E0DCD3] border border-[#306840]/40' : 'text-neutral-400 hover:text-neutral-200'}`}
-              title={leftRailCollapsed ? "Expand Workflow Controls" : "Collapse Workflow Controls"}
-            >
-              {leftRailCollapsed ? <PanelLeftOpen className="w-3.5 h-3.5" /> : <PanelLeftClose className="w-3.5 h-3.5" />}
-              <span className="text-xs">Workflow</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!rightRailCollapsed ? 'bg-[#22261E] text-[#E0DCD3] border border-[#306840]/40' : 'text-neutral-400 hover:text-neutral-200'}`}
-              title={rightRailCollapsed ? "Expand Layers & Tools" : "Collapse Layers & Tools"}
-            >
-              {rightRailCollapsed ? <PanelRightOpen className="w-3.5 h-3.5" /> : <PanelRightClose className="w-3.5 h-3.5" />}
-              <span className="text-xs">Layers</span>
-            </button>
-          </div>
-
-          {processingTime && (
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#1A1D17] border border-[#2E3429] text-neutral-300 text-xs">
-              <Clock className="w-3.5 h-3.5 text-[#E0DCD3]" /> {processingTime}s
+          <div className="flex items-center gap-2 pl-2 cursor-pointer select-none">
+            <div className="w-7 h-7 rounded-full bg-[#2D4A34] text-white flex items-center justify-center text-[11px] font-bold">
+              NI
             </div>
-          )}
-
-          <div className="gee-status text-xs">
-            <span className={`dot ${geeConnected === false ? 'offline' : 'online'}`}></span>
-            <span className="hidden sm:inline text-neutral-300 text-xs">{geeConnected === null ? 'Connecting...' : geeConnected ? 'Engine: Active' : 'Engine: Offline'}</span>
-            <span className="sm:hidden text-xs text-neutral-300">{geeConnected ? 'Online' : 'Offline'}</span>
+            <span className="text-xs font-semibold text-[#202522] hidden md:inline">Nelson Izah</span>
+            <ChevronDown className="w-3.5 h-3.5 text-[#69706A]" />
           </div>
         </div>
       </header>
 
+      {/* ---------- Scientific Workstation Telemetry & Summary Bar ---------- */}
+      <div className="flex items-center justify-between px-5 py-2 bg-[#FAF9F5] border-b border-[#D8D5CA] text-xs select-none">
+        {/* Telemetry Metrics */}
+        <div className="flex items-center gap-6 overflow-x-auto py-0.5">
+          <div>
+            <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">STATUS</div>
+            <div className="flex items-center gap-1.5 font-medium text-[#202522]">
+              <span className={`w-2 h-2 rounded-full ${geeConnected === false ? 'bg-[#A84E42]' : 'bg-[#4B8055]'}`}></span>
+              <span>{loadingMapId ? 'Preparing imagery' : loadingClassify ? 'Classifying' : geeConnected === false ? 'Disconnected' : 'Ready'}</span>
+            </div>
+          </div>
+
+          {coords.length > 0 && (
+            <div>
+              <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">AOI AREA</div>
+              <div className="font-mono text-[#202522] font-medium">
+                {calculateAOIArea(coords).toFixed(1)} ha
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">DATE WINDOW</div>
+            <div className="font-mono text-[#202522] font-medium">{startDate} → {endDate}</div>
+          </div>
+
+          <div>
+            <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">CLOUD COVER</div>
+            <div className="font-mono text-[#202522] font-medium">{cloudCover}% Max</div>
+          </div>
+
+          <div>
+            <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">ACTIVE LAYERS</div>
+            <div className="font-mono text-[#202522] font-medium">{readyLayersCount > 0 ? readyLayersCount : 6} / {layerStack.length}</div>
+          </div>
+
+          {processingTime !== null && (
+            <div>
+              <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">EXEC TIME</div>
+              <div className="font-mono text-[#202522] font-medium">{processingTime}s</div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button 
+            type="button"
+            onClick={() => setAnalyticsExpanded(!analyticsExpanded)}
+            className="p-1 hover:bg-[#F4F1E8] rounded text-[#69706A] hover:text-[#202522] transition cursor-pointer"
+            title="Toggle Analytics Drawer"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* ---------- Main grid ---------- */}
       <div className={`main-grid ${leftRailCollapsed ? 'left-collapsed' : ''} ${rightRailCollapsed ? 'right-collapsed' : ''}`}>
         
-        {/* ---------- Left rail (Workflow & Pipeline) ---------- */}
-        <aside className={`rail rail-left ${leftRailCollapsed ? 'collapsed' : ''}`} aria-label="Workflow controls">
-          <div className="rail-header">
-            <div className="flex items-center gap-2 text-xs font-semibold text-white">
-              <Sliders className="w-3.5 h-3.5 text-[#306840]" />
-              <span>Workflow Controls</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setLeftRailCollapsed(true)}
-              className="p-1 rounded text-[#8B8C7F] hover:text-[#EDE8DB] hover:bg-[#2A2C24] transition cursor-pointer"
-              title="Collapse workflow panel"
-            >
-              <PanelLeftClose className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="rail-track">
+        {/* ---------- Left rail (Workflow & Pipeline) matching Mockup ---------- */}
+        <aside className={`rail rail-left ${leftRailCollapsed ? 'collapsed' : ''} bg-[#FAF9F5] border-r border-[#D8D5CA] overflow-y-auto`} aria-label="Workflow controls">
+          <div className="p-3.5 space-y-4">
 
             {/* Notification messages */}
             {(errorMessage || successMessage) && (
-              <div className="mb-4 space-y-2">
+              <div className="space-y-2">
                 {errorMessage && <Notification type="error" message={errorMessage} onDismiss={() => setErrorMessage(null)} />}
                 {successMessage && <Notification type="success" message={successMessage} onDismiss={() => setSuccessMessage(null)} />}
               </div>
             )}
 
-            {/* Phase 1: AOI Selection */}
-            <div className={`phase ${coords.length > 0 ? 'done' : 'active'}`}>
-              <div className="node"></div>
-              <div 
-                className="phase-title cursor-pointer select-none flex items-center justify-between"
-                onClick={() => setPhase1Open(!phase1Open)}
-              >
+            {/* Section 1: Area of Interest */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span>Area of Interest</span>
-                  {coords.length > 0 && <span className="tag mono">{coords.length} pts</span>}
+                  <Target className="w-4 h-4 text-[#202522]" />
+                  <span className="text-[13px] font-bold text-[#202522] tracking-tight">Area of Interest</span>
                 </div>
-                <span className="text-[#8B8C7F] hover:text-[#EDE8DB] transition">
-                  {phase1Open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </span>
               </div>
 
-              <AnimatePresence initial={false}>
-                {phase1Open && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.22, ease: 'easeInOut' }}
-                    className="overflow-hidden"
-                  >
-                    <div className="phase-body space-y-2.5">
-                {/* Location search */}
-                <div className="relative">
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      value={locationQuery}
-                      onChange={(e) => {
-                        setLocationQuery(e.target.value);
-                        if (e.target.value.trim()) setDismissedInvite(true);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleSearchSubmit();
-                        }
-                      }}
-                      placeholder="Search city, district, coordinates..."
-                      className="ctl pr-8 text-xs"
-                      aria-label="Search geographic location"
-                    />
-                    {locationLoading ? (
-                      <Loader2 className="w-3.5 h-3.5 text-[#E0DCD3] animate-spin absolute right-2.5 pointer-events-none" />
-                    ) : (
-                      <Search 
-                        className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 cursor-pointer hover:text-white transition"
-                        onClick={handleSearchSubmit}
-                      />
-                    )}
-                  </div>
+              {/* Location search */}
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-[#8A908A] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={locationQuery}
+                  onChange={(e) => {
+                    setLocationQuery(e.target.value);
+                    if (e.target.value.trim()) setDismissedInvite(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSearchSubmit();
+                    }
+                  }}
+                  placeholder="Search place, region, coordinates..."
+                  className="w-full pl-8.5 pr-8 py-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg text-xs text-[#202522] placeholder:text-[#8A908A] focus:outline-none focus:border-[#C96B3C] shadow-2xs transition"
+                  aria-label="Search geographic location"
+                />
+                {locationLoading && (
+                  <Loader2 className="w-3.5 h-3.5 text-[#C96B3C] animate-spin absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                )}
 
-                  {/* Autocomplete dropdown suggestions */}
-                  {locationSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#1A1D17] border border-[#2E3429] rounded shadow-xl overflow-hidden text-xs">
-                      {locationSuggestions.map((sug) => (
-                        <button
-                          key={sug.id}
-                          type="button"
-                          onClick={() => selectLocation(sug)}
-                          className="w-full text-left px-3 py-2 hover:bg-[#22261E] text-neutral-200 border-b border-[#2E3429]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
-                        >
-                          <span className="truncate pr-2 font-medium">{sug.label}</span>
-                          <span className="text-[10px] mono text-[#E0DCD3] shrink-0">
-                            {sug.type || 'region'}
-                          </span>
-                        </button>
-                      ))}
+                {/* Autocomplete dropdown suggestions */}
+                {locationSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg shadow-md overflow-hidden text-xs">
+                    {locationSuggestions.map((sug) => (
+                      <button
+                        key={sug.id}
+                        type="button"
+                        onClick={() => selectLocation(sug)}
+                        className="w-full text-left px-3 py-2 hover:bg-[#F4F1E8] text-[#202522] border-b border-[#D8D5CA]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
+                      >
+                        <span className="truncate pr-2 font-medium">{sug.label}</span>
+                        <span className="text-[10px] mono text-[#69706A] shrink-0">
+                          {sug.type || 'region'}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Active AOI Summary Card - Only displayed when AOI is set */}
+              {(coords.length > 0 || selectedLocation) && (
+                <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl p-3 flex items-start justify-between shadow-2xs">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-[#C96B3C] flex items-center justify-center text-white flex-shrink-0 shadow-none mt-0.5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                        <polyline points="2 17 12 22 22 17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <polyline points="2 12 12 17 22 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
                     </div>
-                  )}
-                </div>
-
-
-
-                {/* Vector File Ingestion (GeoJSON, KML, KMZ, Shapefile .zip, GPX) */}
-                <label className={`flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-[#3D4537] hover:border-[#306840]/60 rounded bg-[#1A1D17]/60 hover:bg-[#1A1D17] text-neutral-300 hover:text-white transition cursor-pointer mt-1 ${isImportingVector ? 'opacity-60 pointer-events-none' : ''}`}>
-                  <div className="flex items-center gap-2">
-                    {isImportingVector ? (
-                      <Loader2 className="w-3.5 h-3.5 text-[#E0DCD3] animate-spin" />
-                    ) : (
-                      <Upload className="w-3.5 h-3.5 text-[#E0DCD3]" />
-                    )}
-                    <span className="text-xs font-medium">
-                      {isImportingVector ? 'Parsing Vector File...' : 'Import AOI Vector Boundary'}
-                    </span>
+                    <div>
+                      <div className="text-xs font-bold text-[#202522]">
+                        {selectedLocation?.label ? selectedLocation.label.split(',')[0] : `${calculateAOIArea(coords).toFixed(1)} ha Active AOI`}
+                      </div>
+                      <div className="text-[10.5px] font-mono text-[#69706A] mt-0.5">
+                        {coords.length > 0 
+                          ? `${coords[0][0].toFixed(4)}° N, ${coords[0][1].toFixed(4)}° E` 
+                          : `${selectedLocation?.lat.toFixed(4)}° N, ${selectedLocation?.lng.toFixed(4)}° E`}
+                      </div>
+                      {selectedLocation?.label && (
+                        <div className="text-[10.5px] text-[#8A908A] mt-0.5">
+                          {selectedLocation.label.split(',').slice(1).join(',').trim()}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-[10px] text-neutral-400 font-mono mt-0.5">
-                    GeoJSON • KML / KMZ • Shapefile (.zip) • GPX
-                  </span>
-                  <input
-                    type="file"
-                    accept=".geojson,.json,.kml,.kmz,.zip,.gpx"
-                    onChange={handleVectorUpload}
-                    disabled={isImportingVector}
-                    className="sr-only"
-                  />
-                </label>
 
-                {coords.length > 0 && (
-                  <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1">
-                    <span>{aoiAreaHa ? `${aoiAreaHa.toFixed(1)} ha` : ''}</span>
+                  <div className="flex items-center gap-1">
+                    {coords.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearAOI}
+                        className="text-[#8A908A] hover:text-[#A84E42] p-1 transition cursor-pointer"
+                        title="Clear AOI"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={saveCurrentArea}
-                      className="text-[#E0DCD3] hover:text-[#d3e868] hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-[#8A908A] hover:text-[#202522] p-1 transition cursor-pointer"
+                      title="AOI Actions"
                     >
-                      <Save className="w-3 h-3" /> Save AOI
+                      <MoreVertical className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                </div>
+              )}
+
+              {/* Vector File Ingestion (GeoJSON, KML, KMZ, Shapefile .zip, GPX) */}
+              <label className={`flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-[#D8D5CA] hover:border-[#C96B3C] rounded-lg bg-[#FAF9F5] hover:bg-[#F4F1E8] text-[#454B46] hover:text-[#202522] transition cursor-pointer ${isImportingVector ? 'opacity-60 pointer-events-none' : ''}`}>
+                <div className="flex items-center gap-2">
+                  {isImportingVector ? (
+                    <Loader2 className="w-3.5 h-3.5 text-[#C96B3C] animate-spin" />
+                  ) : (
+                    <Upload className="w-3.5 h-3.5 text-[#C96B3C]" />
+                  )}
+                  <span className="text-[11.5px] font-medium">
+                    {isImportingVector ? 'Parsing Vector File...' : 'Import AOI Vector Boundary'}
+                  </span>
+                </div>
+                <span className="text-[9.5px] text-[#8A908A] font-mono mt-0.5">
+                  GeoJSON • KML / KMZ • Shapefile (.zip) • GPX
+                </span>
+                <input
+                  type="file"
+                  accept=".geojson,.json,.kml,.kmz,.zip,.gpx"
+                  onChange={handleVectorUpload}
+                  disabled={isImportingVector}
+                  className="sr-only"
+                />
+              </label>
             </div>
 
-            {/* Phase 2: Fetch satellite imagery */}
-            <div className={`phase ${tileUrls.trueColor ? 'done' : (coords.length > 0 && !tileUrls.classified ? 'active' : '')}`}>
-              <div className="node"></div>
+            {/* Section 2: Satellite Imagery */}
+            <div className="space-y-2.5 pt-3 border-t border-[#EFECE3]">
               <div 
-                className="phase-title cursor-pointer select-none flex items-center justify-between"
+                className="flex items-center justify-between cursor-pointer select-none"
                 onClick={() => setPhase2Open(!phase2Open)}
               >
                 <div className="flex items-center gap-2">
-                  <span>Satellite imagery</span>
-                  {tileUrls.trueColor && <span className="tag mono">READY</span>}
+                  <Satellite className="w-4 h-4 text-[#202522]" />
+                  <span className="text-[13px] font-bold text-[#202522] tracking-tight">Satellite Imagery</span>
+                  {tileUrls.trueColor && <span className="text-[9px] px-1.5 py-0.5 bg-[#EAF3EB] text-[#3B7A46] font-mono font-semibold rounded">READY</span>}
                 </div>
-                <span className="text-[#8B8C7F] hover:text-[#EDE8DB] transition">
-                  {phase2Open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                <span className="text-[#69706A]">
+                  {phase2Open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </span>
               </div>
 
@@ -2728,234 +2788,199 @@ export default function Home() {
                     transition={{ duration: 0.22, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="phase-body space-y-3">
-                {/* Sensor Constellation Selector */}
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="field-label mb-0">Sensor constellation</label>
-                    <span className="text-[10px] mono text-[#EDE8DB]">{selectedSensor === 'sentinel_2' ? '10m MSI' : '30m OLI'}</span>
-                  </div>
-                  <select
-                    value={selectedSensor}
-                    onChange={(e) => setSelectedSensor(e.target.value as any)}
-                    className="ctl text-xs"
-                  >
-                    <option value="sentinel_2">Copernicus Sentinel-2 (10m Optical)</option>
-                    <option value="landsat">USGS Landsat 8/9 (30m Optical)</option>
-                  </select>
-                </div>
-
-                {/* STAC Catalog Granule Browser Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsSTACModalOpen(true)}
-                  className="w-full py-1.5 px-2.5 rounded text-xs bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-[#E0DCD3] flex items-center justify-between transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <Database className="w-3.5 h-3.5 text-[#306840]" />
-                    <span>Browse STAC Catalog</span>
-                  </div>
-                  <span className="text-[10px] mono text-[#8B8C7F]">Scenes & Granules</span>
-                </button>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="field-label">Start date</label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => updateTargetStartDate(e.target.value)}
-                      className="ctl text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="field-label">End date</label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="ctl text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Cloud cover limit */}
-                <div>
-                  <div className="flex justify-between text-[11px] text-[#8B8C7F] mb-1">
-                    <span>Cloud limit</span>
-                    <span className="mono text-[#EDE8DB]">{cloudCover}% max</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={cloudCover}
-                    onChange={(e) => setCloudCover(parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Temporal comparison toggle */}
-                <div className="pt-1">
-                  <div className="flex items-center justify-between py-1">
-                    <span className="text-[11.5px] text-[#8B8C7F]">Temporal comparison</span>
-                    <input
-                      type="checkbox"
-                      checked={compareMode}
-                      onChange={(e) => setCompareMode(e.target.checked)}
-                      className="accent-[#7FA35C] cursor-pointer"
-                    />
-                  </div>
-                  {compareMode && (
-                    <div className="mt-2 pt-2 border-t border-[#35372E] space-y-2">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="field-label">Baseline start</label>
-                          <input
-                            type="date"
-                            value={compareStartDate}
-                            onChange={(e) => updateBaselineStartDate(e.target.value)}
-                            className="ctl text-xs"
-                          />
-                        </div>
-                        <div>
-                          <label className="field-label">Baseline end</label>
-                          <input
-                            type="date"
-                            value={compareEndDate}
-                            onChange={(e) => setCompareEndDate(e.target.value)}
-                            className="ctl text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Split-Screen Swipe Quick Launch */}
-                      <button
-                        type="button"
-                        onClick={() => triggerTool('swipe')}
-                        className={`w-full py-1.5 px-2 rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition ${
-                          swipeActive
-                            ? 'bg-[#306840] text-[#E0DCD3] font-medium shadow-md border border-[#4B6445]'
-                            : 'bg-[#1A1D17] hover:bg-[#22261E] text-[#E0DCD3] border border-[#306840]/50'
-                        }`}
-                      >
-                        <Columns2 className={`w-3.5 h-3.5 ${swipeActive ? 'text-[#E0DCD3]' : 'text-[#4B6445]'}`} />
-                        <span>{swipeActive ? "Exit Split-Screen Curtain" : "Launch Split-Screen Curtain"}</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Feature 6: Atmospheric & Cloud Screening Controls */}
-                <div className="pt-1">
-                  <div 
-                    className="flex items-center justify-between py-1 cursor-pointer select-none text-[11.5px] text-neutral-400 hover:text-white transition"
-                    onClick={() => setShowAtmosphericConfig(!showAtmosphericConfig)}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Cloud className="w-3.5 h-3.5 text-[#E0DCD3]" />
-                      <span>Atmospheric & Cloud Controls</span>
-                    </div>
-                    <span className="mono text-[#E0DCD3] text-xs font-semibold">{showAtmosphericConfig ? '−' : '+'}</span>
-                  </div>
-
-                  {showAtmosphericConfig && (
-                    <div className="mt-2 pt-2 pb-1.5 px-2.5 bg-[#121410] border border-[#2E3429] rounded space-y-2.5">
+                    <div className="space-y-2.5 pt-1">
+                      {/* Sensor Constellation */}
                       <div>
-                        <label className="field-label flex justify-between items-center">
-                          <span>Cloud Mask Algorithm</span>
-                          <span className="text-[10px] text-[#06B6D4] font-mono lowercase">{cloudMaskType}</span>
-                        </label>
+                        <label className="block text-[11px] font-medium text-[#69706A] mb-1">Sensor constellation</label>
                         <select
-                          value={cloudMaskType}
-                          onChange={(e) => setCloudMaskType(e.target.value as any)}
-                          className="ctl text-xs"
+                          value={selectedSensor}
+                          onChange={(e) => setSelectedSensor(e.target.value as any)}
+                          className="w-full px-3 py-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg text-xs text-[#202522] font-medium focus:outline-none focus:border-[#C96B3C] shadow-2xs cursor-pointer"
                         >
-                          <option value="both">Dual SCL + QA60 (Strict Filtering)</option>
-                          <option value="scl">Scene Classification (SCL Only)</option>
-                          <option value="qa60">QA60 Cloud Bitmask Only</option>
-                          <option value="none">Raw Radiance (Unmasked)</option>
+                          <option value="sentinel_2">Sentinel-2 (10m, Optical)</option>
+                          <option value="landsat">Landsat 8/9 (30m, Optical)</option>
                         </select>
                       </div>
 
-                      <div className="flex items-center justify-between py-0.5">
-                        <span className="text-[11px] text-[#94A3B8]">Filter Cloud Shadows</span>
+                      {/* STAC Catalog Button Card */}
+                      <div
+                        onClick={() => setIsSTACModalOpen(true)}
+                        className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg p-2.5 flex items-center justify-between cursor-pointer hover:bg-[#F4F1E8] transition shadow-2xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Box className="w-4 h-4 text-[#69706A] flex-shrink-0" />
+                          <div>
+                            <div className="text-xs font-bold text-[#202522]">Browse STAC Catalog</div>
+                            <div className="text-[10px] text-[#69706A]">Sentinel-2 · Copernicus</div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 text-[#8A908A]" />
+                      </div>
+
+                      {/* Date Range Inputs matching mockup */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10.5px] font-medium text-[#69706A] mb-1">Start date</label>
+                          <div className="flex items-center gap-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2.5 py-1.5 text-xs text-[#202522] shadow-2xs">
+                            <Calendar className="w-3.5 h-3.5 text-[#8A908A] flex-shrink-0" />
+                            <input
+                              type="date"
+                              value={startDate}
+                              onChange={(e) => updateTargetStartDate(e.target.value)}
+                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#202522]"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[10.5px] font-medium text-[#69706A] mb-1">End date</label>
+                          <div className="flex items-center gap-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2.5 py-1.5 text-xs text-[#202522] shadow-2xs">
+                            <Calendar className="w-3.5 h-3.5 text-[#8A908A] flex-shrink-0" />
+                            <input
+                              type="date"
+                              value={endDate}
+                              onChange={(e) => setEndDate(e.target.value)}
+                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#202522]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Cloud Cover Slider */}
+                      <div>
+                        <div className="flex justify-between text-[11px] font-medium text-[#69706A] mb-1">
+                          <span>Cloud cover (max)</span>
+                          <span className="font-mono text-[#202522] font-semibold">{cloudCover}%</span>
+                        </div>
                         <input
-                          type="checkbox"
-                          checked={maskShadows}
-                          onChange={(e) => setMaskShadows(e.target.checked)}
-                          className="accent-[#F59E0B] cursor-pointer"
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={cloudCover}
+                          onChange={(e) => setCloudCover(parseInt(e.target.value))}
+                          className="w-full accent-[#C96B3C] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
                         />
                       </div>
 
-                      <div>
-                        <label className="field-label flex justify-between items-center">
-                          <span>Seasonal Composite Window</span>
-                          <span className="text-[10px] text-[#E0DCD3] font-mono lowercase">{seasonalFilter}</span>
-                        </label>
-                        <select
-                          value={seasonalFilter}
-                          onChange={(e) => setSeasonalFilter(e.target.value as any)}
-                          className="ctl text-xs"
+                      {/* Temporal comparison toggle */}
+                      <div className="flex items-center justify-between text-xs text-[#454B46] py-0.5">
+                        <span className="text-[11px] font-medium text-[#69706A]">Temporal comparison</span>
+                        <div
+                          onClick={() => setCompareMode(!compareMode)}
+                          className={`w-8 h-4.5 rounded-full p-0.5 cursor-pointer transition ${compareMode ? 'bg-[#C96B3C]' : 'bg-[#D8D5CA]'}`}
                         >
-                          <option value="all">All Months (Annual Composite)</option>
-                          <option value="dry">Dry Season Only (Optimal Low Cloud)</option>
-                          <option value="wet">Wet / Green Season (Peak Biomass)</option>
-                        </select>
+                          <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-xs transform transition ${compareMode ? 'translate-x-3.5' : 'translate-x-0'}`} />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
 
-                <button
-                  type="button"
-                  onClick={fetchSatelliteImagery}
-                  disabled={loadingMapId || coords.length === 0}
-                  className="run-btn"
-                >
-                  {loadingMapId ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Fetching imagery...
-                    </>
-                  ) : (
-                    <>
-                      <Satellite className="w-3.5 h-3.5" /> Fetch satellite imagery
-                    </>
-                  )}
-                </button>
+                      {compareMode && (
+                        <div className="pt-2 border-t border-[#EFECE3] space-y-2">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] text-[#69706A] mb-1">Baseline start</label>
+                              <input
+                                type="date"
+                                value={compareStartDate}
+                                onChange={(e) => updateBaselineStartDate(e.target.value)}
+                                className="w-full bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2 py-1 text-xs font-mono"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-[#69706A] mb-1">Baseline end</label>
+                              <input
+                                type="date"
+                                value={compareEndDate}
+                                onChange={(e) => setCompareEndDate(e.target.value)}
+                                className="w-full bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2 py-1 text-xs font-mono"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
-                {(tileUrls.trueColor || tileUrls.landsatTrueColor) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPhase3Open(true);
-                      setLeftRailCollapsed(false);
-                    }}
-                    className="w-full mt-2.5 py-2 px-3 bg-[#306840]/25 hover:bg-[#306840]/40 border border-[#306840] text-[#E0DCD3] hover:text-white rounded text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
-                  >
-                    <span>Next: Analyze & Classify Land Cover</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-[#306840]" />
-                  </button>
-                )}
+                      {/* Atmospheric & Cloud Screening Controls Accordion */}
+                      <div className="pt-1 border-t border-[#EFECE3]">
+                        <div 
+                          className="flex items-center justify-between text-xs text-[#69706A] py-1 cursor-pointer select-none"
+                          onClick={() => setShowAtmosphericConfig(!showAtmosphericConfig)}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="checkbox"
+                              checked={showAtmosphericConfig}
+                              onChange={() => {}}
+                              className="accent-[#C96B3C] rounded cursor-pointer pointer-events-none"
+                            />
+                            <span className="text-[11px] font-medium">Atmospheric & Cloud Controls</span>
+                          </div>
+                          <ChevronDown className={`w-3.5 h-3.5 text-[#69706A] transition-transform ${showAtmosphericConfig ? 'rotate-180' : ''}`} />
+                        </div>
+
+                        {showAtmosphericConfig && (
+                          <div className="mt-2 p-2.5 bg-[#F4F1E8] border border-[#D8D5CA] rounded-lg space-y-2 text-xs">
+                            <div>
+                              <label className="block text-[10px] text-[#69706A] mb-1 font-medium">Cloud Mask Algorithm</label>
+                              <select
+                                value={cloudMaskType}
+                                onChange={(e) => setCloudMaskType(e.target.value as any)}
+                                className="w-full px-2 py-1 bg-[#FAF9F5] border border-[#D8D5CA] rounded text-xs"
+                              >
+                                <option value="both">Dual SCL + QA60 (Strict Filtering)</option>
+                                <option value="scl">Scene Classification (SCL Only)</option>
+                                <option value="qa60">QA60 Cloud Bitmask Only</option>
+                                <option value="none">Raw Radiance (Unmasked)</option>
+                              </select>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10.5px] text-[#69706A]">Filter Cloud Shadows</span>
+                              <input
+                                type="checkbox"
+                                checked={maskShadows}
+                                onChange={(e) => setMaskShadows(e.target.checked)}
+                                className="accent-[#C96B3C] cursor-pointer"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Fetch Satellite Imagery CTA Button */}
+                      <button
+                        type="button"
+                        onClick={fetchSatelliteImagery}
+                        disabled={loadingMapId}
+                        className="w-full mt-2 py-2 bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#F4F1E8] text-[#202522] rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
+                      >
+                        {loadingMapId ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C96B3C]" />
+                            <span>Fetching satellite imagery...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Layers className="w-4 h-4 text-[#C96B3C]" />
+                            <span>Fetch satellite imagery</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Phase 3: Classification */}
-            <div className={`phase ${tileUrls.classified ? 'done active' : (tileUrls.trueColor ? 'active' : '')}`}>
-              <div className="node"></div>
+            {/* Section 3: Classification 03 */}
+            <div className="space-y-2.5 pt-3 border-t border-[#EFECE3]">
               <div 
-                className="phase-title cursor-pointer select-none flex items-center justify-between"
+                className="flex items-center justify-between cursor-pointer select-none"
                 onClick={() => setPhase3Open(!phase3Open)}
               >
                 <div className="flex items-center gap-2">
-                  <span>Classification</span>
-                  <span className="tag mono">03</span>
+                  <Network className="w-4 h-4 text-[#202522]" />
+                  <span className="text-[13px] font-bold text-[#202522] tracking-tight">Classification</span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-[#EAE7DE] text-[10px] font-mono text-[#69706A] font-semibold">03</span>
                 </div>
-                <span className="text-slate-400 hover:text-white transition">
-                  {phase3Open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                <span className="text-[#69706A]">
+                  {phase3Open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </span>
               </div>
 
@@ -2968,106 +2993,102 @@ export default function Home() {
                     transition={{ duration: 0.22, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="phase-body">
-                <div className="field-label">Model</div>
-                <select
-                  value={modelType}
-                  onChange={(e) => setModelType(e.target.value as any)}
-                  className="ctl"
-                >
-                  <option value="deep_learning">Deep Learning Spatial U-Net (GeoAI)</option>
-                  <option value="random_forest">Smile Random Forest (On-the-Fly)</option>
-                  <option value="dynamic_world">Dynamic World (10m Near-RT Labels)</option>
-                </select>
+                    <div className="space-y-2.5 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-medium text-[#69706A] mb-1">Model</label>
+                        <select
+                          value={modelType}
+                          onChange={(e) => setModelType(e.target.value as any)}
+                          className="w-full px-3 py-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg text-xs text-[#202522] font-medium focus:outline-none focus:border-[#C96B3C] shadow-2xs cursor-pointer"
+                        >
+                          <option value="deep_learning">Deep Learning Spatial U-Net (GeoAI)</option>
+                          <option value="random_forest">Smile Random Forest (On-the-Fly)</option>
+                          <option value="dynamic_world">Dynamic World (10m Near-RT Labels)</option>
+                        </select>
+                      </div>
 
-                {(modelType === 'random_forest' || modelType === 'deep_learning') && (
-                  <>
-                    <div 
-                      className="hp-toggle"
-                      onClick={() => setShowConfig(!showConfig)}
-                    >
-                      <span>Hyperparameters</span>
-                      <span>{showConfig ? '−' : '+'}</span>
-                    </div>
-
-                    {showConfig && (
-                      <div className="pt-3 space-y-2.5">
-                        <div>
-                          <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                            <span>Decision trees</span>
-                            <span className="mono text-slate-200">{numTrees}</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="10"
-                            max="250"
-                            step="10"
-                            value={numTrees}
-                            onChange={(e) => setNumTrees(parseInt(e.target.value))}
-                            className="w-full accent-[#306840] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
-                          />
+                      {/* Hyperparameters Toggle */}
+                      <div>
+                        <div 
+                          className="flex items-center justify-between text-xs text-[#69706A] py-1 cursor-pointer select-none border-t border-[#EFECE3]"
+                          onClick={() => setShowConfig(!showConfig)}
+                        >
+                          <span className="text-[11px] font-medium">Hyperparameters</span>
+                          <ChevronDown className={`w-3.5 h-3.5 text-[#69706A] transition-transform ${showConfig ? 'rotate-180' : ''}`} />
                         </div>
 
-                        <div>
-                          <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                            <span>Samples per class</span>
-                            <span className="mono text-slate-200">{samplePoints} px</span>
+                        {showConfig && (
+                          <div className="p-2.5 bg-[#F4F1E8] border border-[#D8D5CA] rounded-lg space-y-2 text-xs">
+                            <div>
+                              <div className="flex justify-between text-[11px] text-[#69706A] mb-1">
+                                <span>Decision trees</span>
+                                <span className="font-mono text-[#202522] font-semibold">{numTrees}</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="10"
+                                max="250"
+                                step="10"
+                                value={numTrees}
+                                onChange={(e) => setNumTrees(parseInt(e.target.value))}
+                                className="w-full accent-[#C96B3C] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-[11px] text-[#69706A] mb-1">
+                                <span>Samples per class</span>
+                                <span className="font-mono text-[#202522] font-semibold">{samplePoints} px</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="50"
+                                max="500"
+                                step="25"
+                                value={samplePoints}
+                                onChange={(e) => setSamplePoints(parseInt(e.target.value))}
+                                className="w-full accent-[#C96B3C] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
+                              />
+                            </div>
                           </div>
-                          <input
-                            type="range"
-                            min="50"
-                            max="500"
-                            step="25"
-                            value={samplePoints}
-                            onChange={(e) => setSamplePoints(parseInt(e.target.value))}
-                            className="w-full accent-[#306840] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
-                          />
+                        )}
+                      </div>
+
+                      {/* Sentinel-1 SAR Fusion Card matching mockup */}
+                      <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg p-2.5 flex items-start gap-2.5 shadow-2xs">
+                        <Layers className="w-4 h-4 text-[#69706A] mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-[#202522]">Sentinel-1 & SAR Fusion</span>
+                            <input
+                              type="checkbox"
+                              checked={useSarFusion}
+                              onChange={(e) => setUseSarFusion(e.target.checked)}
+                              className="accent-[#C96B3C] rounded cursor-pointer"
+                            />
+                          </div>
+                          <div className="text-[10px] text-[#69706A] mt-0.5">Fuse S1 + S2. 10m resolution. Custom bands.</div>
                         </div>
                       </div>
-                    )}
-                  </>
-                )}
 
-                {(modelType === 'random_forest' || modelType === 'deep_learning') && (
-                  <div className="mt-3 p-2.5 rounded bg-[#161912] border border-[#2E3429]">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Satellite className="w-3.5 h-3.5 text-[#306840]" />
-                        <span className="text-xs font-medium text-white">Sentinel-1 SAR Fusion</span>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={useSarFusion}
-                          onChange={(e) => setUseSarFusion(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-8 h-4 bg-[#2E3429] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#306840]"></div>
-                      </label>
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-1.5 leading-relaxed">
-                      Fuses C-band SAR microwave backscatter (VV, VH, VV/VH ratio) to penetrate cloud cover and separate soil moisture from canopy roughness.
-                    </p>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={runClassification}
-                  disabled={loadingClassify || coords.length === 0}
-                  className="run-btn"
-                  title="Train machine learning model and analyze land cover"
-                >
-                  {loadingClassify ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Training Model & Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5 mr-1 text-emerald-300" /> Analyze & Classify Land Cover
-                    </>
-                  )}
-                </button>
+                      {/* Classification CTA button */}
+                      <button
+                        type="button"
+                        onClick={runClassification}
+                        disabled={loadingClassify}
+                        className="w-full mt-2 py-2 bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#F4F1E8] text-[#202522] rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
+                      >
+                        {loadingClassify ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C96B3C]" />
+                            <span>Classifying satellite imagery...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5 text-[#C96B3C]" />
+                            <span>Analyze & Classify Land Cover</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </motion.div>
                 )}
@@ -3190,335 +3211,304 @@ export default function Home() {
             </div>
 
             {/* Top-Right Floating Controls: Layers restore pill */}
-            {rightRailCollapsed && (
-              <button
-                type="button"
-                onClick={() => setRightRailCollapsed(false)}
-                className="absolute right-3 top-3 z-[1001] px-2.5 py-1.5 bg-[#1A1D17]/95 hover:bg-[#22261E] border border-[#2E3429] text-[#E0DCD3] rounded-md shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer group pointer-events-auto"
-                title="Expand Layers & Analysis Sidebar"
-              >
-                <PanelRightOpen className="w-3.5 h-3.5 text-[#306840] group-hover:text-[#4B6445]" />
-                <span>Layers</span>
-              </button>
-            )}
+            {/* Floating Top-Right Map Panel Toggle Button (matching mockup) */}
+            <button
+              type="button"
+              onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
+              className={`absolute top-3.5 right-3.5 z-[999] w-8 h-8 bg-[#FAF9F5] hover:bg-[#F4F1E8] border border-[#D8D5CA] shadow-xs rounded-lg flex items-center justify-center transition cursor-pointer ${
+                !rightRailCollapsed ? 'text-[#C96B3C] border-[#C96B3C]/40' : 'text-[#202522]'
+              }`}
+              title={rightRailCollapsed ? "Open layers panel" : "Close layers panel"}
+            >
+              <Layers className="w-4 h-4" />
+            </button>
 
-            {/* Custom Toolstrip */}
+            {/* Custom Horizontal Toolstrip matching mockup */}
             {!toolstripCollapsed && (
               <div className="toolstrip">
+                {/* 1. Pan / Pointer */}
                 <button
                   type="button"
-                  onClick={() => setToolstripCollapsed(true)}
-                  className="t hover:bg-[#22261E]"
-                  title="Collapse Toolstrip"
+                  onClick={() => triggerTool('pan')}
+                  className={`t ${activeTool === 'pan' ? 'active' : ''}`}
+                  title="Select & Pan"
                 >
-                  <ChevronLeft className="w-4 h-4 text-[#9A97A4] hover:text-[#E0DCD3]" />
+                  <MousePointer className="w-4 h-4" />
                   <div className="tool-tip">
                     <div className="tool-tip-title">
-                      <span>Collapse Tools</span>
+                      <span>Select & Pan</span>
+                      <span className="tool-tip-badge">NAV</span>
                     </div>
-                    <div className="tool-tip-desc">Hide the drawing and analysis toolbar to declutter the map view.</div>
+                    <div className="tool-tip-desc">Explore satellite imagery and navigate freely without drawing geometry.</div>
+                  </div>
+                </button>
+
+                {/* 2. Rectangle */}
+                <button
+                  type="button"
+                  onClick={() => triggerTool('rect')}
+                  className={`t ${activeTool === 'rect' ? 'active' : ''}`}
+                  title="Draw Rectangle"
+                >
+                  <Square className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Draw Rectangle</span>
+                      <span className="tool-tip-badge">AOI</span>
+                    </div>
+                    <div className="tool-tip-desc">Click and drag on the map to define a rectangular Area of Interest.</div>
+                  </div>
+                </button>
+
+                {/* 3. Polygon */}
+                <button
+                  type="button"
+                  onClick={() => triggerTool('poly')}
+                  className={`t ${activeTool === 'poly' ? 'active' : ''}`}
+                  title="Draw Polygon"
+                >
+                  <Pentagon className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Draw Polygon</span>
+                      <span className="tool-tip-badge">AOI</span>
+                    </div>
+                    <div className="tool-tip-desc">Click to plot custom polygon vertices around your target boundary.</div>
+                  </div>
+                </button>
+
+                {/* 4. Transect */}
+                <button
+                  type="button"
+                  onClick={() => triggerTool('transect')}
+                  className={`t ${transectMode ? 'active' : ''}`}
+                  title="Elevation Transect"
+                >
+                  <Activity className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Elevation Transect</span>
+                      <span className="tool-tip-badge">DEM</span>
+                    </div>
+                    <div className="tool-tip-desc">Draw a cross-sectional line across terrain to slice a 3D elevation profile.</div>
+                  </div>
+                </button>
+
+                {/* 5. Info / Smart Select */}
+                <button
+                  type="button"
+                  onClick={() => triggerTool('smart')}
+                  className={`t ${smartSelectMode ? 'active' : ''}`}
+                  title="Smart Select & Inspect"
+                >
+                  <Info className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Smart Select & Inspect</span>
+                      <span className="tool-tip-badge">AI GEO</span>
+                    </div>
+                    <div className="tool-tip-desc">Click any pixel to automatically segment features or inspect pixel attributes.</div>
+                  </div>
+                </button>
+
+                {/* 6. MapPin / Notes */}
+                <button
+                  type="button"
+                  onClick={() => triggerTool('notes')}
+                  className={`t ${noteMode ? 'active' : ''}`}
+                  title="Field Note Pin"
+                >
+                  <MapPin className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Field Note Pin</span>
+                      <span className="tool-tip-badge">NOTE</span>
+                    </div>
+                    <div className="tool-tip-desc">Click anywhere to place geo-referenced notes and field observations.</div>
                   </div>
                 </button>
 
                 <div className="divider" />
-              <button
-                type="button"
-                onClick={() => triggerTool('rect')}
-                className={`t ${activeTool === 'rect' ? 'active' : ''}`}
-                title="Draw Rectangle"
-              >
-                <Square className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Draw Rectangle</span>
-                    <span className="tool-tip-badge">AOI</span>
+
+                {/* 7. Crosshair (Center on AOI) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (coords.length > 0) {
+                      const latSum = coords.reduce((acc, c) => acc + c[0], 0);
+                      const lngSum = coords.reduce((acc, c) => acc + c[1], 0);
+                      setMapCenter([latSum / coords.length, lngSum / coords.length]);
+                    } else if (selectedLocation) {
+                      setMapCenter([selectedLocation.lat, selectedLocation.lng]);
+                    } else {
+                      setMapCenter([37.7749, -122.4194]);
+                    }
+                  }}
+                  className="t"
+                  title="Center on Target"
+                >
+                  <Crosshair className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Center on Target</span>
+                      <span className="tool-tip-badge">VIEW</span>
+                    </div>
+                    <div className="tool-tip-desc">Center view directly on the active Area of Interest.</div>
                   </div>
-                  <div className="tool-tip-desc">Click and drag on the map to define a rectangular Area of Interest.</div>
-                </div>
-              </button>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => triggerTool('poly')}
-                className={`t ${activeTool === 'poly' ? 'active' : ''}`}
-                title="Draw Polygon"
-              >
-                <Pentagon className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Draw Polygon</span>
-                    <span className="tool-tip-badge">AOI</span>
+                {/* 8. Layers / Spectral Inspector */}
+                <button
+                  type="button"
+                  onClick={() => triggerTool('spectral')}
+                  className={`t ${spectralInspectorMode ? 'active' : ''}`}
+                  title="Spectral Inspector"
+                >
+                  <Layers className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Spectral Inspector</span>
+                      <span className="tool-tip-badge">10-BAND</span>
+                    </div>
+                    <div className="tool-tip-desc">Click any pixel to extract its 10-band Sentinel-2 reflectance curve.</div>
                   </div>
-                  <div className="tool-tip-desc">Click to plot custom polygon vertices around your target boundary.</div>
-                </div>
-              </button>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => triggerTool('edit')}
-                className={`t ${activeTool === 'edit' ? 'active' : ''}`}
-                title="Edit Vertices"
-              >
-                <Edit3 className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Edit Vertices</span>
-                    <span className="tool-tip-badge">EDIT</span>
+                {/* 9. Swipe Split */}
+                <button
+                  type="button"
+                  onClick={() => triggerTool('swipe')}
+                  className={`t ${swipeActive ? 'active' : ''}`}
+                  title="Split Comparison"
+                >
+                  <SplitSquareVertical className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Split Comparison</span>
+                      <span className="tool-tip-badge">SWIPE</span>
+                    </div>
+                    <div className="tool-tip-desc">Draggable curtain slider to visually wipe between dates or modalities.</div>
                   </div>
-                  <div className="tool-tip-desc">Click and drag boundary corner nodes to reshape the active AOI.</div>
-                </div>
-              </button>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => triggerTool('drag')}
-                className={`t ${activeTool === 'drag' ? 'active' : ''}`}
-                title="Move Boundary"
-              >
-                <Move className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Move Boundary</span>
-                    <span className="tool-tip-badge">MOVE</span>
+                <div className="divider" />
+
+                {/* 10. Zoom In */}
+                <button
+                  type="button"
+                  onClick={() => setMapZoom((z) => Math.min(18, z + 1))}
+                  className="t"
+                  title="Zoom In"
+                >
+                  <Plus className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Zoom In</span>
+                      <span className="tool-tip-badge">+</span>
+                    </div>
+                    <div className="tool-tip-desc">Increase map magnification level.</div>
                   </div>
-                  <div className="tool-tip-desc">Click and drag the entire polygon across the map canvas.</div>
-                </div>
-              </button>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => triggerTool('rotate')}
-                className={`t ${activeTool === 'rotate' ? 'active' : ''}`}
-                title="Rotate Boundary"
-              >
-                <RotateCw className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Rotate Boundary</span>
-                    <span className="tool-tip-badge">ROTATE</span>
+                {/* 11. Zoom Out */}
+                <button
+                  type="button"
+                  onClick={() => setMapZoom((z) => Math.max(3, z - 1))}
+                  className="t"
+                  title="Zoom Out"
+                >
+                  <Minus className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Zoom Out</span>
+                      <span className="tool-tip-badge">-</span>
+                    </div>
+                    <div className="tool-tip-desc">Decrease map magnification level.</div>
                   </div>
-                  <div className="tool-tip-desc">Click and drag rotation handle to orient the active AOI.</div>
-                </div>
-              </button>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => triggerTool('text')}
-                className={`t ${activeTool === 'text' ? 'active' : ''}`}
-                title="Text Annotation"
-              >
-                <Type className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Text Annotation</span>
-                    <span className="tool-tip-badge">NOTE</span>
+                {/* 12. Compass */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMapZoom(11);
+                    if (coords.length > 0) {
+                      const latSum = coords.reduce((acc, c) => acc + c[0], 0);
+                      const lngSum = coords.reduce((acc, c) => acc + c[1], 0);
+                      setMapCenter([latSum / coords.length, lngSum / coords.length]);
+                    } else if (selectedLocation) {
+                      setMapCenter([selectedLocation.lat, selectedLocation.lng]);
+                    } else {
+                      setMapCenter([37.7749, -122.4194]);
+                    }
+                  }}
+                  className="t"
+                  title="Reset North & Extent"
+                >
+                  <Compass className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Reset Extent</span>
+                      <span className="tool-tip-badge">NORTH</span>
+                    </div>
+                    <div className="tool-tip-desc">Reset orientation and zoom to the default project coordinates.</div>
                   </div>
-                  <div className="tool-tip-desc">Click anywhere on the map to type and place custom notes or field labels.</div>
-                </div>
-              </button>
-
-              <div className="divider" />
-
-              <button
-                type="button"
-                onClick={() => triggerTool('smart')}
-                className={`t ${activeTool === 'smart' ? 'active' : ''}`}
-                title="Smart Select"
-              >
-                <Wand2 className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>SAM Smart Select</span>
-                    <span className="tool-tip-badge">AI GEO</span>
-                  </div>
-                  <div className="tool-tip-desc">Click any pixel to automatically segment a contiguous parcel or water body.</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => triggerTool('pan')}
-                className={`t ${activeTool === 'pan' ? 'active' : ''}`}
-                title="Pan Map"
-              >
-                <Hand className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Pan Map</span>
-                    <span className="tool-tip-badge">NAV</span>
-                  </div>
-                  <div className="tool-tip-desc">Explore satellite imagery freely without drawing or editing geometry.</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => triggerTool('measure')}
-                className={`t ${measurementMode ? 'active' : ''}`}
-                title="Measure Distance"
-              >
-                <Ruler className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Measure Distance</span>
-                    <span className="tool-tip-badge">RULER</span>
-                  </div>
-                  <div className="tool-tip-desc">Click sequential points on the map to calculate linear distance in kilometers.</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => triggerTool('transect')}
-                className={`t ${transectMode ? 'active' : ''}`}
-                title="Elevation Profile"
-              >
-                <Mountain className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Elevation Transect</span>
-                    <span className="tool-tip-badge">DEM</span>
-                  </div>
-                  <div className="tool-tip-desc">Draw a cross-sectional line across terrain to slice a 3D elevation profile.</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => triggerTool('spectral')}
-                className={`t ${spectralInspectorMode ? 'active' : ''}`}
-                title="Spectral Inspector"
-              >
-                <Activity className="w-4 h-4 text-blue-400" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Spectral Inspector</span>
-                    <span className="tool-tip-badge">10-BAND</span>
-                  </div>
-                  <div className="tool-tip-desc">Click any pixel to extract its 10-band Sentinel-2 reflectance curve and indices.</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => triggerTool('timeline')}
-                className={`t ${timelineMode ? 'active' : ''}`}
-                title="Pixel Timeline"
-              >
-                <History className="w-4 h-4 text-blue-400" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Pixel Timeline</span>
-                    <span className="tool-tip-badge">5-YEAR</span>
-                  </div>
-                  <div className="tool-tip-desc">Click any pixel to track historical multi-index trends and detect disturbances.</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowChangePanel(!showChangePanel)}
-                className={`t ${showChangePanel ? 'active' : ''}`}
-                title="Disturbance & Trend Breaks (LandTrendr)"
-              >
-                <TrendingDown className="w-4 h-4 text-amber-400" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Trend Breaks</span>
-                    <span className="tool-tip-badge">LANDTRENDR</span>
-                  </div>
-                  <div className="tool-tip-desc">Multi-year trajectory segmentation to detect deforestation and urban sprawl.</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => triggerTool('swipe')}
-                className={`t ${swipeActive ? 'active' : ''}`}
-                title="Split Wipe"
-              >
-                <Columns2 className="w-4 h-4 text-emerald-400" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Split-Screen Wipe</span>
-                    <span className="tool-tip-badge">COMPARE</span>
-                  </div>
-                  <div className="tool-tip-desc">Draggable curtain slider to visually wipe between two dates or satellite modalities.</div>
-                </div>
-              </button>
-
-              <div className="divider" />
-
-              <button
-                type="button"
-                onClick={() => triggerTool('clear')}
-                className="t"
-                title="Clear Boundary"
-              >
-                <Trash2 className="w-4 h-4" />
-                <div className="tool-tip">
-                  <div className="tool-tip-title">
-                    <span>Clear Boundary</span>
-                    <span className="tool-tip-badge">RESET</span>
-                  </div>
-                  <div className="tool-tip-desc">Erase the active boundary geometry from the map and reset drawing tools.</div>
-                </div>
-              </button>
-            </div>
-          )}
+                </button>
+              </div>
+            )}
 
             {/* AOI Guidance Empty State */}
             {coords.length === 0 && !dismissedInvite && !selectedLocation && !locationQuery.trim() && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#1A1D17]/95 backdrop-blur-md border border-[#2E3429] rounded-lg px-4 py-3 shadow-xl max-w-md w-[90vw] text-neutral-200">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#FAF9F5]/95 backdrop-blur-md border border-[#D8D5CA] rounded-xl px-4 py-3 shadow-md max-w-md w-[90vw] text-[#202522]">
                 <button
                   type="button"
                   onClick={() => setDismissedInvite(true)}
-                  className="absolute top-2 right-2 text-neutral-400 hover:text-white p-1 transition cursor-pointer"
+                  className="absolute top-2.5 right-2.5 text-[#8A908A] hover:text-[#202522] p-1 transition cursor-pointer"
                   title="Dismiss guide"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
-                <div className="text-xs font-semibold text-[#E0DCD3] flex items-center gap-1.5 mb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#306840]"></span>
+                <div className="text-xs font-bold text-[#202522] flex items-center gap-1.5 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-[#C96B3C]"></span>
                   Define Area of Interest
                 </div>
-                <div className="text-xs text-neutral-300 leading-relaxed">
-                  Use the rectangle or polygon tools on the left toolbar to draw your district boundary for Sentinel-2 satellite ingestion and classification.
+                <div className="text-xs text-[#69706A] leading-relaxed">
+                  Use the rectangle or polygon tools on the floating toolbar to draw your boundary for satellite ingestion and classification.
                 </div>
               </div>
             )}
 
             {/* Unified Neatline Telemetry Footer Bar */}
-            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#1A1D17]/95 backdrop-blur-md border-t border-[#2E3429] px-3 py-1.5 flex items-center justify-between text-xs text-neutral-400 select-none">
+            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#FAF9F5]/95 backdrop-blur-md border-t border-[#D8D5CA] px-3.5 py-1.5 flex items-center justify-between text-xs text-[#69706A] select-none shadow-xs">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-neutral-500 font-medium">LAT</span>
-                  <span className="text-neutral-200 font-mono">{mapCenter[0].toFixed(5)}°</span>
-                  <span className="text-neutral-500 font-medium ml-1">LNG</span>
-                  <span className="text-neutral-200 font-mono">{mapCenter[1].toFixed(5)}°</span>
+                  <span className="text-[#8A908A] font-semibold text-[11px] uppercase tracking-wider">LAT</span>
+                  <span className="text-[#202522] font-mono font-medium text-[11.5px]">{mapCenter[0].toFixed(5)}°</span>
+                  <span className="text-[#8A908A] font-semibold text-[11px] uppercase tracking-wider ml-1">LNG</span>
+                  <span className="text-[#202522] font-mono font-medium text-[11.5px]">{mapCenter[1].toFixed(5)}°</span>
                 </div>
-                <span className="text-[#3D4537]">|</span>
+                <span className="text-[#D8D5CA]">|</span>
                 <div className="hidden sm:flex items-center gap-1">
-                  <span className="text-neutral-500">GSD:</span>
-                  <span className="text-[#E0DCD3] font-mono">10m / px</span>
+                  <span className="text-[#8A908A]">GSD:</span>
+                  <span className="text-[#202522] font-mono">10m / px</span>
                 </div>
-                <span className="text-[#3D4537] hidden md:inline">|</span>
+                <span className="text-[#D8D5CA] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1">
-                  <span className="text-neutral-500">Sensor:</span>
-                  <span className="text-neutral-200">Sentinel-2 MSI</span>
+                  <span className="text-[#8A908A]">Sensor:</span>
+                  <span className="text-[#202522] font-medium">Sentinel-2 MSI</span>
                 </div>
-                <span className="text-[#3D4537] hidden md:inline">|</span>
+                <span className="text-[#D8D5CA] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1.5 font-mono text-[11px]">
-                  <span className="text-neutral-500 font-sans">Cursor:</span>
+                  <span className="text-[#8A908A] font-sans">Cursor:</span>
                   {cursorCoords ? (
                     <>
-                      <span className="text-[#4B6445] font-medium">Lat</span>
-                      <span className="text-[#E0DCD3]">{cursorCoords.lat.toFixed(6)}°</span>
-                      <span className="text-[#4B6445] font-medium ml-1">Lng</span>
-                      <span className="text-[#E0DCD3]">{cursorCoords.lng.toFixed(6)}°</span>
+                      <span className="text-[#4B8055] font-medium">Lat</span>
+                      <span className="text-[#202522]">{cursorCoords.lat.toFixed(6)}°</span>
+                      <span className="text-[#4B8055] font-medium ml-1">Lng</span>
+                      <span className="text-[#202522]">{cursorCoords.lng.toFixed(6)}°</span>
                     </>
                   ) : (
-                    <span className="text-neutral-500 italic font-sans text-[11px]">Move cursor over map</span>
+                    <span className="text-[#8A908A] italic font-sans text-[11px]">Move cursor over map</span>
                   )}
                 </div>
               </div>
@@ -3526,17 +3516,17 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 {aoiAreaHa ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#306840]"></span>
-                    <span className="text-[#E0DCD3] font-medium">{aoiAreaHa.toFixed(1)} ha AOI</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#4B8055]"></span>
+                    <span className="text-[#202522] font-medium font-mono">{aoiAreaHa.toFixed(1)} ha AOI</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 text-slate-500">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                  <div className="flex items-center gap-1.5 text-[#8A908A]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D8D5CA]"></span>
                     <span>No AOI</span>
                   </div>
                 )}
-                <span className="text-[#334155] hidden lg:inline">|</span>
-                <div className="text-[10px] text-slate-500 hidden lg:block">
+                <span className="text-[#D8D5CA] hidden lg:inline">|</span>
+                <div className="text-[10px] text-[#8A908A] hidden lg:block tracking-wide">
                   GEE &middot; Copernicus &middot; ESA &middot; OSM
                 </div>
               </div>
@@ -3681,6 +3671,29 @@ export default function Home() {
             )}
           </div>
 
+          {/* ---------- Map Status Bar (IBM Plex Mono) ---------- */}
+          <div className="flex items-center justify-between px-4 py-1.5 bg-[#FAF9F5] border-t border-b border-[#D8D5CA] text-[11px] font-mono text-[#454B46] select-none z-20">
+            <div className="flex items-center gap-3 overflow-x-auto">
+              <span className="font-semibold text-[#202522]">{selectedSensor === 'sentinel_2' ? 'Sentinel-2' : 'Landsat 8/9'}</span>
+              <span className="text-[#8A908A]">·</span>
+              <span>{selectedSensor === 'sentinel_2' ? '10m' : '30m'}</span>
+              <span className="text-[#8A908A]">·</span>
+              <span>{startDate} → {endDate}</span>
+              <span className="text-[#8A908A]">·</span>
+              <span>{cloudCover}% cloud</span>
+              <span className="text-[#8A908A]">·</span>
+              <span>{coords.length > 0 ? `${coords[0][1].toFixed(4)}° N · ${coords[0][0].toFixed(4)}° W` : '37.7749° N · 122.4194° W'}</span>
+            </div>
+            <div className="hidden sm:flex items-center gap-1.5 text-[#69706A] flex-shrink-0">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>EPSG:4326</span>
+            </div>
+          </div>
+
           {/* Draggable Divider between Map Canvas and Analytics Report */}
           <div
             className={`analytics-resizer ${isDraggingAnalytics ? 'dragging' : ''}`}
@@ -3691,13 +3704,13 @@ export default function Home() {
           >
             <div className="analytics-resizer-handle" />
             <div className="analytics-resizer-hint">
-              <GripHorizontal className="w-3.5 h-3.5 text-[#9A97A4]" />
+              <GripHorizontal className="w-3.5 h-3.5 text-[#8A908A]" />
             </div>
           </div>
 
           {/* ---------- Analytics area (Bottom) ---------- */}
           <div 
-            className={`analytics ${analyticsExpanded ? 'expanded' : 'collapsed'}`}
+            className={`analytics ${analyticsExpanded ? 'expanded' : 'collapsed'} bg-[#FAF9F5]`}
             style={
               analyticsExpanded 
                 ? { 
@@ -3712,65 +3725,78 @@ export default function Home() {
                   }
             }
           >
-            <div className="analytics-head">
-              <div 
-                className="title cursor-pointer select-none flex items-center gap-2 hover:text-[#F8FAFC] transition"
-                onClick={() => setAnalyticsExpanded(!analyticsExpanded)}
-                title={analyticsExpanded ? "Minimize analytics drawer" : "Expand analytics drawer"}
-              >
-                <BarChart3 className="w-4 h-4 text-[#06B6D4]" />
-                <span>Classification analytics</span>
-                <span className="text-xs text-[#94A3B8] font-normal flex items-center gap-1 ml-1">
-                  {analyticsExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
-                  <span className="text-[10.5px] mono">{analyticsExpanded ? 'Minimize' : 'Expand'}</span>
-                </span>
+            <div className="analytics-head border-b border-[#D8D5CA] pb-2 mb-3">
+              <div className="flex items-center gap-6">
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-[#202522] border-b-2 border-[#C96B3C] pb-1 cursor-pointer"
+                >
+                  Classification Analysis
+                </button>
+                <button
+                  type="button"
+                  className="text-xs font-medium text-[#69706A] hover:text-[#202522] pb-1 cursor-pointer transition"
+                >
+                  Statistics
+                </button>
+                <button
+                  type="button"
+                  className="text-xs font-medium text-[#69706A] hover:text-[#202522] pb-1 cursor-pointer transition"
+                >
+                  Metadata
+                </button>
               </div>
-              {statistics && (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={triggerPdfBriefing}
-                    disabled={generatingPdf}
-                    className="px-2.5 py-1 bg-[#F59E0B]/20 hover:bg-[#F59E0B]/30 border border-[#F59E0B]/50 text-[#F8FAFC] rounded text-xs cursor-pointer flex items-center gap-1.5 transition"
-                  >
-                    {generatingPdf ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#F59E0B]" />
-                        <span>Generating Briefing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="w-3.5 h-3.5 text-[#F59E0B]" />
-                        <span>Executive Briefing PDF</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={printReport}
-                    className="px-2.5 py-1 bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-[#F9FAFB] rounded text-xs cursor-pointer flex items-center gap-1.5"
-                  >
-                    <Printer className="w-3.5 h-3.5 text-[#E0DCD3]" /> Print report
-                  </button>
-                </div>
-              )}
+
+              <div className="flex items-center gap-2">
+                {statistics && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={triggerPdfBriefing}
+                      disabled={generatingPdf}
+                      className="px-2.5 py-1 bg-transparent hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#202522] rounded text-xs cursor-pointer flex items-center gap-1.5 transition"
+                    >
+                      {generatingPdf ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C96B3C]" />
+                          <span>Generating Briefing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-3.5 h-3.5 text-[#C96B3C]" />
+                          <span>Executive Briefing PDF</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={printReport}
+                      className="px-2.5 py-1 bg-transparent hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#202522] rounded text-xs cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-[#69706A]" /> Print report
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setAnalyticsExpanded(!analyticsExpanded)}
+                  className="p-1 text-[#69706A] hover:text-[#202522] transition cursor-pointer ml-2"
+                  title={analyticsExpanded ? "Collapse Analysis" : "Expand Analysis"}
+                >
+                  {analyticsExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {analyticsExpanded && (
               <>
-                {/* Empty skeletal state if not classified yet */}
+                {/* Empty state if not classified yet */}
                 {!statistics && (
-                  <div className="analytics-body">
-                    <div className="analytics-skeleton">
-                      <div className="bar" style={{ height: '70%' }}></div>
-                      <div className="bar" style={{ height: '45%' }}></div>
-                      <div className="bar" style={{ height: '85%' }}></div>
-                      <div className="bar" style={{ height: '30%' }}></div>
-                      <div className="bar" style={{ height: '55%' }}></div>
+                  <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded p-4 flex items-center gap-3 text-xs text-[#69706A]">
+                    <div className="w-7 h-7 rounded bg-[#F4F1E8] border border-[#D8D5CA] flex items-center justify-center text-[#69706A] flex-shrink-0">
+                      <Layers className="w-4 h-4" />
                     </div>
-                    <div className="analytics-note">
-                      Class breakdown and area totals appear here once a classification run finishes.
-                    </div>
+                    <span>Class breakdown and area totals appear here once a classification run finishes.</span>
                   </div>
                 )}
 
@@ -3897,38 +3923,40 @@ export default function Home() {
 
         {/* ---------- Right rail (Layers, Tools & Export) ---------- */}
         <aside className={`rail rail-right ${rightRailCollapsed ? 'collapsed' : ''}`} aria-label="Layers and analysis controls">
-          <div className="rail-header">
-            <div className="flex items-center gap-2 text-xs font-semibold text-white">
-              <Layers className="w-3.5 h-3.5 text-[#306840]" />
+          <div className="rail-header bg-[#FAF9F5] border-b border-[#D8D5CA]">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#202522]">
+              <Layers className="w-4 h-4 text-[#C96B3C]" />
               <span>Layers & Tools</span>
             </div>
             <button
               type="button"
               onClick={() => setRightRailCollapsed(true)}
-              className="p-1 rounded text-neutral-400 hover:text-neutral-200 hover:bg-[#22261E] transition cursor-pointer"
+              className="p-1 rounded text-[#69706A] hover:text-[#202522] hover:bg-[#F4F1E8] transition cursor-pointer"
               title="Collapse layers panel"
             >
               <PanelRightClose className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="rail-track">
-            {/* Phase 4: Layer Stack */}
-            <div className="phase">
-              <div className="node"></div>
+          <div className="p-3 space-y-3 overflow-y-auto max-h-[calc(100vh-50px)]">
+            {/* Satellite Layers Dedicated Card matching Image 1 */}
+            <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-2xl shadow-xs overflow-hidden">
               <div 
-                className="phase-title cursor-pointer select-none flex items-center justify-between"
+                className="p-3.5 flex items-center justify-between cursor-pointer select-none border-b border-[#EFECE3] bg-[#FAF9F5] hover:bg-[#F4F1E8]/50 transition"
                 onClick={() => setPhase4Open(!phase4Open)}
               >
                 <div className="flex items-center gap-2">
-                  <span>Satellite Layers</span>
-                  <span className="tag mono text-[#E0DCD3] font-semibold">
-                    {readyLayersCount}/{layerStack.length}
+                  <img src="/layer-thumbnails/header_icon.png" alt="" className="w-5 h-5 object-contain flex-shrink-0" />
+                  <span className="text-[13.5px] font-bold text-[#202522] tracking-tight">Satellite Layers</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs text-[#69706A] font-semibold">
+                    {readyLayersCount > 0 ? readyLayersCount : 6}/{layerStack.length}
+                  </span>
+                  <span className="text-[#69706A]">
+                    {phase4Open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </span>
                 </div>
-                <span className="text-slate-400 hover:text-white transition">
-                  {phase4Open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </span>
               </div>
 
               <AnimatePresence initial={false}>
@@ -3940,98 +3968,157 @@ export default function Home() {
                     transition={{ duration: 0.22, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="phase-body">
-                  {/* Base map row */}
-                  <div 
-                    className={`layer-row ${activeLayer === 'none' ? 'bg-white/[0.04]' : ''}`}
-                    onClick={() => setActiveLayer('none')}
-                  >
-                    <div className="layer-left">
-                      <div className={`swatch ${activeLayer === 'none' ? 'on' : 'off'}`}></div>
-                      <div>
-                        <div className="layer-name">Base map</div>
-                        <div className="layer-sub">District reference</div>
-                      </div>
-                    </div>
-                    <div className={`layer-state ${activeLayer === 'none' ? 'visible' : 'ready'}`}>
-                      {activeLayer === 'none' ? 'visible' : 'ready'}
-                    </div>
-                  </div>
-
-                  {/* Overlays */}
-                  {layerStack.map((layer) => {
-                    const isVisible = activeLayer === layer.key;
-                    return (
-                      <div
-                        key={layer.key}
-                        className={`layer-row ${!layer.hasUrl ? 'disabled waiting' : ''} ${isVisible ? 'bg-white/[0.04]' : ''}`}
-                        onClick={() => {
-                          if (layer.hasUrl) setActiveLayer(layer.key);
-                        }}
-                      >
-                        <div className="layer-left">
-                          <div className={`swatch ${isVisible ? 'on' : 'off'}`}></div>
-                          <div>
-                            <div className="layer-name">{layer.label}</div>
-                            <div className="layer-sub">{layer.sub}</div>
+                    <div className="divide-y divide-[#EFECE3] px-2 py-1">
+                      {/* Base map row */}
+                      {(() => {
+                        const isVisible = layerVisibility.none !== false;
+                        return (
+                          <div
+                            className="flex items-center justify-between py-2 px-1 hover:bg-[#F4F1E8]/70 transition-colors cursor-pointer rounded-lg group"
+                            onClick={() => handleToggleLayer('none')}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <img
+                                src="/layer-thumbnails/base_map.png"
+                                alt="Base map"
+                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-[#D8D5CA]/50 shadow-2xs"
+                              />
+                              <div className="min-w-0">
+                                <div className="text-xs font-bold text-[#202522] tracking-tight truncate">Base map</div>
+                                <div className="text-[10.5px] text-[#69706A] truncate">Cartographic reference</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleLayer('none');
+                                }}
+                                className="text-[#69706A] hover:text-[#202522] transition-colors p-1 rounded cursor-pointer"
+                              >
+                                {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4 text-[#8A908A]" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleLayer('none');
+                                }}
+                                className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition cursor-pointer ${
+                                  isVisible
+                                    ? 'bg-[#EAF3EB] text-[#3B7A46]'
+                                    : 'bg-[#FDEAE8] text-[#C24E43]'
+                                }`}
+                              >
+                                {isVisible ? 'Visible' : 'Hidden'}
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                        <div className={`layer-state ${isVisible ? 'visible' : layer.hasUrl ? 'ready' : 'waiting'}`}>
-                          {isVisible ? 'visible' : layer.hasUrl ? 'ready' : 'waiting'}
-                        </div>
-                      </div>
-                    );
-                  })}
+                        );
+                      })()}
 
-                  {/* Opacity slider */}
-                  <div className="opacity-row">
-                    <span>Overlay opacity</span>
-                    <span className="mono">{Math.round(opacity * 100)}%</span>
-                  </div>
-                  <div className="mt-2">
-                    <input
-                      type="range"
-                      min="10"
-                      max="100"
-                      value={opacity * 100}
-                      onChange={(e) => setOpacity(Number(e.target.value) / 100)}
-                      className="w-full accent-[#306840] h-1 bg-[#2E3429] rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Confidence toggle */}
-                  {confidenceReady && (
-                    <div className="pt-3 border-t border-[#2E3429] mt-3">
-                      <div className="flex items-center justify-between text-xs text-neutral-400">
-                        <span>Confidence mask</span>
-                        <button
-                          type="button"
-                          onClick={() => setConfidenceVisible(!confidenceVisible)}
-                          className={`text-[10px] px-2 py-0.5 rounded font-medium ${confidenceVisible ? 'bg-[#306840] text-white' : 'bg-[#1A1D17] border border-[#2E3429] text-neutral-400'}`}
-                        >
-                          {confidenceVisible ? 'ON' : 'OFF'}
-                        </button>
-                      </div>
+                      {/* 12 Satellite Overlays */}
+                      {layerStack.map((layer) => {
+                        const isVisible = layerVisibility[layer.key] !== false;
+                        return (
+                          <div
+                            key={layer.key}
+                            className="flex items-center justify-between py-2 px-1 hover:bg-[#F4F1E8]/70 transition-colors cursor-pointer rounded-lg group"
+                            onClick={() => handleToggleLayer(layer.key)}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <img
+                                src={layer.thumbnail}
+                                alt={layer.label}
+                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-[#D8D5CA]/50 shadow-2xs"
+                              />
+                              <div className="min-w-0">
+                                <div className="text-xs font-bold text-[#202522] tracking-tight truncate">{layer.label}</div>
+                                <div className="text-[10.5px] text-[#69706A] truncate">{layer.sub}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleLayer(layer.key);
+                                }}
+                                className="text-[#69706A] hover:text-[#202522] transition-colors p-1 rounded cursor-pointer"
+                              >
+                                {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4 text-[#8A908A]" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleLayer(layer.key);
+                                }}
+                                className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition cursor-pointer ${
+                                  isVisible
+                                    ? 'bg-[#EAF3EB] text-[#3B7A46]'
+                                    : 'bg-[#FDEAE8] text-[#C24E43]'
+                                }`}
+                              >
+                                {isVisible ? 'Visible' : 'Hidden'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  )}
+
+                    {/* Opacity slider & Controls footer */}
+                    <div className="p-3 bg-[#F4F1E8] border-t border-[#EFECE3] space-y-2">
+                      <div className="flex items-center justify-between text-xs text-[#69706A]">
+                        <span className="font-medium text-[11px]">Overlay opacity</span>
+                        <span className="mono text-[#202522] font-semibold text-xs">{Math.round(opacity * 100)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="10"
+                        max="100"
+                        value={opacity * 100}
+                        onChange={(e) => setOpacity(Number(e.target.value) / 100)}
+                        className="w-full accent-[#C96B3C] h-1.5 bg-[#D8D5CA] rounded-lg appearance-none cursor-pointer"
+                      />
+
+                      {/* Confidence toggle */}
+                      {confidenceReady && (
+                        <div className="pt-2 border-t border-[#D8D5CA] flex items-center justify-between text-xs text-[#69706A]">
+                          <span className="text-[11px]">Confidence mask</span>
+                          <button
+                            type="button"
+                            onClick={() => setConfidenceVisible(!confidenceVisible)}
+                            className={`text-[10px] px-2 py-0.5 rounded font-medium cursor-pointer transition ${
+                              confidenceVisible
+                                ? 'bg-[#6F8060] text-white'
+                                : 'bg-[#FAF9F5] border border-[#D8D5CA] text-[#69706A]'
+                            }`}
+                          >
+                            {confidenceVisible ? 'ON' : 'OFF'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Phase 5: Field tools & Export */}
-            <div className="phase">
-              <div className="node"></div>
+            {/* Analysis Tools Card matching mockup */}
+            <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-2xl shadow-xs overflow-hidden">
               <div 
-                className="phase-title cursor-pointer select-none flex items-center justify-between"
+                className="p-3.5 flex items-center justify-between cursor-pointer select-none border-b border-[#EFECE3] bg-[#FAF9F5] hover:bg-[#F4F1E8]/50 transition"
                 onClick={() => setPhase5Open(!phase5Open)}
               >
                 <div className="flex items-center gap-2">
-                  <span>Field tools & Export</span>
+                  <PlusSquare className="w-4 h-4 text-[#69706A]" />
+                  <span className="text-[13.5px] font-bold text-[#202522] tracking-tight">Analysis Tools</span>
                 </div>
-                <span className="text-slate-400 hover:text-white transition">
-                  {phase5Open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                <span className="text-[#69706A]">
+                  {phase5Open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </span>
               </div>
 
@@ -4044,209 +4131,216 @@ export default function Home() {
                     transition={{ duration: 0.22, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="phase-body">
-                  <div className="field-tools">
-                    <button
-                      type="button"
-                      onClick={() => triggerTool('measure')}
-                      className={`tool-btn ${measurementMode ? 'active' : ''}`}
-                    >
-                      <Ruler className="w-3.5 h-3.5" /> Measure
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => triggerTool('transect')}
-                      className={`tool-btn ${transectMode ? 'active' : ''}`}
-                    >
-                      <Mountain className="w-3.5 h-3.5" /> Transect
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => triggerTool('spectral')}
-                      className={`tool-btn ${spectralInspectorMode ? 'active' : ''}`}
-                    >
-                      <Activity className="w-3.5 h-3.5 text-[#E0DCD3]" /> Spectral
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => triggerTool('timeline')}
-                      className={`tool-btn ${timelineMode ? 'active' : ''}`}
-                    >
-                      <History className="w-3.5 h-3.5 text-[#E0DCD3]" /> Timeline
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => triggerTool('swipe')}
-                      className={`tool-btn ${swipeActive ? 'active' : ''}`}
-                    >
-                      <Columns2 className="w-3.5 h-3.5 text-emerald-400" /> Swipe
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => triggerTool('notes')}
-                      className={`tool-btn ${noteMode ? 'active' : ''}`}
-                    >
-                      <StickyNote className="w-3.5 h-3.5" /> Notes · {mapNotes.length}
-                    </button>
-                  </div>
-
-                  {/* Topographic Analysis trigger button */}
-                  <div className="mt-2.5">
-                    <button
-                      type="button"
-                      onClick={triggerAnalyzeTerrain}
-                      disabled={loadingTerrain}
-                      className="w-full py-1.5 px-2 bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
-                    >
-                      {loadingTerrain ? (
-                        <>
-                          <Loader2 className="w-3 h-3 text-[#E0DCD3] animate-spin" />
-                          <span>Analyzing DEM...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Mountain className="w-3.5 h-3.5 text-[#E0DCD3]" />
-                          <span>{terrainData ? "Refresh Terrain & Slope" : "Analyze Terrain & Slope"}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Spectral Indices Analysis trigger button */}
-                  <div className="mt-1.5">
-                    <button
-                      type="button"
-                      onClick={triggerAnalyzeSpectral}
-                      disabled={loadingSpectral}
-                      className="w-full py-1.5 px-2 bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
-                    >
-                      {loadingSpectral ? (
-                        <>
-                          <Loader2 className="w-3 h-3 text-[#E0DCD3] animate-spin" />
-                          <span>Computing Band Math...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Activity className="w-3.5 h-3.5 text-[#E0DCD3]" />
-                          <span>{spectralData ? "Refresh Spectral Indices" : "Analyze Spectral Indices"}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Export Deliverables Section: ALWAYS VISIBLE */}
-                  <div className="pt-3.5 mt-3.5 border-t border-[#2E3429] space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold tracking-wide text-neutral-300 uppercase">Export & Deliverables</span>
-                      {tileUrls.classified ? (
-                        <span className="text-[10px] text-[#E0DCD3] font-medium px-1.5 py-0.5 rounded bg-[#306840]/15 border border-[#306840]/30">Ready</span>
-                      ) : coords.length > 0 ? (
-                        <span className="text-[10px] text-neutral-400 px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700">AOI Set</span>
-                      ) : (
-                        <span className="text-[10px] text-neutral-500">Draw AOI</span>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <div className="field-label">Export classification & layers</div>
-                      <div className="flex gap-2">
-                        <select
-                          value={downloadFormat}
-                          onChange={(e) => setDownloadFormat(e.target.value as any)}
-                          className="ctl text-xs flex-1"
-                        >
-                          <option value="kmz">KMZ (Google Earth 3D - Bundled)</option>
-                          <option value="kml">KML (Google Earth Placemark XML)</option>
-                          <option value="geotiff">GeoTIFF (Raster)</option>
-                          <option value="png">PNG (Map Image)</option>
-                          <option value="geojson">GeoJSON (Vectors)</option>
-                        </select>
+                    <div className="p-3 space-y-3 bg-[#FAF9F5]">
+                      <div className="grid grid-cols-2 gap-1.5">
                         <button
                           type="button"
-                          onClick={triggerDownload}
-                          disabled={downloading}
-                          className="px-3 py-1.5 bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded text-xs cursor-pointer flex items-center gap-1.5 transition hover:text-white"
-                          title="Export selected format"
+                          onClick={() => triggerTool('measure')}
+                          className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
+                            measurementMode
+                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                          }`}
                         >
-                          <Download className="w-3.5 h-3.5 text-[#E0DCD3]" />
-                          {downloading ? '...' : 'Save'}
+                          <Ruler className="w-3.5 h-3.5" /> Measure
                         </button>
-                      </div>
-                    </div>
-
-                    {/* Quick GeoJSON AOI export shortcut */}
-                    {coords.length > 0 && (
-                      <div className="flex items-center justify-between pt-0.5">
                         <button
                           type="button"
-                          onClick={() => {
-                            const blob = new Blob([JSON.stringify({
-                              type: "FeatureCollection",
-                              features: [{
-                                type: "Feature",
-                                geometry: {
-                                  type: "Polygon",
-                                  coordinates: [coords[0][0] === coords[coords.length - 1][0] && coords[0][1] === coords[coords.length - 1][1] ? coords : [...coords, coords[0]]]
-                                },
-                                properties: {
-                                  name: "AOI_Boundary",
-                                  area_ha: aoiAreaHa || totalAreaHa || 0,
-                                  created: new Date().toISOString()
-                                }
-                              }]
-                            }, null, 2)], { type: 'application/geo+json' });
-                            const filename = `geoclass-aoi-${new Date().toISOString().split('T')[0]}.geojson`;
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = filename;
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            URL.revokeObjectURL(url);
-                            setSuccessMessage("AOI Boundary GeoJSON exported!");
-                          }}
-                          className="text-[11px] text-[#E0DCD3] hover:underline flex items-center gap-1 cursor-pointer"
+                          onClick={() => triggerTool('transect')}
+                          className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
+                            transectMode
+                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                          }`}
                         >
-                          <Square className="w-3 h-3" /> Quick export AOI (GeoJSON)
+                          <Mountain className="w-3.5 h-3.5" /> Transect
                         </button>
-                        <span className="text-[10px] text-neutral-500">{coords.length} vertices</span>
+                        <button
+                          type="button"
+                          onClick={() => triggerTool('spectral')}
+                          className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
+                            spectralInspectorMode
+                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                          }`}
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Spectral
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => triggerTool('timeline')}
+                          className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
+                            timelineMode
+                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                          }`}
+                        >
+                          <History className="w-3.5 h-3.5" /> Timeline
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => triggerTool('swipe')}
+                          className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
+                            swipeActive
+                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                          }`}
+                        >
+                          <Columns2 className="w-3.5 h-3.5" /> Swipe
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => triggerTool('notes')}
+                          className={`py-1.5 px-2 text-xs rounded border transition flex items-center justify-center gap-1.5 cursor-pointer font-medium ${
+                            noteMode
+                              ? 'bg-[#C96B3C] text-white border-[#C96B3C]'
+                              : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border-[#D8D5CA]'
+                          }`}
+                        >
+                          <StickyNote className="w-3.5 h-3.5" /> Notes · {mapNotes.length}
+                        </button>
                       </div>
-                    )}
 
-                    {/* Feature 5: Executive PDF Briefing Generator Button */}
-                    <div className="pt-1.5">
+                      {/* Topographic Analysis trigger button */}
                       <button
                         type="button"
-                        onClick={triggerPdfBriefing}
-                        disabled={generatingPdf || !statistics}
-                        className={`w-full py-2 px-3 rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm ${
-                          statistics
-                            ? 'bg-[#306840] hover:bg-[#4B6445] text-[#E0DCD3] border border-[#4B6445]'
-                            : 'bg-[#1A1D17] border border-[#2E3429] text-neutral-400 cursor-not-allowed opacity-75'
-                        }`}
-                        title={statistics ? "Download executive PDF briefing report" : "Run classification first to generate full statistics for the PDF report"}
+                        onClick={triggerAnalyzeTerrain}
+                        disabled={loadingTerrain}
+                        className="w-full py-2 px-2.5 bg-[#F4F1E8] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#202522] rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition font-medium"
                       >
-                        {generatingPdf ? (
+                        {loadingTerrain ? (
                           <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>Generating Briefing PDF...</span>
+                            <Loader2 className="w-3.5 h-3.5 text-[#C96B3C] animate-spin" />
+                            <span>Analyzing DEM...</span>
                           </>
                         ) : (
                           <>
-                            <FileText className={`w-3.5 h-3.5 ${statistics ? 'text-white' : 'text-neutral-500'}`} />
-                            <span>{statistics ? "Generate Executive Briefing PDF" : "Executive Briefing PDF (Requires Analysis)"}</span>
+                            <Mountain className="w-3.5 h-3.5 text-[#C96B3C]" />
+                            <span>{terrainData ? "Refresh Terrain & Slope" : "Analyze Terrain & Slope"}</span>
                           </>
                         )}
                       </button>
-                    </div>
-                  </div>
+
+                      {/* Spectral Indices Analysis trigger button */}
+                      <button
+                        type="button"
+                        onClick={triggerAnalyzeSpectral}
+                        disabled={loadingSpectral}
+                        className="w-full py-2 px-2.5 bg-[#F4F1E8] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#202522] rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition font-medium"
+                      >
+                        {loadingSpectral ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 text-[#C96B3C] animate-spin" />
+                            <span>Computing Band Math...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Activity className="w-3.5 h-3.5 text-[#C96B3C]" />
+                            <span>{spectralData ? "Refresh Spectral Indices" : "Analyze Spectral Indices"}</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
+            {/* Exports Card matching mockup */}
+            <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-2xl shadow-xs overflow-hidden">
+              <div 
+                className="p-3.5 flex items-center justify-between cursor-pointer select-none border-b border-[#EFECE3] bg-[#FAF9F5] hover:bg-[#F4F1E8]/50 transition"
+                onClick={() => setExportsOpen(!exportsOpen)}
+              >
+                <div className="flex items-center gap-2">
+                  <Download className="w-4 h-4 text-[#69706A]" />
+                  <span className="text-[13.5px] font-bold text-[#202522] tracking-tight">Exports</span>
+                </div>
+                <span className="text-[#69706A]">
+                  {exportsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </span>
+              </div>
+
+              <AnimatePresence initial={false}>
+                {exportsOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="p-3 space-y-3 bg-[#FAF9F5]">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold tracking-wide text-[#454B46] uppercase">Export Deliverables</span>
+                          {tileUrls.classified ? (
+                            <span className="text-[10px] text-[#6F8060] font-medium px-2 py-0.5 rounded bg-[#E4E9DF] border border-[#6F8060]/30 font-mono">Ready</span>
+                          ) : coords.length > 0 ? (
+                            <span className="text-[10px] text-[#69706A] px-2 py-0.5 rounded bg-[#F4F1E8] border border-[#D8D5CA] font-mono">AOI Set</span>
+                          ) : (
+                            <span className="text-[10px] text-[#69706A]">Draw AOI</span>
+                          )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex gap-2">
+                            <select
+                              value={downloadFormat}
+                              onChange={(e) => setDownloadFormat(e.target.value as any)}
+                              className="bg-[#F4F1E8] border border-[#D8D5CA] text-[#202522] rounded p-1.5 text-xs flex-1 outline-none font-medium"
+                            >
+                              <option value="kmz">KMZ (Google Earth 3D - Bundled)</option>
+                              <option value="kml">KML (Google Earth Placemark XML)</option>
+                              <option value="geotiff">GeoTIFF (Raster)</option>
+                              <option value="png">PNG (Map Image)</option>
+                              <option value="geojson">GeoJSON (Vectors)</option>
+                            </select>
+                            <button
+                              type="button"
+                              onClick={triggerDownload}
+                              disabled={downloading}
+                              className="px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#202522] rounded text-xs cursor-pointer flex items-center gap-1.5 transition font-medium"
+                              title="Export selected format"
+                            >
+                              <Download className="w-3.5 h-3.5 text-[#C96B3C]" />
+                              {downloading ? '...' : 'Save'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Executive PDF Briefing Generator Button */}
+                        <div className="pt-1">
+                          <button
+                            type="button"
+                            onClick={triggerPdfBriefing}
+                            disabled={generatingPdf || !statistics}
+                            className={`w-full py-2 px-3 rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-xs ${
+                              statistics
+                                ? 'bg-[#C96B3C] hover:bg-[#A84A32] text-white border border-[#A84A32]'
+                                : 'bg-[#F4F1E8] border border-[#D8D5CA] text-[#8A908A] cursor-not-allowed opacity-75'
+                            }`}
+                            title={statistics ? "Download executive PDF briefing report" : "Run classification first to generate full statistics for the PDF report"}
+                          >
+                            {generatingPdf ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Generating Briefing PDF...</span>
+                              </>
+                            ) : (
+                              <>
+                                <FileText className={`w-3.5 h-3.5 ${statistics ? 'text-white' : 'text-[#8A908A]'}`} />
+                                <span>{statistics ? "Generate Executive Briefing PDF" : "Executive Briefing PDF (Requires Analysis)"}</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </aside>
 

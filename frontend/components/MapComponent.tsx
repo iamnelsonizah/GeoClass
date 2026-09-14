@@ -566,21 +566,168 @@ function CoordinateTracker({ onCursorMove }: { onCursorMove?: (coords: { lat: nu
 }
 
 // ─────────────────────────────── Scale Bar ──────────────────────────────────────
+// Custom cartographic scale bar with upward ticks and dynamic ground distance (matches GIS workstation standard)
 function ScaleBar() {
   const map = useMap();
-  const controlRef = useRef<L.Control.Scale | null>(null);
+  const controlRef = useRef<L.Control | null>(null);
 
   useEffect(() => {
-    controlRef.current = L.control.scale({
-      position: 'bottomright',
-      maxWidth: 140,
-      metric: true,
-      imperial: true,
+    const CustomScaleControl = L.Control.extend({
+      options: {
+        position: 'bottomright' as L.ControlPosition,
+      },
+      onAdd() {
+        const div = L.DomUtil.create('div', 'gc-carto-scale-control');
+        L.DomEvent.disableClickPropagation(div);
+        L.DomEvent.disableScrollPropagation(div);
+        return div;
+      },
     });
-    map.addControl(controlRef.current);
+
+    const control = new CustomScaleControl();
+    control.addTo(map);
+    controlRef.current = control;
+
+    const updateScale = () => {
+      const container = control.getContainer();
+      if (!container || !map) return;
+
+      const size = map.getSize();
+      if (size.x <= 0 || size.y <= 0) return;
+
+      // Measure ground distance near the bottom of the viewport
+      const y = Math.max(10, size.y - 40);
+      const p1 = map.containerPointToLatLng([100, y]);
+      const p2 = map.containerPointToLatLng([200, y]);
+      const metersPerPixel = map.distance(p1, p2) / 100;
+      if (!metersPerPixel || metersPerPixel <= 0 || !isFinite(metersPerPixel)) return;
+
+      // Target scale bar width: ~160px
+      const targetWidthPx = 160;
+      const targetMeters = targetWidthPx * metersPerPixel;
+
+      // Select clean cartographic rounded distance
+      const pow10 = Math.pow(10, Math.floor(Math.log10(targetMeters)));
+      const mult = targetMeters / pow10;
+      let niceMultiplier = 1;
+      if (mult >= 7.5) {
+        niceMultiplier = 10;
+      } else if (mult >= 3.5) {
+        niceMultiplier = 5;
+      } else if (mult >= 1.5) {
+        niceMultiplier = 2;
+      } else {
+        niceMultiplier = 1;
+      }
+      const maxMeters = niceMultiplier * pow10;
+      const widthPx = Math.max(50, Math.round(maxMeters / metersPerPixel));
+
+      // Calculate ticks and labels matching cartographic standard (0, quarter, half, full)
+      let ticks: { ratio: number; label: string }[] = [];
+      if (maxMeters >= 1000) {
+        const km = maxMeters / 1000;
+        if (km % 2 === 0) {
+          // e.g. 2, 20, 200 km: [0, 5, 10, 20 km]
+          ticks = [
+            { ratio: 0, label: '0' },
+            { ratio: 0.25, label: `${km * 0.25}` },
+            { ratio: 0.5, label: `${km * 0.5}` },
+            { ratio: 1.0, label: `${km} km` },
+          ];
+        } else if (km % 5 === 0) {
+          // e.g. 5, 50 km: [0, 1, 2, 5 km]
+          ticks = [
+            { ratio: 0, label: '0' },
+            { ratio: 0.2, label: `${km * 0.2}` },
+            { ratio: 0.4, label: `${km * 0.4}` },
+            { ratio: 1.0, label: `${km} km` },
+          ];
+        } else {
+          // e.g. 1, 10 km
+          if (km === 1) {
+            ticks = [
+              { ratio: 0, label: '0' },
+              { ratio: 0.25, label: '250' },
+              { ratio: 0.5, label: '500' },
+              { ratio: 1.0, label: '1000 m' },
+            ];
+          } else {
+            ticks = [
+              { ratio: 0, label: '0' },
+              { ratio: 0.25, label: `${km * 0.25}` },
+              { ratio: 0.5, label: `${km * 0.5}` },
+              { ratio: 1.0, label: `${km} km` },
+            ];
+          }
+        }
+      } else {
+        const m = maxMeters;
+        if (m % 20 === 0) {
+          ticks = [
+            { ratio: 0, label: '0' },
+            { ratio: 0.25, label: `${m * 0.25}` },
+            { ratio: 0.5, label: `${m * 0.5}` },
+            { ratio: 1.0, label: `${m} m` },
+          ];
+        } else if (m % 50 === 0 || m === 5) {
+          ticks = [
+            { ratio: 0, label: '0' },
+            { ratio: 0.2, label: `${m * 0.2}` },
+            { ratio: 0.4, label: `${m * 0.4}` },
+            { ratio: 1.0, label: `${m} m` },
+          ];
+        } else {
+          ticks = [
+            { ratio: 0, label: '0' },
+            { ratio: 0.25, label: `${m * 0.25}` },
+            { ratio: 0.5, label: `${m * 0.5}` },
+            { ratio: 1.0, label: `${m} m` },
+          ];
+        }
+      }
+
+      const padX = 18;
+      const startX = padX;
+      const endX = padX + widthPx;
+      const svgWidth = endX + padX + 6;
+      const svgHeight = 30;
+      const baselineY = 22;
+      const tickTop = 15; // 7px tick mark pointing up
+
+      const tickLines = ticks
+        .map((t) => {
+          const x = Math.round(startX + t.ratio * widthPx);
+          return `<line x1="${x}" y1="${baselineY}" x2="${x}" y2="${tickTop}" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="butt" />`;
+        })
+        .join('');
+
+      const tickLabels = ticks
+        .map((t) => {
+          const x = Math.round(startX + t.ratio * widthPx);
+          return `<text x="${x}" y="${tickTop - 3}" text-anchor="middle" fill="#FFFFFF" font-family="'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11.5px" font-weight="600" letter-spacing="-0.01em">${t.label}</text>`;
+        })
+        .join('');
+
+      container.innerHTML = `
+        <div style="pointer-events:none;user-select:none;margin-right:12px;margin-bottom:8px;">
+          <svg width="${svgWidth}" height="${svgHeight}" style="overflow:visible;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.85)) drop-shadow(0 0 1px rgba(0,0,0,0.95));">
+            <line x1="${startX}" y1="${baselineY}" x2="${endX}" y2="${baselineY}" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="butt" />
+            ${tickLines}
+            ${tickLabels}
+          </svg>
+        </div>
+      `;
+    };
+
+    updateScale();
+    map.on('zoomend moveend viewreset resize', updateScale);
 
     return () => {
-      if (controlRef.current) map.removeControl(controlRef.current);
+      map.off('zoomend moveend viewreset resize', updateScale);
+      if (controlRef.current) {
+        map.removeControl(controlRef.current);
+        controlRef.current = null;
+      }
     };
   }, [map]);
 
@@ -888,7 +1035,7 @@ function SwipeControl({
         className="absolute top-0 bottom-0 z-[1001] pointer-events-none"
         style={{ left: `${sliderPos}%` }}
       >
-        <div className="w-[3px] -ml-[1.5px] h-full bg-gradient-to-b from-[#F59E0B] via-[#F8FAFC] to-[#F59E0B] shadow-[0_0_12px_rgba(245,158,11,0.9)]" />
+        <div className="w-[2px] -ml-[1px] h-full bg-[#C96B3C] shadow-[0_0_8px_rgba(201,107,60,0.4)]" />
       </div>
 
       {/* Floating Ratio Badge attached to slider position */}
@@ -896,10 +1043,10 @@ function SwipeControl({
         className="absolute top-4 z-[1002] -translate-x-1/2 select-none pointer-events-none"
         style={{ left: `${sliderPos}%` }}
       >
-        <div className="flex items-center gap-1.5 bg-[#121410]/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-[#2E3429] shadow-2xl text-[10px] font-bold tracking-wider mono text-[#F9FAFB]">
-          <span className="text-[#306840]">{Math.round(sliderPos)}%</span>
-          <span className="text-neutral-400">|</span>
-          <span className="text-[#E0DCD3]">{Math.round(100 - sliderPos)}%</span>
+        <div className="flex items-center gap-1.5 bg-[#FAF9F5]/95 backdrop-blur-md px-2.5 py-1 rounded border border-[#D8D5CA] shadow-md text-[10px] font-bold tracking-wider mono text-[#202522]">
+          <span className="text-[#C96B3C]">{Math.round(sliderPos)}%</span>
+          <span className="text-[#BCB8AA]">|</span>
+          <span className="text-[#416B73]">{Math.round(100 - sliderPos)}%</span>
         </div>
       </div>
 
@@ -910,14 +1057,14 @@ function SwipeControl({
         onMouseDown={startDrag}
         onTouchStart={startDrag}
       >
-        <div className="relative w-11 h-11 rounded-full bg-[#121410]/95 border-2 border-[#F9FAFB] backdrop-blur-md flex items-center justify-center shadow-[0_4px_24px_rgba(0,0,0,0.7)] group-hover:scale-110 group-hover:border-[#306840] transition-all cursor-grab active:cursor-grabbing">
+        <div className="relative w-9 h-9 rounded-full bg-[#FAF9F5] border-2 border-[#C96B3C] backdrop-blur-md flex items-center justify-center shadow-md group-hover:scale-105 group-hover:border-[#A84A32] transition-all cursor-grab active:cursor-grabbing">
           {/* Dual lateral arrows */}
-          <div className="flex items-center justify-between w-6 text-[#F9FAFB] group-hover:text-[#306840] transition-colors">
-            <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
+          <div className="flex items-center justify-between w-5 text-[#202522] group-hover:text-[#C96B3C] transition-colors">
+            <svg width="8" height="10" viewBox="0 0 10 12" fill="currentColor">
               <path d="M9 1L2 6L9 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             </svg>
-            <div className="w-0.5 h-3.5 bg-[#3D4537]" />
-            <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor">
+            <div className="w-0.5 h-3 bg-[#D8D5CA]" />
+            <svg width="8" height="10" viewBox="0 0 10 12" fill="currentColor">
               <path d="M1 1L8 6L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             </svg>
           </div>
@@ -925,15 +1072,15 @@ function SwipeControl({
       </div>
 
       {/* Left side pinned label */}
-      <div className="absolute top-3 left-3 z-[1001] px-3 py-1.5 bg-[#121410]/95 backdrop-blur-md border border-[#2E3429] rounded-lg text-xs font-bold text-[#F9FAFB] shadow-xl flex items-center gap-1.5 pointer-events-none">
-        <span className="w-2 h-2 rounded-full bg-[#306840]" />
+      <div className="absolute top-3 left-3 z-[1001] px-2.5 py-1 bg-[#FAF9F5]/95 backdrop-blur-md border border-[#D8D5CA] rounded text-xs font-semibold text-[#202522] shadow-sm flex items-center gap-1.5 pointer-events-none">
+        <span className="w-2 h-2 rounded-full bg-[#C96B3C]" />
         <span>◀ {leftLabel}</span>
       </div>
 
       {/* Right side pinned label */}
-      <div className="absolute top-3 right-3 z-[1001] px-3 py-1.5 bg-[#121410]/95 backdrop-blur-md border border-[#2E3429] rounded-lg text-xs font-bold text-[#F9FAFB] shadow-xl flex items-center gap-1.5 pointer-events-none">
+      <div className="absolute top-3 right-3 z-[1001] px-2.5 py-1 bg-[#FAF9F5]/95 backdrop-blur-md border border-[#D8D5CA] rounded text-xs font-semibold text-[#202522] shadow-sm flex items-center gap-1.5 pointer-events-none">
         <span>{rightLabel} ▶</span>
-        <span className="w-2 h-2 rounded-full bg-[#E0DCD3]" />
+        <span className="w-2 h-2 rounded-full bg-[#416B73]" />
       </div>
     </>
   );
@@ -1302,8 +1449,8 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
 
       L.circleMarker(point, {
         radius: 6,
-        color: '#12140F',
-        fillColor: '#e9c947',
+        color: '#FAF9F5',
+        fillColor: '#C96B3C',
         fillOpacity: 1,
         weight: 2,
       })
@@ -1357,9 +1504,9 @@ function MeasurementTool({ enabled }: { enabled: boolean }) {
 
         let subtextHtml = 'Click map point to begin';
         if (isFinished && points.length > 1) {
-          subtextHtml = `<span style="color: #06B6D4;">✓ Measurement locked (${points.length - 1} segment${points.length === 2 ? '' : 's'})</span>`;
+          subtextHtml = `<span style="color: #6F8060; font-weight: 600;">✓ Measurement locked (${points.length - 1} segment${points.length === 2 ? '' : 's'})</span>`;
         } else if (points.length > 1 && liveDistanceMeters !== null && !isFinished) {
-          subtextHtml = `Line: <b>${confirmedDistStr}</b> &bull; +${formatMeasureDistance(liveDelta)} to cursor <span style="color:#F59E0B;">(${formatMeasureDistance(liveDistanceMeters)})</span>`;
+          subtextHtml = `Line: <b>${confirmedDistStr}</b> &bull; +${formatMeasureDistance(liveDelta)} to cursor <span style="color:#C96B3C; font-weight: 600;">(${formatMeasureDistance(liveDistanceMeters)})</span>`;
         } else if (points.length > 1) {
           subtextHtml = `${points.length - 1} segment${points.length === 2 ? '' : 's'} connected`;
         } else if (points.length === 1) {
@@ -1646,14 +1793,14 @@ function ElevationTransectTool({
         const div = L.DomUtil.create('div', 'geo-transect-control');
         L.DomEvent.disableClickPropagation(div);
         const distKm = (distanceMeters / 1000).toFixed(2);
-        div.style.backgroundColor = 'rgba(27, 29, 25, 0.94)';
-        div.style.border = '1px solid #35372E';
+        div.style.backgroundColor = 'rgba(250, 249, 245, 0.96)';
+        div.style.border = '1px solid #D8D5CA';
         div.style.padding = '8px 12px';
-        div.style.borderRadius = '6px';
-        div.style.color = '#EDE8DB';
+        div.style.borderRadius = '4px';
+        div.style.color = '#202522';
         div.style.fontSize = '11px';
         div.style.fontFamily = 'monospace';
-        div.style.boxShadow = '0 4px 14px rgba(0,0,0,0.5)';
+        div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
         div.style.display = 'flex';
         div.style.flexDirection = 'column';
         div.style.gap = '6px';
@@ -1665,37 +1812,37 @@ function ElevationTransectTool({
         let routeHtml = '';
         if (startLoc && endLoc) {
           routeHtml = `
-            <div style="background:#12140F;border:1px solid #35372E;border-radius:4px;padding:4px 6px;margin-top:2px;">
-              <div style="color:#8B8C7F;font-size:9.5px;text-transform:uppercase;">Elevation Transect Route</div>
+            <div style="background:#F4F1E8;border:1px solid #D8D5CA;border-radius:4px;padding:4px 6px;margin-top:2px;">
+              <div style="color:#69706A;font-size:9.5px;text-transform:uppercase;">Elevation Transect Route</div>
               <div style="font-weight:600;display:flex;align-items:center;gap:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;">
-                <span style="color:#22c55e;">${startLoc}</span>
-                <span style="color:#8B8C7F;">→</span>
-                <span style="color:#ef4444;">${endLoc}</span>
+                <span style="color:#6F8060;">${startLoc}</span>
+                <span style="color:#69706A;">→</span>
+                <span style="color:#C96B3C;">${endLoc}</span>
               </div>
             </div>
           `;
         } else if (startLoc) {
           routeHtml = `
-            <div style="background:#12140F;border:1px solid #35372E;border-radius:4px;padding:4px 6px;margin-top:2px;">
-              <div style="color:#8B8C7F;font-size:9.5px;text-transform:uppercase;">Starting Point (A)</div>
-              <div style="font-weight:600;color:#22c55e;margin-top:1px;">${startLoc}</div>
+            <div style="background:#F4F1E8;border:1px solid #D8D5CA;border-radius:4px;padding:4px 6px;margin-top:2px;">
+              <div style="color:#69706A;font-size:9.5px;text-transform:uppercase;">Starting Point (A)</div>
+              <div style="font-weight:600;color:#6F8060;margin-top:1px;">${startLoc}</div>
             </div>
           `;
         }
 
         div.innerHTML = `
-          <div style="font-weight: 700; color: #22d3ee; display: flex; align-items: center; gap: 6px;">
-            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#22d3ee;"></span>
+          <div style="font-weight: 700; color: #202522; display: flex; align-items: center; gap: 6px;">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#C96B3C;"></span>
             Elevation Transect Line
           </div>
           ${routeHtml}
-          <div style="color: #8B8C7F;">
-            ${points.length < 2 ? 'Click on map to place transect points (min 2 points)' : `${points.length} points &middot; <strong style="color:#EDE8DB">${distKm} km</strong>`}
+          <div style="color: #69706A;">
+            ${points.length < 2 ? 'Click on map to place transect points (min 2 points)' : `${points.length} points &middot; <strong style="color:#202522">${distKm} km</strong>`}
           </div>
           <div style="display: flex; gap: 6px; margin-top: 4px;">
-            ${points.length >= 2 ? `<button id="btn-calc-profile" type="button" style="flex:1;background:#0891b2;color:#ffffff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;font-weight:600;font-size:10.5px;">Get Profile</button>` : ''}
-            ${points.length > 0 ? `<button id="btn-undo-point" type="button" style="background:#2A2C24;color:#EDE8DB;border:1px solid #35372E;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:10.5px;">Undo</button>` : ''}
-            ${points.length > 0 ? `<button id="btn-clear-transect" type="button" style="background:#2A2C24;color:#C56A5A;border:1px solid #35372E;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:10.5px;">Clear</button>` : ''}
+            ${points.length >= 2 ? `<button id="btn-calc-profile" type="button" style="flex:1;background:#C96B3C;color:#ffffff;border:1px solid #A84A32;padding:5px 8px;border-radius:4px;cursor:pointer;font-weight:600;font-size:10.5px;">Get Profile</button>` : ''}
+            ${points.length > 0 ? `<button id="btn-undo-point" type="button" style="background:#F4F1E8;color:#202522;border:1px solid #D8D5CA;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:10.5px;">Undo</button>` : ''}
+            ${points.length > 0 ? `<button id="btn-clear-transect" type="button" style="background:#F4F1E8;color:#A84A32;border:1px solid #D8D5CA;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:10.5px;">Clear</button>` : ''}
           </div>
         `;
 
@@ -1774,22 +1921,20 @@ function ElevationProfilePanel({
 
   return (
     <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 16, bottom: true }} zIndex={1005}>
-      <div className="w-[94vw] max-w-4xl bg-[#1A1D17]/95 backdrop-blur-md border border-[#2E3429] rounded-lg shadow-2xl p-4 text-[#F9FAFB] space-y-3 cursor-grab active:cursor-grabbing">
+      <div className="w-[94vw] max-w-4xl bg-[#FAF9F5]/98 backdrop-blur-md border border-[#D8D5CA] rounded shadow-2xl p-4 text-[#202522] space-y-3 cursor-grab active:cursor-grabbing">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#2E3429] pb-2">
+        <div className="flex items-center justify-between border-b border-[#D8D5CA] pb-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="w-2 h-2 rounded-full bg-[#306840]"></span>
-            <span className="text-xs font-semibold tracking-tight text-white">
-              Topographic Elevation:
+            <span className="w-2 h-2 rounded-full bg-[#C96B3C]"></span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#202522]">
+              Topographic Elevation Profile
             </span>
             {routeTitle ? (
-              <span className="text-xs font-medium text-[#E0DCD3] bg-[#306840]/15 px-2 py-0.5 rounded border border-[#306840]/30">
+              <span className="text-xs font-medium text-[#C96B3C] bg-[#C96B3C]/10 px-2 py-0.5 rounded border border-[#C96B3C]/30 font-mono">
                 {routeTitle}
               </span>
-            ) : (
-              <span className="text-xs font-medium text-neutral-300">Transect Profile</span>
-            )}
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-700">
+            ) : null}
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#F4F1E8] text-[#454B46] border border-[#D8D5CA] font-mono">
               Copernicus 30m Global DEM
             </span>
           </div>
@@ -1798,7 +1943,7 @@ function ElevationProfilePanel({
             <button
               type="button"
               onClick={handleExportCSV}
-              className="text-xs px-2.5 py-1 bg-[#22261E] hover:bg-[#282A31] border border-[#3D4537] rounded text-neutral-200 hover:text-white font-medium cursor-pointer flex items-center gap-1 transition"
+              className="text-xs px-2.5 py-1 bg-[#F4F1E8] hover:bg-[#E9E6DC] border border-[#D8D5CA] rounded text-[#202522] font-medium cursor-pointer flex items-center gap-1 transition"
               title="Download CSV of elevation profile"
             >
               Export CSV
@@ -1806,7 +1951,7 @@ function ElevationProfilePanel({
             <button
               type="button"
               onClick={onClose}
-              className="text-neutral-400 hover:text-white p-1 rounded transition cursor-pointer text-sm font-bold"
+              className="text-[#69706A] hover:text-[#202522] p-1 rounded transition cursor-pointer text-sm font-bold"
               title="Close profile"
             >
               ✕
@@ -1816,56 +1961,56 @@ function ElevationProfilePanel({
 
         {/* Route Details Bar */}
         {(startLoc || endLoc || summary.start_point) && (
-          <div className="bg-[#121410] border border-[#2E3429] rounded px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="bg-[#F4F1E8] border border-[#D8D5CA] rounded px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-              <span className="text-neutral-400 text-xs font-medium">Point A (Start):</span>
-              <span className="text-neutral-200 font-medium">
+              <span className="w-2 h-2 rounded-full bg-[#6F8060] shrink-0"></span>
+              <span className="text-[#69706A] text-xs font-medium">Point A (Start):</span>
+              <span className="text-[#202522] font-medium font-mono">
                 {startLoc || (summary.start_point ? `${summary.start_point.lat.toFixed(4)}°, ${summary.start_point.lng.toFixed(4)}°` : 'Start')}
               </span>
             </div>
 
-            <div className="text-[#E0DCD3] font-bold px-2 hidden sm:inline">→</div>
+            <div className="text-[#69706A] font-bold px-2 hidden sm:inline">→</div>
 
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
-              <span className="text-neutral-400 text-xs font-medium">Point B (End):</span>
-              <span className="text-neutral-200 font-medium">
+              <span className="w-2 h-2 rounded-full bg-[#C96B3C] shrink-0"></span>
+              <span className="text-[#69706A] text-xs font-medium">Point B (End):</span>
+              <span className="text-[#202522] font-medium font-mono">
                 {endLoc || (summary.end_point ? `${summary.end_point.lat.toFixed(4)}°, ${summary.end_point.lng.toFixed(4)}°` : 'End')}
               </span>
             </div>
 
-            <div className="text-neutral-400 text-xs ml-auto">
-              Distance: <strong className="text-[#E0DCD3] font-semibold">{summary.total_distance_km} km</strong>
+            <div className="text-[#69706A] text-xs ml-auto">
+              Distance: <strong className="text-[#202522] font-mono font-semibold">{summary.total_distance_km} km</strong>
             </div>
           </div>
         )}
 
         {/* Summary Badges Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center text-xs">
-          <div className="bg-[#121410] border border-[#2E3429] p-1.5 rounded">
-            <span className="text-[10px] text-neutral-400 uppercase font-medium">Total Distance</span>
-            <div className="font-semibold text-neutral-200 mt-0.5">{summary.total_distance_km} km</div>
+          <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-1.5 rounded">
+            <span className="text-[10px] text-[#69706A] uppercase font-medium">Total Distance</span>
+            <div className="font-semibold text-[#202522] font-mono mt-0.5">{summary.total_distance_km} km</div>
           </div>
-          <div className="bg-[#121410] border border-[#2E3429] p-1.5 rounded">
-            <span className="text-[10px] text-neutral-400 uppercase font-medium">Min Elevation</span>
-            <div className="font-semibold text-emerald-400 mt-0.5">{summary.min_elevation_m} m</div>
+          <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-1.5 rounded">
+            <span className="text-[10px] text-[#69706A] uppercase font-medium">Min Elevation</span>
+            <div className="font-semibold text-[#6F8060] font-mono mt-0.5">{summary.min_elevation_m} m</div>
           </div>
-          <div className="bg-[#121410] border border-[#2E3429] p-1.5 rounded">
-            <span className="text-[10px] text-neutral-400 uppercase font-medium">Max Elevation</span>
-            <div className="font-semibold text-rose-400 mt-0.5">{summary.max_elevation_m} m</div>
+          <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-1.5 rounded">
+            <span className="text-[10px] text-[#69706A] uppercase font-medium">Max Elevation</span>
+            <div className="font-semibold text-[#C96B3C] font-mono mt-0.5">{summary.max_elevation_m} m</div>
           </div>
-          <div className="bg-[#121410] border border-[#2E3429] p-1.5 rounded">
-            <span className="text-[10px] text-neutral-400 uppercase font-medium">Relief (Δ)</span>
-            <div className="font-semibold text-[#E0DCD3] mt-0.5">{summary.elevation_relief_m} m</div>
+          <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-1.5 rounded">
+            <span className="text-[10px] text-[#69706A] uppercase font-medium">Relief (Δ)</span>
+            <div className="font-semibold text-[#202522] font-mono mt-0.5">{summary.elevation_relief_m} m</div>
           </div>
-          <div className="bg-[#121410] border border-[#2E3429] p-1.5 rounded">
-            <span className="text-[10px] text-neutral-400 uppercase font-medium">Gain / Loss</span>
-            <div className="font-semibold text-neutral-200 mt-0.5">+{summary.elevation_gain_m}m / -{summary.elevation_loss_m}m</div>
+          <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-1.5 rounded">
+            <span className="text-[10px] text-[#69706A] uppercase font-medium">Gain / Loss</span>
+            <div className="font-semibold text-[#202522] font-mono mt-0.5">+{summary.elevation_gain_m}m / -{summary.elevation_loss_m}m</div>
           </div>
-          <div className="bg-[#121410] border border-[#2E3429] p-1.5 rounded">
-            <span className="text-[10px] text-neutral-400 uppercase font-medium">Max Grade</span>
-            <div className="font-semibold text-[#E0DCD3] mt-0.5">{summary.max_grade_pct}%</div>
+          <div className="bg-[#F4F1E8] border border-[#D8D5CA] p-1.5 rounded">
+            <span className="text-[10px] text-[#69706A] uppercase font-medium">Max Grade</span>
+            <div className="font-semibold text-[#202522] font-mono mt-0.5">{summary.max_grade_pct}%</div>
           </div>
         </div>
 
@@ -1885,28 +2030,30 @@ function ElevationProfilePanel({
             >
               <defs>
                 <linearGradient id="elevGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.6} />
-                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.05} />
+                  <stop offset="5%" stopColor="#416B73" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#416B73" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2A2C24" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E9E6DC" vertical={false} />
               <XAxis
                 dataKey="distance_km"
                 unit=" km"
-                tick={{ fill: '#8B8C7F', fontSize: 10 }}
+                tick={{ fill: '#69706A', fontSize: 10, fontFamily: 'monospace' }}
               />
               <YAxis
                 unit=" m"
                 domain={['dataMin - 10', 'dataMax + 10']}
-                tick={{ fill: '#8B8C7F', fontSize: 10 }}
+                tick={{ fill: '#69706A', fontSize: 10, fontFamily: 'monospace' }}
               />
               <RechartsTooltip
                 contentStyle={{
-                  backgroundColor: '#12140F',
-                  border: '1px solid #35372E',
+                  backgroundColor: '#FAF9F5',
+                  border: '1px solid #D8D5CA',
                   borderRadius: 4,
+                  color: '#202522',
                   fontSize: 11,
-                  fontFamily: 'monospace'
+                  fontFamily: 'monospace',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
                 }}
                 formatter={(val: any) => [`${val} m`, 'Elevation']}
                 labelFormatter={(label: any) => `Distance: ${label} km`}
@@ -1914,7 +2061,7 @@ function ElevationProfilePanel({
               <Area
                 type="monotone"
                 dataKey="elevation_m"
-                stroke="#22d3ee"
+                stroke="#416B73"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#elevGrad)"
@@ -1979,21 +2126,21 @@ function SearchLocationMarker({
     });
 
     const popupNode = document.createElement('div');
-    popupNode.className = 'p-3 space-y-2 text-[#F8FAFC]';
+    popupNode.className = 'p-3 space-y-2 text-[#202522]';
     popupNode.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: #06B6D4; text-transform: uppercase; letter-spacing: 0.05em;">
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: #C96B3C; text-transform: uppercase; letter-spacing: 0.05em;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
         <span>Location Target</span>
       </div>
       <div>
-        <div style="font-weight: 600; font-size: 12px; color: #F9FAFB; line-height: 1.2;">${location.shortLabel || 'Selected Point'}</div>
-        <div style="font-size: 10px; color: #9CA3AF; margin-top: 2px; max-height: 36px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${location.label}</div>
+        <div style="font-weight: 600; font-size: 12px; color: #202522; line-height: 1.2;">${location.shortLabel || 'Selected Point'}</div>
+        <div style="font-size: 10px; color: #69706A; margin-top: 2px; max-height: 36px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${location.label}</div>
       </div>
-      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: #1A1D17; padding: 4px 8px; border-radius: 4px; border: 1px solid #2E3429; color: #E0DCD3;">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: #F4F1E8; padding: 4px 8px; border-radius: 4px; border: 1px solid #D8D5CA; color: #202522;">
         ${location.lat.toFixed(5)}°, ${location.lng.toFixed(5)}°
       </div>
       ${onSetAOI ? `
-        <button id="geo-btn-create-aoi-popup" style="width: 100%; margin-top: 6px; padding: 6px 10px; background: #306840; color: #FFFFFF; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid rgba(153, 170, 56, 0.4); display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: background 150ms;">
+        <button id="geo-btn-create-aoi-popup" style="width: 100%; margin-top: 6px; padding: 6px 10px; background: #C96B3C; color: #FAF9F5; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid #A84A32; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: background 150ms;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
           <span>Create 5km AOI Box</span>
         </button>
@@ -2598,7 +2745,7 @@ export default function MapComponent({
   return (
     <div
       ref={containerRef}
-      className={`geo-map-shell relative w-full h-full overflow-hidden ${isFullscreen ? 'bg-slate-950' : ''}`}
+      className={`geo-map-shell relative w-full h-full overflow-hidden ${isFullscreen ? 'bg-[#F4F1E8]' : ''}`}
     >
       <MapContainer
         center={mapCenter}
@@ -2610,7 +2757,7 @@ export default function MapComponent({
 
         {/* Base Layers */}
         <LayersControl position="topright">
-          <LayersControl.BaseLayer checked name="District Map">
+          <LayersControl.BaseLayer checked name="Reference Map">
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -2770,36 +2917,36 @@ export default function MapComponent({
 
       {/* ── Draggable Floating Zoom Controls (bottom-left) ── */}
       <DraggableContainer defaultPosition={{ x: 16, y: 112, bottom: true }} zIndex={1002}>
-        <div className="flex flex-col items-center gap-1 shadow-lg bg-slate-950/80 backdrop-blur-md border border-slate-800 rounded-lg p-1.5 cursor-grab active:cursor-grabbing">
+        <div className="flex flex-col items-center gap-1 shadow-md bg-[#FAF9F5]/95 backdrop-blur-md border border-[#D8D5CA] rounded p-1.5 cursor-grab active:cursor-grabbing">
           {/* Grip handle */}
-          <div className="flex flex-col gap-0.5 justify-center opacity-40 hover:opacity-80 transition-opacity cursor-grab active:cursor-grabbing select-none pb-1 border-b border-slate-800/60 w-full items-center">
+          <div className="flex flex-col gap-0.5 justify-center opacity-40 hover:opacity-80 transition-opacity cursor-grab active:cursor-grabbing select-none pb-1 border-b border-[#D8D5CA] w-full items-center">
             <div className="flex gap-0.5">
-              <div className="w-1 h-1 rounded-full bg-slate-400" />
-              <div className="w-1 h-1 rounded-full bg-slate-400" />
+              <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
+              <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
             </div>
             <div className="flex gap-0.5">
-              <div className="w-1 h-1 rounded-full bg-slate-400" />
-              <div className="w-1 h-1 rounded-full bg-slate-400" />
+              <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
+              <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
             </div>
           </div>
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('map-zoom-in'))}
-            className="w-8 h-8 bg-slate-900/90 text-slate-200 rounded hover:bg-slate-850 hover:text-white transition flex items-center justify-center font-bold text-lg cursor-pointer"
+            className="w-8 h-8 bg-[#F4F1E8] text-[#202522] rounded hover:bg-[#E9E6DC] transition flex items-center justify-center font-bold text-lg cursor-pointer border border-[#D8D5CA]"
             aria-label="Zoom in"
           >
             +
           </button>
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('map-zoom-out'))}
-            className="w-8 h-8 bg-slate-900/90 text-slate-200 rounded hover:bg-slate-850 hover:text-white transition flex items-center justify-center font-bold text-lg cursor-pointer"
+            className="w-8 h-8 bg-[#F4F1E8] text-[#202522] rounded hover:bg-[#E9E6DC] transition flex items-center justify-center font-bold text-lg cursor-pointer border border-[#D8D5CA]"
             aria-label="Zoom out"
           >
             −
           </button>
-          <div className="w-full h-px bg-slate-800/80 my-0.5" />
+          <div className="w-full h-px bg-[#D8D5CA] my-0.5" />
           <button
             onClick={toggleFullscreen}
-            className="w-8 h-8 bg-slate-900/90 text-slate-200 rounded hover:bg-slate-850 hover:text-white transition flex items-center justify-center cursor-pointer"
+            className="w-8 h-8 bg-[#F4F1E8] text-[#202522] rounded hover:bg-[#E9E6DC] transition flex items-center justify-center cursor-pointer border border-[#D8D5CA]"
             aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
@@ -2825,18 +2972,18 @@ export default function MapComponent({
       {/* ── Draggable Swipe Comparison Bar (top-center) ── */}
       {canSwipe && (
         <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 12 }} zIndex={1003}>
-          <div className="flex flex-col gap-1.5 bg-[#121410]/95 backdrop-blur-md border border-[#2E3429] rounded-xl p-2 shadow-2xl cursor-grab active:cursor-grabbing max-w-[92vw]">
+          <div className="flex flex-col gap-1.5 bg-[#FAF9F5]/98 backdrop-blur-md border border-[#D8D5CA] rounded-xl p-2 shadow-lg cursor-grab active:cursor-grabbing max-w-[92vw]">
             {/* Top controls row */}
             <div className="flex items-center gap-2">
               {/* Grip handle */}
               <div className="flex flex-col gap-0.5 justify-center opacity-40 hover:opacity-80 transition-opacity select-none mr-0.5">
                 <div className="flex gap-0.5">
-                  <div className="w-1 h-1 rounded-full bg-neutral-400" />
-                  <div className="w-1 h-1 rounded-full bg-neutral-400" />
+                  <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
+                  <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
                 </div>
                 <div className="flex gap-0.5">
-                  <div className="w-1 h-1 rounded-full bg-neutral-400" />
-                  <div className="w-1 h-1 rounded-full bg-neutral-400" />
+                  <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
+                  <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
                 </div>
               </div>
 
@@ -2844,33 +2991,33 @@ export default function MapComponent({
                 <>
                   <div className="flex items-center gap-1.5">
                     {/* Left layer select */}
-                    <div className="flex items-center gap-1 bg-[#1A1D17] border border-[#2E3429] rounded px-2 py-0.5">
-                      <span className="w-2 h-2 rounded-full bg-[#306840]" />
+                    <div className="flex items-center gap-1 bg-[#F4F1E8] border border-[#D8D5CA] rounded px-2 py-0.5">
+                      <span className="w-2 h-2 rounded-full bg-[#C96B3C]" />
                       <select
                         value={swipeLeft}
                         onChange={(e) => setSwipeLeft(e.target.value)}
-                        className="bg-transparent text-[11px] text-[#F9FAFB] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
+                        className="bg-transparent text-[11px] text-[#202522] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
                       >
                         {availableLayers.map(([key]) => (
-                          <option key={key} value={key} className="bg-[#121410] text-[#F9FAFB]">
+                          <option key={key} value={key} className="bg-[#FAF9F5] text-[#202522]">
                             {layerLabel(key)}
                           </option>
                         ))}
                       </select>
                     </div>
 
-                    <span className="text-neutral-400 text-[10px] font-bold px-0.5 uppercase tracking-wider">vs</span>
+                    <span className="text-[#69706A] text-[10px] font-bold px-0.5 uppercase tracking-wider">vs</span>
 
                     {/* Right layer select */}
-                    <div className="flex items-center gap-1 bg-[#1A1D17] border border-[#2E3429] rounded px-2 py-0.5">
-                      <span className="w-2 h-2 rounded-full bg-[#E0DCD3]" />
+                    <div className="flex items-center gap-1 bg-[#F4F1E8] border border-[#D8D5CA] rounded px-2 py-0.5">
+                      <span className="w-2 h-2 rounded-full bg-[#416B73]" />
                       <select
                         value={swipeRight}
                         onChange={(e) => setSwipeRight(e.target.value)}
-                        className="bg-transparent text-[11px] text-[#F9FAFB] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
+                        className="bg-transparent text-[11px] text-[#202522] font-semibold outline-none cursor-pointer max-w-[140px] truncate"
                       >
                         {availableLayers.map(([key]) => (
-                          <option key={key} value={key} className="bg-[#121410] text-[#F9FAFB]">
+                          <option key={key} value={key} className="bg-[#FAF9F5] text-[#202522]">
                             {layerLabel(key)}
                           </option>
                         ))}
@@ -2884,13 +3031,13 @@ export default function MapComponent({
                     title={isAutoWiping ? "Pause automated curtain wipe" : "Start cinematic auto-wipe animation"}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded text-[10.5px] font-semibold transition cursor-pointer ${
                       isAutoWiping
-                        ? 'bg-[#306840]/25 text-[#E0DCD3] border border-[#306840]/60 shadow-lg'
-                        : 'bg-[#1A1D17] hover:bg-[#22261E] text-[#F9FAFB] border border-[#2E3429]'
+                        ? 'bg-[#C96B3C]/15 text-[#C96B3C] border border-[#C96B3C]/40 shadow-xs'
+                        : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA]'
                     }`}
                   >
                     {isAutoWiping ? (
                       <>
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#306840] animate-ping" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#C96B3C] animate-ping" />
                         <span>Pause Wipe</span>
                       </>
                     ) : (
@@ -2904,7 +3051,7 @@ export default function MapComponent({
                   {/* Exit Swipe button */}
                   <button
                     onClick={handleToggleSwipe}
-                    className="flex items-center gap-1 px-2 py-1 rounded text-[10.5px] font-semibold bg-[#1A1D17] hover:bg-rose-950/40 hover:text-rose-400 text-neutral-400 border border-[#2E3429] transition cursor-pointer"
+                    className="flex items-center gap-1 px-2 py-1 rounded text-[10.5px] font-semibold bg-[#F4F1E8] hover:bg-rose-50 hover:text-rose-700 text-[#69706A] border border-[#D8D5CA] transition cursor-pointer"
                   >
                     ✕ Exit
                   </button>
@@ -2912,9 +3059,9 @@ export default function MapComponent({
               ) : (
                 <button
                   onClick={handleToggleSwipe}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-[#F9FAFB] bg-[#1A1D17] hover:bg-[#22261E] border border-[#306840]/50 transition cursor-pointer shadow-lg"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold text-[#202522] bg-[#FAF9F5] hover:bg-[#F4F1E8] border border-[#D8D5CA] transition cursor-pointer shadow-xs"
                 >
-                  <span className="text-[#306840]">⚡</span>
+                  <span className="text-[#C96B3C]">⚡</span>
                   <span>Split-Screen Swipe Curtain</span>
                 </button>
               )}
@@ -2922,8 +3069,8 @@ export default function MapComponent({
 
             {/* Presets Row (visible when swipe is active) */}
             {swipeActive && (
-              <div className="flex items-center gap-1 pt-1 border-t border-[#2E3429] overflow-x-auto pb-0.5">
-                <span className="text-[9.5px] text-neutral-400 uppercase tracking-wider font-semibold mr-1 shrink-0">
+              <div className="flex items-center gap-1 pt-1 border-t border-[#D8D5CA] overflow-x-auto pb-0.5">
+                <span className="text-[9.5px] text-[#69706A] uppercase tracking-wider font-semibold mr-1 shrink-0">
                   Presets:
                 </span>
                 {swipePresets.filter((p) => p.available).map((preset) => {
@@ -2937,8 +3084,8 @@ export default function MapComponent({
                       }}
                       className={`text-[10px] px-2 py-0.5 rounded transition shrink-0 cursor-pointer font-medium ${
                         isActive
-                          ? 'bg-[#306840] text-neutral-900 font-bold shadow-md'
-                          : 'bg-[#1A1D17] hover:bg-[#22261E] text-[#F9FAFB] border border-[#2E3429]'
+                          ? 'bg-[#C96B3C] text-white font-bold shadow-xs'
+                          : 'bg-[#F4F1E8] hover:bg-[#E9E6DC] text-[#202522] border border-[#D8D5CA]'
                       }`}
                     >
                       {preset.badge} {preset.name}
@@ -2961,16 +3108,16 @@ export default function MapComponent({
           >
             {/* Collapsed state */}
             {!legendOpen && (
-              <div className="flex items-center gap-1 bg-slate-950/80 backdrop-blur-md border border-slate-800 rounded-lg p-1 cursor-grab active:cursor-grabbing">
+              <div className="flex items-center gap-1 bg-[#FAF9F5]/95 backdrop-blur-md border border-[#D8D5CA] rounded p-1 cursor-grab active:cursor-grabbing shadow-md">
                 {/* Grip handle */}
                 <div className="flex flex-col gap-0.5 justify-center opacity-40 hover:opacity-80 transition-opacity cursor-grab active:cursor-grabbing select-none px-0.5">
-                  <div className="w-1 h-1 rounded-full bg-slate-400" />
-                  <div className="w-1 h-1 rounded-full bg-slate-400" />
-                  <div className="w-1 h-1 rounded-full bg-slate-400" />
+                  <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
+                  <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
+                  <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
                 </div>
                 <button
                   onClick={() => setLegendOpen(true)}
-                  className="w-8 h-8 bg-slate-900/90 text-slate-300 rounded hover:bg-slate-800 hover:text-white transition flex items-center justify-center font-bold text-lg cursor-pointer"
+                  className="w-8 h-8 bg-[#F4F1E8] text-[#202522] rounded hover:bg-[#E9E6DC] transition flex items-center justify-center font-bold text-lg cursor-pointer border border-[#D8D5CA]"
                   aria-label="Open legend"
                   title="Show Legend"
                 >
@@ -2986,22 +3133,22 @@ export default function MapComponent({
 
             {/* Expanded state */}
             {legendOpen && (
-              <div className="bg-slate-950/92 backdrop-blur-xl border border-slate-700/60 rounded-xl shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing">
+              <div className="bg-[#FAF9F5]/98 backdrop-blur-xl border border-[#D8D5CA] rounded shadow-xl overflow-hidden cursor-grab active:cursor-grabbing">
                 {/* Header with collapse button */}
-                <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800/80">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-[#D8D5CA] bg-[#F4F1E8]">
                   <div className="flex items-center gap-1.5">
                     {/* Grip handle */}
                     <div className="flex flex-col gap-0.5 justify-center opacity-40 hover:opacity-80 transition-opacity cursor-grab active:cursor-grabbing select-none mr-0.5">
                       <div className="flex gap-0.5">
-                        <div className="w-1 h-1 rounded-full bg-slate-400" />
-                        <div className="w-1 h-1 rounded-full bg-slate-400" />
+                        <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
+                        <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
                       </div>
                       <div className="flex gap-0.5">
-                        <div className="w-1 h-1 rounded-full bg-slate-400" />
-                        <div className="w-1 h-1 rounded-full bg-slate-400" />
+                        <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
+                        <div className="w-1 h-1 rounded-full bg-[#BCB8AA]" />
                       </div>
                     </div>
-                    <h4 className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                    <h4 className="text-[11px] font-bold text-[#202522] uppercase tracking-wider">
                       {activeLayer !== 'none' && LAYER_INFO[activeLayer]
                         ? LAYER_INFO[activeLayer].title
                         : 'Legend'}
@@ -3009,7 +3156,7 @@ export default function MapComponent({
                   </div>
                   <button
                     onClick={() => setLegendOpen(false)}
-                    className="w-5 h-5 text-slate-500 hover:text-slate-300 transition flex items-center justify-center rounded cursor-pointer"
+                    className="w-5 h-5 text-[#69706A] hover:text-[#202522] transition flex items-center justify-center rounded cursor-pointer"
                     aria-label="Collapse legend"
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -3030,10 +3177,10 @@ export default function MapComponent({
                         {LULC_CLASSES.map((cls) => (
                           <div key={cls.name} className="flex items-center gap-2">
                             <span
-                              className="w-3 h-3 rounded-sm border border-slate-800/50 flex-shrink-0 shadow-sm"
+                              className="w-3 h-3 rounded-xs border border-[#D8D5CA] flex-shrink-0 shadow-xs"
                               style={{ backgroundColor: cls.color }}
                             />
-                            <span className="text-[10px] text-slate-300 font-medium">{cls.name}</span>
+                            <span className="text-[10px] text-[#202522] font-medium">{cls.name}</span>
                           </div>
                         ))}
                       </div>
@@ -3043,7 +3190,7 @@ export default function MapComponent({
                   {/* Non-classified layer legend: show band/index info */}
                   {activeLayer !== 'none' && activeLayer !== 'classified' && !swipeActive && LAYER_INFO[activeLayer] && (
                     <div className="space-y-1.5">
-                      <p className="text-[10px] text-slate-400 leading-relaxed">
+                      <p className="text-[10px] text-[#69706A] leading-relaxed">
                         {LAYER_INFO[activeLayer].description}
                       </p>
                       {LAYER_INFO[activeLayer].bands && (
@@ -3051,10 +3198,10 @@ export default function MapComponent({
                           {LAYER_INFO[activeLayer].bands!.map((band) => (
                             <div key={band.label} className="flex items-center gap-2">
                               <span
-                                className="w-3 h-3 rounded-sm flex-shrink-0"
+                                className="w-3 h-3 rounded-xs flex-shrink-0"
                                 style={{ backgroundColor: band.color }}
                               />
-                              <span className="text-[10px] text-slate-400 font-medium">{band.label}</span>
+                              <span className="text-[10px] text-[#454B46] font-medium">{band.label}</span>
                             </div>
                           ))}
                         </div>
@@ -3070,21 +3217,21 @@ export default function MapComponent({
                   ) && (
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0" />
-                        <span className="text-[10px] text-slate-300 font-medium">Left: {layerLabel(swipeLeft)}</span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#C96B3C] flex-shrink-0" />
+                        <span className="text-[10px] text-[#202522] font-medium">Left: {layerLabel(swipeLeft)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0" />
-                        <span className="text-[10px] text-slate-300 font-medium">Right: {layerLabel(swipeRight)}</span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#416B73] flex-shrink-0" />
+                        <span className="text-[10px] text-[#202522] font-medium">Right: {layerLabel(swipeRight)}</span>
                       </div>
                     </div>
                   )}
 
                   {/* AOI indicator when boundary is active */}
                   {aoiCoords.length > 2 && (
-                    <div className="flex items-center gap-2 pt-1 border-t border-slate-800/60">
-                      <span className="w-4 h-0 border-t-2 border-dashed border-blue-400 flex-shrink-0" />
-                      <span className="text-[10px] text-slate-400 font-medium">AOI Boundary</span>
+                    <div className="flex items-center gap-2 pt-1 border-t border-[#D8D5CA]">
+                      <span className="w-4 h-0 border-t-2 border-dashed border-[#C96B3C] flex-shrink-0" />
+                      <span className="text-[10px] text-[#69706A] font-medium">AOI Boundary</span>
                     </div>
                   )}
                 </div>

@@ -1,16 +1,24 @@
 import type { Metadata } from "next";
-import { Roboto_Mono } from "next/font/google";
+import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const robotoMono = Roboto_Mono({
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-sans",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
   variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
-  title: "GeoClass - Satellite Land Cover Workspace",
-  description: "A geospatial workspace for land cover classification, satellite remote sensing, and environmental analysis with Google Earth Engine.",
+  title: "GeoClass — Earth Observation & Land Cover Analysis",
+  description: "A professional scientific mapping workstation for satellite remote sensing, land cover classification, and geospatial intelligence.",
 };
 
 export default function RootLayout({
@@ -19,16 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`h-full antialiased ${robotoMono.variable}`} suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Google+Sans+Display:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&family=Google+Sans+Text:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&family=Google+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
-        />
-      </head>
-      <body className="min-h-full flex flex-col bg-[#121410] text-[#D0D0D0]" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`h-full antialiased ${ibmPlexSans.variable} ${ibmPlexMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-full flex flex-col font-sans bg-[#FAF9F5] text-[#202522]" suppressHydrationWarning>
         {children}
       </body>
     </html>
