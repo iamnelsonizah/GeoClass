@@ -43,19 +43,29 @@
   --gc-dark-muted: #A4AAA2;
   --gc-dark-accent: #D47747;
 
-  /* GeoClass Master Design System Tokens */
-  --background: #07100D;
-  --surface: #0B1713;
-  --surface-raised: #101C18;
+  /* GeoClass Master Design System Tokens (Exact #0D1316 from uploaded reference) */
+  --gc-geo-bg: #0D1316;
+  --gc-geo-surface: #131C20;
+  --gc-geo-card: #182328;
+  --gc-geo-text: #FFFFFF;
+  --gc-geo-text-muted: #E2E8F0;
+  --gc-geo-text-subtle: #94A3B8;
+  --gc-geo-accent: #B7E89F;
+  --gc-geo-accent-hover: #C8FFB2;
+  --gc-geo-border: #1F2A30;
 
-  --foreground: #F1F3EF;
-  --foreground-muted: #A5B2AB;
-  --foreground-subtle: #69766F;
+  --background: #0D1316;
+  --surface: #0D1316;
+  --surface-raised: #131C20;
 
-  --accent: #B7F36B;
-  --accent-hover: #C8FF82;
+  --foreground: #FFFFFF;
+  --foreground-muted: #E2E8F0;
+  --foreground-subtle: #94A3B8;
 
-  --border: #26332E;
+  --accent: #B7E89F;
+  --accent-hover: #C8FFB2;
+
+  --border: #1F2A30;
 
   --success: #4CAF6A;
   --warning: #E7B84B;

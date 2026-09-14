@@ -9,47 +9,47 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#07100D] text-[#F1F3EF] selection:bg-[#B7F36B] selection:text-[#07100D] font-sans relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#0D1316] text-[#FFFFFF] selection:bg-[#B7E89F] selection:text-[#0D1316] font-sans relative overflow-x-hidden">
       
-      {/* ────────────────────────────────── Header Navigation ────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-[#07100D] border-b border-[#26332E]">
+      {/* ────────────────────────────────── Header Navigation (Matching #0D1316 Exactly) ────────────────────────────────── */}
+      <header className="sticky top-0 z-50 bg-[#0D1316] border-b border-[#1B2428]">
         <div className="max-w-[1240px] mx-auto px-6 h-17 flex items-center justify-between">
           
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2.5 cursor-pointer group">
               {/* Clean vector mountain contour emblem matching Image 1 */}
               <svg width="24" height="20" viewBox="0 0 28 22" fill="none" className="flex-shrink-0">
-                <path d="M14 2L2 19H26L14 2Z" stroke="#B7F36B" strokeWidth="2.2" strokeLinejoin="round" />
-                <path d="M8 14L14 7L20 14" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" />
+                <path d="M14 2L2 19H26L14 2Z" stroke="#B7E89F" strokeWidth="2.2" strokeLinejoin="round" />
+                <path d="M8 14L14 7L20 14" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" />
               </svg>
-              <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-[#F1F3EF]">
+              <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-[#FFFFFF]">
                 GeoClass
               </span>
             </Link>
-            <span className="hidden sm:inline-block font-mono text-[11px] uppercase tracking-[0.12em] text-[#69766F] border-l border-[#26332E] pl-4">
+            <span className="hidden sm:inline-block font-mono text-[11px] uppercase tracking-[0.12em] text-[#D1D7D3] border-l border-[#222E33] pl-4">
               Earth Observation
             </span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-[#A5B2AB]" aria-label="Main Navigation">
-            <a href="#platform" className="hover:text-[#F1F3EF] transition-colors">Platform</a>
-            <a href="#workflow" className="hover:text-[#F1F3EF] transition-colors">Workflow</a>
-            <a href="#tools" className="hover:text-[#F1F3EF] transition-colors">Tools</a>
-            <a href="#use-cases" className="hover:text-[#F1F3EF] transition-colors">Use cases</a>
-            <Link href="/methods" className="hover:text-[#B7F36B] transition-colors">Methods &amp; API</Link>
+          <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-[#FFFFFF]" aria-label="Main Navigation">
+            <a href="#platform" className="hover:text-[#B7E89F] transition-colors">Platform</a>
+            <a href="#workflow" className="hover:text-[#B7E89F] transition-colors">Workflow</a>
+            <a href="#tools" className="hover:text-[#B7E89F] transition-colors">Tools</a>
+            <a href="#use-cases" className="hover:text-[#B7E89F] transition-colors">Use cases</a>
+            <Link href="/methods" className="hover:text-[#B7E89F] transition-colors">Methods &amp; API</Link>
           </nav>
 
           <div className="flex items-center gap-5">
             <Link 
               href="/login" 
-              className="text-[14px] font-medium text-[#A5B2AB] hover:text-[#F1F3EF] transition-colors hidden sm:inline-block"
+              className="text-[14px] font-medium text-[#FFFFFF] hover:text-[#B7E89F] transition-colors hidden sm:inline-block"
             >
               Log in
             </Link>
             <Link 
               href="/app" 
-              className="inline-flex items-center gap-2 bg-[#B7F36B] hover:bg-[#C8FF82] text-[#07100D] font-semibold text-[13.5px] px-4 py-2 rounded-[4px] transition-colors"
+              className="inline-flex items-center gap-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-[13.5px] px-4 py-2 rounded-[4px] transition-colors"
             >
               <span>Launch Workspace</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -60,39 +60,39 @@ export default function LandingPage() {
 
       <main>
 
-        {/* ────────────────────────────────── Hero Section (Matching Image 1) ────────────────────────────────── */}
-        <section className="pt-16 pb-20 lg:pt-20 lg:pb-24">
+        {/* ────────────────────────────────── Hero Section (Same #0D1316 Background) ────────────────────────────────── */}
+        <section className="pt-16 pb-20 lg:pt-20 lg:pb-24 bg-[#0D1316]">
           <div className="max-w-[1240px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
             
             {/* Left Hero Content */}
             <div className="lg:col-span-5 space-y-6">
-              <div className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7F36B]">
+              <div className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7E89F]">
                 SATELLITE ANALYTICS FOR REAL WORLD DECISIONS
               </div>
 
-              {/* Exact Hero Headline from Image 1: All lines in crisp soft white #F1F3EF, normal weight */}
-              <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-normal leading-[1.05] tracking-[-0.035em] text-[#F1F3EF]">
+              {/* Exact Hero Headline from Image 1: Crisp Pure White #FFFFFF */}
+              <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-normal leading-[1.05] tracking-[-0.035em] text-[#FFFFFF]">
                 Satellite analysis,<br />
                 without the GIS<br />
                 overhead.
               </h1>
 
-              {/* Exact Hero Description from Image 1: 18px font-size, 1.6 line-height, #A5B2AB */}
-              <p className="text-[17px] sm:text-[18px] leading-[1.6] font-normal text-[#A5B2AB] max-w-lg">
+              {/* Hero Description: Crisp, clear, highly legible light text #E2E8F0 (not dim ash) */}
+              <p className="text-[17px] sm:text-[18px] leading-[1.6] font-normal text-[#E2E8F0] max-w-lg">
                 GeoClass turns Earth observation data into maps and results you can actually use. Define an area, choose your imagery, run an analysis. No complex setup, no GIS software.
               </p>
 
               <div className="flex flex-wrap items-center gap-6 pt-2">
                 <Link 
                   href="/app" 
-                  className="inline-flex items-center justify-center gap-2 bg-[#B7F36B] hover:bg-[#C8FF82] text-[#07100D] font-semibold text-[14.5px] px-5 py-2.5 rounded-[4px] transition-colors cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-[14.5px] px-5 py-2.5 rounded-[4px] transition-colors cursor-pointer"
                 >
                   <span>Start classifying free</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a 
                   href="#workflow" 
-                  className="text-[14.5px] font-medium text-[#F1F3EF] hover:text-[#B7F36B] underline underline-offset-4 decoration-[#26332E] hover:decoration-[#B7F36B] transition-colors"
+                  className="text-[14.5px] font-medium text-[#FFFFFF] hover:text-[#B7E89F] underline underline-offset-4 decoration-[#222E33] hover:decoration-[#B7E89F] transition-colors"
                 >
                   See how it works
                 </a>
@@ -101,7 +101,7 @@ export default function LandingPage() {
 
             {/* Right Hero Product Window: Exact Mockup from Image 1 */}
             <div className="lg:col-span-7">
-              <div className="rounded-[4px] overflow-hidden border border-[#26332E] bg-[#101C18]">
+              <div className="rounded-[4px] overflow-hidden border border-[#1F2C33] bg-[#0D1316] shadow-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src="/geoclass-hero-mockup.png" 
@@ -114,10 +114,10 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ────────────────────────────────── Section 2: How It Works (4 Columns Matching Image 1) ────────────────────────────────── */}
-        <section id="workflow" className="py-20 bg-[#07100D] border-t border-[#26332E]">
+        {/* ────────────────────────────────── Section 2: How It Works (Exact Same #0D1316 Background) ────────────────────────────────── */}
+        <section id="workflow" className="py-20 bg-[#0D1316] border-t border-[#1B2428]">
           <div className="max-w-[1240px] mx-auto px-6">
-            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7F36B] mb-12">
+            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7E89F] mb-12">
               HOW IT WORKS
             </div>
 
@@ -125,44 +125,44 @@ export default function LandingPage() {
               
               {/* Step 01 */}
               <div className="space-y-3">
-                <div className="font-mono text-sm text-[#B7F36B] font-medium">01</div>
-                <h3 className="text-xl font-semibold text-[#F1F3EF]">
+                <div className="font-mono text-sm text-[#B7E89F] font-medium">01</div>
+                <h3 className="text-xl font-semibold text-[#FFFFFF]">
                   Define your area
                 </h3>
-                <p className="text-[15px] font-normal text-[#A5B2AB] leading-relaxed">
+                <p className="text-[15px] font-normal text-[#E2E8F0] leading-relaxed">
                   Draw or upload your boundary. Set your region and time range.
                 </p>
               </div>
 
               {/* Step 02 */}
               <div className="space-y-3">
-                <div className="font-mono text-sm text-[#B7F36B] font-medium">02</div>
-                <h3 className="text-xl font-semibold text-[#F1F3EF]">
+                <div className="font-mono text-sm text-[#B7E89F] font-medium">02</div>
+                <h3 className="text-xl font-semibold text-[#FFFFFF]">
                   Choose your data
                 </h3>
-                <p className="text-[15px] font-normal text-[#A5B2AB] leading-relaxed">
+                <p className="text-[15px] font-normal text-[#E2E8F0] leading-relaxed">
                   Use Sentinel, SAR, DEM and more. Pick from built-in analysis methods or bring your own data.
                 </p>
               </div>
 
               {/* Step 03 */}
               <div className="space-y-3">
-                <div className="font-mono text-sm text-[#B7F36B] font-medium">03</div>
-                <h3 className="text-xl font-semibold text-[#F1F3EF]">
+                <div className="font-mono text-sm text-[#B7E89F] font-medium">03</div>
+                <h3 className="text-xl font-semibold text-[#FFFFFF]">
                   Run classification
                 </h3>
-                <p className="text-[15px] font-normal text-[#A5B2AB] leading-relaxed">
+                <p className="text-[15px] font-normal text-[#E2E8F0] leading-relaxed">
                   Our ML models process your data in the cloud. No setup, no coding.
                 </p>
               </div>
 
               {/* Step 04 */}
               <div className="space-y-3">
-                <div className="font-mono text-sm text-[#B7F36B] font-medium">04</div>
-                <h3 className="text-xl font-semibold text-[#F1F3EF]">
+                <div className="font-mono text-sm text-[#B7E89F] font-medium">04</div>
+                <h3 className="text-xl font-semibold text-[#FFFFFF]">
                   Get results
                 </h3>
-                <p className="text-[15px] font-normal text-[#A5B2AB] leading-relaxed">
+                <p className="text-[15px] font-normal text-[#E2E8F0] leading-relaxed">
                   View your land cover map, explore analytics and export your report or data.
                 </p>
               </div>
@@ -210,7 +210,7 @@ export default function LandingPage() {
                   </Link>
                 </div>
 
-                <div className="relative rounded-[2px] overflow-hidden border border-[#D8D5CA] aspect-[16/9] bg-[#07100D]">
+                <div className="relative rounded-[2px] overflow-hidden border border-[#D8D5CA] aspect-[16/9] bg-[#0D1316]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src="/geoclass-app-workspace.jpg" 
@@ -297,17 +297,17 @@ export default function LandingPage() {
         </section>
 
         {/* ────────────────────────────────── Section 4: Authentic Layer Gallery ────────────────────────────────── */}
-        <section id="platform" className="py-24 bg-[#07100D] border-t border-[#26332E]">
+        <section id="platform" className="py-24 bg-[#0D1316] border-t border-[#1B2428]">
           <div className="max-w-[1240px] mx-auto px-6">
             
             <div className="max-w-xl mb-14">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7F36B] block mb-3">
+              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7E89F] block mb-3">
                 LAYER REGISTRY
               </span>
-              <h2 className="text-3xl sm:text-4xl font-normal leading-[1.1] tracking-[-0.03em] text-[#F1F3EF]">
+              <h2 className="text-3xl sm:text-4xl font-normal leading-[1.1] tracking-[-0.03em] text-[#FFFFFF]">
                 Authentic satellite layers ready on click
               </h2>
-              <p className="text-[#A5B2AB] text-[16px] mt-3 leading-relaxed">
+              <p className="text-[#E2E8F0] text-[16px] mt-3 leading-relaxed">
                 Explore the exact earth observation layers computed on Google Earth Engine supercomputing clusters inside GeoClass.
               </p>
             </div>
@@ -330,9 +330,9 @@ export default function LandingPage() {
               ].map((layer, idx) => (
                 <div 
                   key={idx}
-                  className="bg-[#101C18] border border-[#26332E] hover:border-[#B7F36B] rounded-[4px] p-3 transition-colors flex flex-col justify-between"
+                  className="bg-[#131C20] border border-[#1F2A30] hover:border-[#B7E89F] rounded-[4px] p-3 transition-colors flex flex-col justify-between"
                 >
-                  <div className="aspect-video w-full rounded-[2px] overflow-hidden mb-2.5 bg-[#07100D] border border-[#26332E]">
+                  <div className="aspect-video w-full rounded-[2px] overflow-hidden mb-2.5 bg-[#0D1316] border border-[#1F2A30]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={layer.img} 
@@ -341,10 +341,10 @@ export default function LandingPage() {
                     />
                   </div>
                   <div>
-                    <div className="text-[13px] font-semibold text-[#F1F3EF] leading-tight">
+                    <div className="text-[13px] font-semibold text-[#FFFFFF] leading-tight">
                       {layer.name}
                     </div>
-                    <div className="text-[11px] font-mono text-[#69766F] mt-1">
+                    <div className="text-[11px] font-mono text-[#94A3B8] mt-1">
                       {layer.desc}
                     </div>
                   </div>
@@ -356,71 +356,71 @@ export default function LandingPage() {
         </section>
 
         {/* ────────────────────────────────── Section 5: Field Tools & Deliverables ────────────────────────────────── */}
-        <section id="tools" className="py-24 bg-[#0B1713] border-t border-[#26332E]">
+        <section id="tools" className="py-24 bg-[#0D1316] border-t border-[#1B2428]">
           <div className="max-w-[1240px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             <div className="lg:col-span-6 space-y-6">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7F36B] block">
+              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7E89F] block">
                 DIAGNOSTIC TOOLS
               </span>
-              <h2 className="text-3xl sm:text-4xl font-normal leading-[1.1] tracking-[-0.03em] text-[#F1F3EF]">
+              <h2 className="text-3xl sm:text-4xl font-normal leading-[1.1] tracking-[-0.03em] text-[#FFFFFF]">
                 Inspect pixels, curves, and time series
               </h2>
-              <p className="text-[#A5B2AB] text-[16px] leading-[1.6]">
+              <p className="text-[#E2E8F0] text-[16px] leading-[1.6]">
                 GeoClass is engineered for analysts who need to verify ground truth with physics-based diagnostics before publishing conclusions.
               </p>
 
               <div className="space-y-3 pt-2">
-                <div className="p-4 rounded-[4px] border border-[#26332E] bg-[#101C18] flex gap-3">
-                  <div className="font-mono text-xs text-[#B7F36B] font-medium w-24 flex-shrink-0 pt-0.5">10-BAND</div>
+                <div className="p-4 rounded-[4px] border border-[#1F2A30] bg-[#131C20] flex gap-3">
+                  <div className="font-mono text-xs text-[#B7E89F] font-medium w-24 flex-shrink-0 pt-0.5">10-BAND</div>
                   <div>
-                    <h4 className="text-sm font-semibold text-[#F1F3EF]">Full Spectral Signature Graph</h4>
-                    <p className="text-xs text-[#A5B2AB] mt-1">Click any pixel on Earth to graph its exact 10-band surface reflectance profile from coastal blue to SWIR-2.</p>
+                    <h4 className="text-sm font-semibold text-[#FFFFFF]">Full Spectral Signature Graph</h4>
+                    <p className="text-xs text-[#E2E8F0] mt-1">Click any pixel on Earth to graph its exact 10-band surface reflectance profile from coastal blue to SWIR-2.</p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-[4px] border border-[#26332E] bg-[#101C18] flex gap-3">
-                  <div className="font-mono text-xs text-[#B7F36B] font-medium w-24 flex-shrink-0 pt-0.5">5-YEAR</div>
+                <div className="p-4 rounded-[4px] border border-[#1F2A30] bg-[#131C20] flex gap-3">
+                  <div className="font-mono text-xs text-[#B7E89F] font-medium w-24 flex-shrink-0 pt-0.5">5-YEAR</div>
                   <div>
-                    <h4 className="text-sm font-semibold text-[#F1F3EF]">Pixel Trajectory &amp; LandTrendr</h4>
-                    <p className="text-xs text-[#A5B2AB] mt-1">Segment multi-year Sentinel-2 medians from 2018 to 2025 to separate permanent land conversion from seasonal phenology.</p>
+                    <h4 className="text-sm font-semibold text-[#FFFFFF]">Pixel Trajectory &amp; LandTrendr</h4>
+                    <p className="text-xs text-[#E2E8F0] mt-1">Segment multi-year Sentinel-2 medians from 2018 to 2025 to separate permanent land conversion from seasonal phenology.</p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-[4px] border border-[#26332E] bg-[#101C18] flex gap-3">
-                  <div className="font-mono text-xs text-[#B7F36B] font-medium w-24 flex-shrink-0 pt-0.5">SWIPE</div>
+                <div className="p-4 rounded-[4px] border border-[#1F2A30] bg-[#131C20] flex gap-3">
+                  <div className="font-mono text-xs text-[#B7E89F] font-medium w-24 flex-shrink-0 pt-0.5">SWIPE</div>
                   <div>
-                    <h4 className="text-sm font-semibold text-[#F1F3EF]">Split-Screen Comparison Curtain</h4>
-                    <p className="text-xs text-[#A5B2AB] mt-1">Drag an interactive vertical curtain to immediately detect what changed between two satellite passes or between RGB and classified masks.</p>
+                    <h4 className="text-sm font-semibold text-[#FFFFFF]">Split-Screen Comparison Curtain</h4>
+                    <p className="text-xs text-[#E2E8F0] mt-1">Drag an interactive vertical curtain to immediately detect what changed between two satellite passes or between RGB and classified masks.</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Deliverables Card Preview */}
-            <div className="lg:col-span-6 bg-[#101C18] border border-[#26332E] rounded-[4px] p-8 space-y-6">
-              <div className="flex items-center justify-between border-b border-[#26332E] pb-4">
-                <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#B7F36B] font-medium">EXPORT SUITE</span>
-                <span className="font-mono text-[11px] text-[#A5B2AB]">FIELD &amp; GIS READY</span>
+            <div className="lg:col-span-6 bg-[#131C20] border border-[#1F2A30] rounded-[4px] p-8 space-y-6">
+              <div className="flex items-center justify-between border-b border-[#1F2A30] pb-4">
+                <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#B7E89F] font-medium">EXPORT SUITE</span>
+                <span className="font-mono text-[11px] text-[#E2E8F0]">FIELD &amp; GIS READY</span>
               </div>
-              <h3 className="text-2xl font-semibold text-[#F1F3EF]">
+              <h3 className="text-2xl font-semibold text-[#FFFFFF]">
                 Every result exports in publication formats
               </h3>
-              <p className="text-sm text-[#A5B2AB] leading-relaxed">
+              <p className="text-sm text-[#E2E8F0] leading-relaxed">
                 Take classified layers directly into QGIS, ArcGIS, Google Earth, or send executive summary dossiers to leadership.
               </p>
-              <div className="grid grid-cols-2 gap-2.5 font-mono text-xs text-[#F1F3EF]">
-                <div className="bg-[#07100D] p-2.5 rounded-[2px] border border-[#26332E] flex items-center gap-2">
-                  <span className="text-[#B7F36B]">●</span> GeoTIFF (32-bit Float)
+              <div className="grid grid-cols-2 gap-2.5 font-mono text-xs text-[#FFFFFF]">
+                <div className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2">
+                  <span className="text-[#B7E89F]">●</span> GeoTIFF (32-bit Float)
                 </div>
-                <div className="bg-[#07100D] p-2.5 rounded-[2px] border border-[#26332E] flex items-center gap-2">
-                  <span className="text-[#B7F36B]">●</span> GeoJSON Vector
+                <div className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2">
+                  <span className="text-[#B7E89F]">●</span> GeoJSON Vector
                 </div>
-                <div className="bg-[#07100D] p-2.5 rounded-[2px] border border-[#26332E] flex items-center gap-2">
-                  <span className="text-[#B7F36B]">●</span> KMZ Google Earth
+                <div className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2">
+                  <span className="text-[#B7E89F]">●</span> KMZ Google Earth
                 </div>
-                <div className="bg-[#07100D] p-2.5 rounded-[2px] border border-[#26332E] flex items-center gap-2">
-                  <span className="text-[#B7F36B]">●</span> Executive PDF Dossier
+                <div className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2">
+                  <span className="text-[#B7E89F]">●</span> Executive PDF Dossier
                 </div>
               </div>
             </div>
@@ -429,25 +429,25 @@ export default function LandingPage() {
         </section>
 
         {/* ────────────────────────────────── Section 6: Final CTA Band ────────────────────────────────── */}
-        <section className="py-24 text-center bg-[#07100D] border-t border-[#26332E]">
+        <section className="py-24 text-center bg-[#0D1316] border-t border-[#1B2428]">
           <div className="max-w-2xl mx-auto px-6 space-y-6">
-            <h2 className="text-3xl sm:text-5xl font-normal leading-[1.05] tracking-[-0.03em] text-[#F1F3EF]">
+            <h2 className="text-3xl sm:text-5xl font-normal leading-[1.05] tracking-[-0.03em] text-[#FFFFFF]">
               Start your first classification.
             </h2>
-            <p className="text-[#A5B2AB] text-base sm:text-lg leading-relaxed">
+            <p className="text-[#E2E8F0] text-base sm:text-lg leading-relaxed">
               Launch the workspace, pick any coordinate on Earth, and receive instant land cover intelligence.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
               <Link 
                 href="/app" 
-                className="inline-flex items-center justify-center gap-2 bg-[#B7F36B] hover:bg-[#C8FF82] text-[#07100D] font-semibold text-[15px] px-6 py-3 rounded-[4px] transition-colors"
+                className="inline-flex items-center justify-center gap-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-[15px] px-6 py-3 rounded-[4px] transition-colors"
               >
                 <span>Launch Workspace Now</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link 
                 href="/login" 
-                className="inline-flex items-center justify-center border border-[#26332E] hover:border-[#A5B2AB] text-[#F1F3EF] font-medium text-[15px] px-6 py-3 rounded-[4px] transition-colors bg-[#101C18]"
+                className="inline-flex items-center justify-center border border-[#1F2A30] hover:border-[#E2E8F0] text-[#FFFFFF] font-medium text-[15px] px-6 py-3 rounded-[4px] transition-colors bg-[#131C20]"
               >
                 <span>Sign in</span>
               </Link>
@@ -458,30 +458,30 @@ export default function LandingPage() {
       </main>
 
       {/* ────────────────────────────────── Footer ────────────────────────────────── */}
-      <footer className="border-t border-[#26332E] bg-[#07100D] py-12">
+      <footer className="border-t border-[#1B2428] bg-[#0D1316] py-12">
         <div className="max-w-[1240px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <svg width="22" height="18" viewBox="0 0 28 22" fill="none">
-              <path d="M14 2L2 19H26L14 2Z" stroke="#B7F36B" strokeWidth="2.2" strokeLinejoin="round" />
-              <path d="M8 14L14 7L20 14" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" />
+              <path d="M14 2L2 19H26L14 2Z" stroke="#B7E89F" strokeWidth="2.2" strokeLinejoin="round" />
+              <path d="M8 14L14 7L20 14" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span className="font-sans text-[16px] font-bold text-[#F1F3EF]">GeoClass</span>
-            <span className="text-[12px] text-[#69766F] ml-2">
+            <span className="font-sans text-[16px] font-bold text-[#FFFFFF]">GeoClass</span>
+            <span className="text-[12px] text-[#94A3B8] ml-2">
               © {new Date().getFullYear()} GeoClass Geospatial Systems.
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6 text-[13.5px] text-[#A5B2AB]">
-            <a href="#platform" className="hover:text-[#F1F3EF] transition-colors">Platform</a>
-            <a href="#workflow" className="hover:text-[#F1F3EF] transition-colors">Workflow</a>
-            <a href="#tools" className="hover:text-[#F1F3EF] transition-colors">Tools</a>
-            <a href="#use-cases" className="hover:text-[#F1F3EF] transition-colors">Use cases</a>
-            <Link href="/methods" className="hover:text-[#B7F36B] transition-colors">Methods &amp; API</Link>
-            <Link href="/login" className="hover:text-[#F1F3EF] transition-colors">Log in</Link>
+          <div className="flex flex-wrap items-center gap-6 text-[13.5px] text-[#FFFFFF]">
+            <a href="#platform" className="hover:text-[#B7E89F] transition-colors">Platform</a>
+            <a href="#workflow" className="hover:text-[#B7E89F] transition-colors">Workflow</a>
+            <a href="#tools" className="hover:text-[#B7E89F] transition-colors">Tools</a>
+            <a href="#use-cases" className="hover:text-[#B7E89F] transition-colors">Use cases</a>
+            <Link href="/methods" className="hover:text-[#B7E89F] transition-colors">Methods &amp; API</Link>
+            <Link href="/login" className="hover:text-[#B7E89F] transition-colors">Log in</Link>
           </div>
 
-          <div className="font-mono text-[11px] text-[#69766F]">
+          <div className="font-mono text-[11px] text-[#94A3B8]">
             Sentinel-2 MSI · Sentinel-1 SAR · Copernicus 30m DEM
           </div>
         </div>
