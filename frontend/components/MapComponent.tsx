@@ -71,6 +71,24 @@ const LAYER_INFO: Record<string, { title: string; description: string; bands?: {
     title: 'Land Cover Classification',
     description: 'Model output for land use and land cover review',
   },
+  landsat_true_color: {
+    title: 'Landsat 8/9 True Color (RGB)',
+    description: 'Natural visible spectrum composite using Landsat 8/9 OLI Collection 2 Level 2 Surface Reflectance (Red: SR_B4, Green: SR_B3, Blue: SR_B2 at 30m GSD).',
+  },
+  landsat_false_color: {
+    title: 'Landsat 8/9 False Color (SWIR/NIR/Red)',
+    description: 'False color infrared composite highlighting vegetation moisture and land boundaries (SWIR 1: SR_B6, NIR: SR_B5, Red: SR_B4 at 30m GSD).',
+  },
+  landsat_ndvi: {
+    title: 'Landsat 8/9 NDVI Index',
+    description: 'Normalized Difference Vegetation Index: (SR_B5 - SR_B4) / (SR_B5 + SR_B4)',
+    bands: [
+      { label: '< 0 - Water / Bare', color: '#a16207' },
+      { label: '0 - 0.3 - Sparse', color: '#d4d4aa' },
+      { label: '0.3 - 0.6 - Moderate', color: '#65a30d' },
+      { label: '> 0.6 - Dense', color: '#166534' },
+    ],
+  },
   slope: {
     title: 'Topographic Slope Stability',
     description: 'Copernicus 30m terrain slope classification (degrees):',
@@ -172,6 +190,9 @@ interface MapComponentProps {
   mndwiUrl?: string;
   nbrUrl?: string;
   sarUrl?: string;
+  landsatTrueColorUrl?: string;
+  landsatFalseColorUrl?: string;
+  landsatNdviUrl?: string;
   changeYearUrl?: string;
   changeMagnitudeUrl?: string;
   baselineTrueColorUrl?: string;
@@ -181,7 +202,7 @@ interface MapComponentProps {
   compareMode?: boolean;
   activeTimePeriod?: 'target' | 'baseline';
   opacity: number;
-  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude';
+  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude' | 'landsat_true_color' | 'landsat_false_color' | 'landsat_ndvi';
   mapCenter: [number, number];
   mapZoom: number;
   searchLocation?: SearchLocation | null;
@@ -2263,6 +2284,9 @@ export default function MapComponent({
   mndwiUrl,
   nbrUrl,
   sarUrl,
+  landsatTrueColorUrl,
+  landsatFalseColorUrl,
+  landsatNdviUrl,
   changeYearUrl,
   changeMagnitudeUrl,
   baselineTrueColorUrl,
@@ -2374,6 +2398,9 @@ export default function MapComponent({
     mndwiUrl ||
     nbrUrl ||
     sarUrl ||
+    landsatTrueColorUrl ||
+    landsatFalseColorUrl ||
+    landsatNdviUrl ||
     changeYearUrl ||
     changeMagnitudeUrl ||
     baselineTrueColorUrl ||
@@ -2395,6 +2422,9 @@ export default function MapComponent({
         target_ndvi: ndviUrl,
         baseline_ndvi: baselineNdviUrl,
         sar: sarUrl,
+        landsat_true_color: landsatTrueColorUrl,
+        landsat_false_color: landsatFalseColorUrl,
+        landsat_ndvi: landsatNdviUrl,
         change_year: changeYearUrl,
         change_magnitude: changeMagnitudeUrl,
         slope: slopeUrl,
@@ -2409,6 +2439,9 @@ export default function MapComponent({
         false_color: falseColorUrl,
         ndvi: ndviUrl,
         sar: sarUrl,
+        landsat_true_color: landsatTrueColorUrl,
+        landsat_false_color: landsatFalseColorUrl,
+        landsat_ndvi: landsatNdviUrl,
         change_year: changeYearUrl,
         change_magnitude: changeMagnitudeUrl,
         classified: classifiedUrl,
@@ -2467,12 +2500,26 @@ export default function MapComponent({
       ndbi: 'NDBI (Built-Up)',
       mndwi: 'MNDWI (Water Body)',
       nbr: 'NBR (Burn Severity)',
+      landsat_true_color: 'Landsat 8/9 True Color (30m)',
+      landsat_false_color: 'Landsat 8/9 False Color (30m)',
+      landsat_ndvi: 'Landsat 8/9 NDVI (30m)',
     };
     return labels[key] || key;
   };
 
   // Preset comparison pairs
   const swipePresets = [
+    {
+      id: 's2_vs_landsat',
+      name: 'Sentinel-2 vs Landsat 8/9',
+      left: compareMode ? (layerUrls.target_true_color ? 'target_true_color' : 'true_color') : 'true_color',
+      right: 'landsat_true_color',
+      available: !!(
+        (layerUrls.target_true_color || layerUrls.true_color) &&
+        layerUrls.landsat_true_color
+      ),
+      badge: '🛰️ S2 vs Landsat',
+    },
     {
       id: 'baseline_vs_target',
       name: 'Baseline vs Current',
@@ -2636,6 +2683,15 @@ export default function MapComponent({
         )}
         {!swipeActive && activeLayer === 'sar' && sarUrl && (
           <TileLayer key={sarUrl} url={sarUrl} opacity={opacity} zIndex={400} attribution="Copernicus Sentinel-1 C-Band SAR" />
+        )}
+        {!swipeActive && activeLayer === 'landsat_true_color' && landsatTrueColorUrl && (
+          <TileLayer key={landsatTrueColorUrl} url={landsatTrueColorUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Landsat 8/9" />
+        )}
+        {!swipeActive && activeLayer === 'landsat_false_color' && landsatFalseColorUrl && (
+          <TileLayer key={landsatFalseColorUrl} url={landsatFalseColorUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Landsat 8/9 False Color" />
+        )}
+        {!swipeActive && activeLayer === 'landsat_ndvi' && landsatNdviUrl && (
+          <TileLayer key={landsatNdviUrl} url={landsatNdviUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Landsat 8/9 NDVI" />
         )}
         {!swipeActive && activeLayer === 'change_year' && changeYearUrl && (
           <TileLayer key={changeYearUrl} url={changeYearUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine LandTrendr" />

@@ -329,6 +329,58 @@ for class_name, metrics in data["statistics"].items():
                 </table>
               </div>
             </div>
+
+            {/* Multi-Sensor Constellation Comparative Specifications */}
+            <div className="mt-8">
+              <h4 className="text-sm font-semibold text-white mb-2">Multi-Mission Earth Observation Constellations</h4>
+              <p className="text-xs text-neutral-300 leading-relaxed mb-4">
+                GeoClass bridges European Space Agency (Copernicus) and NASA / USGS constellations. Through our STAC catalog integration and Earth Engine bindings, users can dynamically switch optical baselines between Sentinel-2 and Landsat 8/9, or fuse Sentinel-1 synthetic aperture radar.
+              </p>
+              <div className="overflow-x-auto rounded-lg border border-[#2E3429]">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-[#1A1D17] border-b border-[#2E3429] text-neutral-400 font-mono">
+                      <th className="p-3">Constellation</th>
+                      <th className="p-3">Operator</th>
+                      <th className="p-3">Sensor Type</th>
+                      <th className="p-3">Spatial Resolution</th>
+                      <th className="p-3">Temporal Revisit</th>
+                      <th className="p-3">Atmospheric Resilience</th>
+                      <th className="p-3">Primary Role in GeoClass</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2E3429] text-neutral-300">
+                    <tr>
+                      <td className="p-3 font-semibold text-white">Copernicus Sentinel-2</td>
+                      <td className="p-3">ESA / European Union</td>
+                      <td className="p-3">MSI (Multi-Spectral 13 Bands)</td>
+                      <td className="p-3 font-mono text-[#E0DCD3]">10m / 20m</td>
+                      <td className="p-3">5 days (Constellation 2A + 2B)</td>
+                      <td className="p-3 text-amber-300">SCL & QA60 Cloud Screening</td>
+                      <td className="p-3">High-resolution optical classification, 10m spectral indices (NDVI, NDRE)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-white">USGS / NASA Landsat 8 & 9</td>
+                      <td className="p-3">USGS / NASA</td>
+                      <td className="p-3">OLI / OLI-2 + TIRS (11 Bands)</td>
+                      <td className="p-3 font-mono text-[#E0DCD3]">30m (Optical) / 100m (Thermal)</td>
+                      <td className="p-3">8 days (Combined 8 + 9)</td>
+                      <td className="p-3 text-amber-300">QA_PIXEL Bitmask Screening</td>
+                      <td className="p-3">Decadal historical continuity, 30m Level-2 Tier-1 surface reflectance cross-validation</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-white">Copernicus Sentinel-1</td>
+                      <td className="p-3">ESA / European Union</td>
+                      <td className="p-3">C-SAR (Active Microwave 5.405 GHz)</td>
+                      <td className="p-3 font-mono text-[#E0DCD3]">10m (IW Ground Range Detected)</td>
+                      <td className="p-3">6-12 days</td>
+                      <td className="p-3 text-emerald-400 font-semibold">100% Cloud-Penetrating (All-Weather)</td>
+                      <td className="p-3">Cloud-penetrating radar backscatter fusion (VV, VH), canopy moisture and structural roughness</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </section>
         )}
 
@@ -609,6 +661,18 @@ for class_name, metrics in data["statistics"].items():
                     <td className="p-3 font-mono text-white">/api/v1/change-detection</td>
                     <td className="p-3">Runs multi-temporal LandTrendr disturbance onset and trajectory segmentation.</td>
                     <td className="p-3 font-mono text-[11px]">coords, start_year, end_year, index_name, sensitivity</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
+                    <td className="p-3 font-mono text-white">/api/v1/stac/search</td>
+                    <td className="p-3">Queries STAC-compliant scenes for Sentinel-2, Landsat 8/9, and Sentinel-1.</td>
+                    <td className="p-3 font-mono text-[11px]">coords, start_date, end_date, collections, max_cloud_cover</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
+                    <td className="p-3 font-mono text-white">/api/v1/landsat-composite</td>
+                    <td className="p-3">Generates Landsat 8/9 Collection 2 Tier 1 Surface Reflectance composites &amp; tiles.</td>
+                    <td className="p-3 font-mono text-[11px]">coords, start_date, end_date, cloud_percentage</td>
                   </tr>
                 </tbody>
               </table>

@@ -51,13 +51,15 @@ import {
   Trash2,
   Sparkles,
   Share2,
-  BookOpen
+  BookOpen,
+  Database
 } from 'lucide-react';
 import DashboardCharts, { SpectralData } from '../components/DashboardCharts';
 import { DraggableContainer } from '../components/DraggableContainer';
 import { SpectralInspectorPanel, SpectralPixelData } from '../components/SpectralInspectorPanel';
 import { PixelTimelinePanel, PixelTimelineData } from '../components/PixelTimelinePanel';
 import { ChangeDetectionPanel, ChangeDetectionData } from '../components/ChangeDetectionPanel';
+import { STACBrowserModal } from '../components/STACBrowserModal';
 import { parseVectorFile } from '../lib/vectorParsers';
 
 // Dynamically import the map component to avoid SSR errors with Leaflet
@@ -468,7 +470,9 @@ export default function Home() {
   const [timelineTargetYear, setTimelineTargetYear] = useState(2024);
 
   // Overlay Layer States
-  const [activeLayer, setActiveLayer] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude'>('none');
+  const [activeLayer, setActiveLayer] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude' | 'landsat_true_color' | 'landsat_false_color' | 'landsat_ndvi'>('none');
+  const [selectedSensor, setSelectedSensor] = useState<'sentinel_2' | 'landsat'>('sentinel_2');
+  const [isSTACModalOpen, setIsSTACModalOpen] = useState(false);
   const [useSarFusion, setUseSarFusion] = useState(false);
   const [opacity, setOpacity] = useState(0.82);
   const [swipeActive, setSwipeActive] = useState(false);
@@ -572,6 +576,9 @@ export default function Home() {
     mndwi?: string;
     nbr?: string;
     sar?: string;
+    landsatTrueColor?: string;
+    landsatFalseColor?: string;
+    landsatNdvi?: string;
     changeYear?: string;
     changeMagnitude?: string;
     baselineTrueColor?: string;
@@ -1696,6 +1703,40 @@ export default function Home() {
     const startTime = performance.now();
 
     try {
+      if (selectedSensor === 'landsat') {
+        const response = await fetch(`${API_BASE}/api/landsat/map-id`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            coords,
+            start_date: startDate,
+            end_date: endDate,
+            cloud_percentage: cloudCover
+          })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || "Failed to fetch Landsat imagery.");
+        }
+
+        const data = await response.json();
+        setTileUrls(prev => ({
+          ...prev,
+          landsatTrueColor: data.true_color_url,
+          landsatFalseColor: data.false_color_url,
+          landsatNdvi: data.ndvi_url,
+          trueColor: data.true_color_url,
+          falseColor: data.false_color_url,
+          ndvi: data.ndvi_url
+        }));
+        setActiveLayer('true_color');
+        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+        setProcessingTime(parseFloat(elapsed));
+        setSuccessMessage(`Landsat 8/9 composite generated in ${elapsed}s (30m GSD).`);
+        return;
+      }
+
       if (!compareMode) {
         const response = await fetch(`${API_BASE}/api/gee/map-id`, {
           method: 'POST',
@@ -1817,7 +1858,8 @@ export default function Home() {
         cloud_mask_type: cloudMaskType,
         mask_shadows: maskShadows,
         seasonal_filter: seasonalFilter,
-        use_sar_fusion: useSarFusion
+        use_sar_fusion: useSarFusion,
+        sensor: selectedSensor
       };
 
       if (!compareMode) {
@@ -2273,6 +2315,24 @@ export default function Home() {
       hasUrl: !!tileUrls.sar,
     },
     {
+      key: 'landsat_true_color' as const,
+      label: 'Landsat 8/9 RGB',
+      sub: 'USGS 30m True Color',
+      hasUrl: !!tileUrls.landsatTrueColor,
+    },
+    {
+      key: 'landsat_false_color' as const,
+      label: 'Landsat False Color',
+      sub: 'SWIR/NIR 30m composite',
+      hasUrl: !!tileUrls.landsatFalseColor,
+    },
+    {
+      key: 'landsat_ndvi' as const,
+      label: 'Landsat NDVI',
+      sub: '30m Vegetation Index',
+      hasUrl: !!tileUrls.landsatNdvi,
+    },
+    {
       key: 'change_year' as const,
       label: 'Disturbance Onset',
       sub: 'LandTrendr break year',
@@ -2560,6 +2620,35 @@ export default function Home() {
                     className="overflow-hidden"
                   >
                     <div className="phase-body space-y-3">
+                {/* Sensor Constellation Selector */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="field-label mb-0">Sensor constellation</label>
+                    <span className="text-[10px] mono text-[#EDE8DB]">{selectedSensor === 'sentinel_2' ? '10m MSI' : '30m OLI'}</span>
+                  </div>
+                  <select
+                    value={selectedSensor}
+                    onChange={(e) => setSelectedSensor(e.target.value as any)}
+                    className="ctl text-xs"
+                  >
+                    <option value="sentinel_2">Copernicus Sentinel-2 (10m Optical)</option>
+                    <option value="landsat">USGS Landsat 8/9 (30m Optical)</option>
+                  </select>
+                </div>
+
+                {/* STAC Catalog Granule Browser Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsSTACModalOpen(true)}
+                  className="w-full py-1.5 px-2.5 rounded text-xs bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-[#E0DCD3] flex items-center justify-between transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Database className="w-3.5 h-3.5 text-[#306840]" />
+                    <span>Browse STAC Catalog</span>
+                  </div>
+                  <span className="text-[10px] mono text-[#8B8C7F]">Scenes & Granules</span>
+                </button>
+
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="field-label">Start date</label>
@@ -3317,6 +3406,9 @@ export default function Home() {
               mndwiUrl={tileUrls.mndwi}
               nbrUrl={tileUrls.nbr}
               sarUrl={tileUrls.sar}
+              landsatTrueColorUrl={tileUrls.landsatTrueColor}
+              landsatFalseColorUrl={tileUrls.landsatFalseColor}
+              landsatNdviUrl={tileUrls.landsatNdvi}
               changeYearUrl={tileUrls.changeYear}
               changeMagnitudeUrl={tileUrls.changeMagnitude}
               spectralInspectorMode={spectralInspectorMode}
@@ -3329,6 +3421,21 @@ export default function Home() {
               onTransectDrawn={handleTransectDrawn}
               elevationProfileData={elevationProfileData}
               onClearElevationProfile={() => setElevationProfileData(null)}
+            />
+
+            {/* STAC Catalog Granules Browser Modal */}
+            <STACBrowserModal
+              isOpen={isSTACModalOpen}
+              onClose={() => setIsSTACModalOpen(false)}
+              aoiCoords={coords}
+              startDate={startDate}
+              endDate={endDate}
+              onApplySceneSettings={(newStart, newEnd, newSensor) => {
+                setStartDate(newStart);
+                setEndDate(newEnd);
+                setSelectedSensor(newSensor as any);
+                setSuccessMessage(`Applied STAC scene window (${newStart} to ${newEnd}) on ${newSensor === 'landsat' ? 'Landsat 8/9' : 'Sentinel-2'}.`);
+              }}
             />
 
             {/* Spectral Band Inspector Floating Drawer */}

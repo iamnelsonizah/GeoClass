@@ -46,16 +46,17 @@ def train_and_classify_gee(
     aoi: ee.Geometry,
     num_trees: int = 100,
     sample_points: int = 150,
-    sar_composite: Optional[ee.Image] = None
+    sar_composite: Optional[ee.Image] = None,
+    sensor: str = "sentinel_2"
 ) -> Tuple[ee.Image, Dict[str, Any]]:
     """
     Trains an ee.Classifier.smileRandomForest on the GEE server.
     - Samples points from the label_composite (Dynamic World labels) in the AOI.
-    - Uses Sentinel-2 optical bands, spectral indices, and optional Sentinel-1 SAR features.
+    - Uses optical bands from Sentinel-2 MSI or Landsat 8/9 OLI, spectral indices, and optional Sentinel-1 SAR features.
     - Classifies the multi-sensor composite.
     - Computes area statistics in hectares.
     """
-    logger.info("Starting GEE Random Forest training and classification...")
+    logger.info(f"Starting GEE Random Forest training ({sensor.upper()})...")
 
     # Calculate AOI area to determine scale dynamically
     try:
@@ -76,18 +77,19 @@ def train_and_classify_gee(
         scale = 20
         logger.info(f"Medium AOI (>10k ha) detected. Using adaptive scale: {scale}m")
     else:
-        scale = 10
+        scale = 30 if sensor == "landsat" else 10
 
     # 1. Prepare features
-    # Calculate NDVI and add it as a band
-    ndvi = s2_composite.normalizedDifference(['B8', 'B4']).rename('NDVI')
-    
-    # Calculate NDWI (Water Index) and add it: (B3 - B8) / (B3 + B8)
-    ndwi = s2_composite.normalizedDifference(['B3', 'B8']).rename('NDWI')
-    
-    # Create feature image with optical bands
-    feature_bands = ['B2', 'B3', 'B4', 'B8', 'B11', 'B12', 'NDVI', 'NDWI']
-    feature_image = s2_composite.select(['B2', 'B3', 'B4', 'B8', 'B11', 'B12']).addBands([ndvi, ndwi])
+    if sensor == "landsat":
+        ndvi = s2_composite.normalizedDifference(['SR_B5', 'SR_B4']).rename('NDVI')
+        ndwi = s2_composite.normalizedDifference(['SR_B3', 'SR_B5']).rename('NDWI')
+        feature_bands = ['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7', 'NDVI', 'NDWI']
+        feature_image = s2_composite.select(['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7']).addBands([ndvi, ndwi])
+    else:
+        ndvi = s2_composite.normalizedDifference(['B8', 'B4']).rename('NDVI')
+        ndwi = s2_composite.normalizedDifference(['B3', 'B8']).rename('NDWI')
+        feature_bands = ['B2', 'B3', 'B4', 'B8', 'B11', 'B12', 'NDVI', 'NDWI']
+        feature_image = s2_composite.select(['B2', 'B3', 'B4', 'B8', 'B11', 'B12']).addBands([ndvi, ndwi])
 
     # If Sentinel-1 SAR composite is provided, fuse C-band microwave backscatter
     if sar_composite is not None:
@@ -192,7 +194,8 @@ def train_and_classify_deep_learning_gee(
     aoi: ee.Geometry,
     num_trees: int = 150,
     sample_points: int = 200,
-    sar_composite: Optional[ee.Image] = None
+    sar_composite: Optional[ee.Image] = None,
+    sensor: str = "sentinel_2"
 ) -> Tuple[ee.Image, Dict[str, Any]]:
     """
     Deep Learning spatial contextual segmentation on GEE.
@@ -202,7 +205,7 @@ def train_and_classify_deep_learning_gee(
     - Fuses optional Sentinel-1 SAR microwave backscatter.
     - Applies spatial majority filter (focal_mode) to eliminate noise and enforce spatial coherence.
     """
-    logger.info("Starting Deep Learning spatial classification on GEE...")
+    logger.info(f"Starting Deep Learning spatial classification ({sensor.upper()})...")
 
     try:
         area_ha = aoi.area().divide(10000).getInfo()
@@ -218,29 +221,43 @@ def train_and_classify_deep_learning_gee(
     elif area_ha > 10000:
         scale = 20
     else:
-        scale = 10
+        scale = 30 if sensor == "landsat" else 10
 
-    # 1. Multi-spectral Indices
-    ndvi = s2_composite.normalizedDifference(['B8', 'B4']).rename('NDVI')
-    ndwi = s2_composite.normalizedDifference(['B3', 'B8']).rename('NDWI')
-    ndbi = s2_composite.normalizedDifference(['B11', 'B8']).rename('NDBI')
-    mndwi = s2_composite.normalizedDifference(['B3', 'B11']).rename('MNDWI')
-
-    # 2. Spatial Context Convolutions (Textures & Edges)
-    b8_smooth = s2_composite.select('B8').convolve(ee.Kernel.gaussian(radius=3, sigma=1.5)).rename('B8_smooth')
-    ndvi_smooth = ndvi.convolve(ee.Kernel.gaussian(radius=3, sigma=1.5)).rename('NDVI_smooth')
-    edge_gradient = s2_composite.select('B4').convolve(ee.Kernel.laplacian8(1)).rename('Edge_gradient')
-
-    feature_bands = [
-        'B2', 'B3', 'B4', 'B8', 'B11', 'B12',
-        'NDVI', 'NDWI', 'NDBI', 'MNDWI',
-        'B8_smooth', 'NDVI_smooth', 'Edge_gradient'
-    ]
-    
-    feature_image = s2_composite.select(['B2', 'B3', 'B4', 'B8', 'B11', 'B12']).addBands([
-        ndvi, ndwi, ndbi, mndwi,
-        b8_smooth, ndvi_smooth, edge_gradient
-    ])
+    # 1. Multi-spectral Indices & Convolutions
+    if sensor == "landsat":
+        ndvi = s2_composite.normalizedDifference(['SR_B5', 'SR_B4']).rename('NDVI')
+        ndwi = s2_composite.normalizedDifference(['SR_B3', 'SR_B5']).rename('NDWI')
+        ndbi = s2_composite.normalizedDifference(['SR_B6', 'SR_B5']).rename('NDBI')
+        mndwi = s2_composite.normalizedDifference(['SR_B3', 'SR_B6']).rename('MNDWI')
+        b_smooth = s2_composite.select('SR_B5').convolve(ee.Kernel.gaussian(radius=3, sigma=1.5)).rename('NIR_smooth')
+        ndvi_smooth = ndvi.convolve(ee.Kernel.gaussian(radius=3, sigma=1.5)).rename('NDVI_smooth')
+        edge_gradient = s2_composite.select('SR_B4').convolve(ee.Kernel.laplacian8(1)).rename('Edge_gradient')
+        feature_bands = [
+            'SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7',
+            'NDVI', 'NDWI', 'NDBI', 'MNDWI',
+            'NIR_smooth', 'NDVI_smooth', 'Edge_gradient'
+        ]
+        feature_image = s2_composite.select(['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7']).addBands([
+            ndvi, ndwi, ndbi, mndwi,
+            b_smooth, ndvi_smooth, edge_gradient
+        ])
+    else:
+        ndvi = s2_composite.normalizedDifference(['B8', 'B4']).rename('NDVI')
+        ndwi = s2_composite.normalizedDifference(['B3', 'B8']).rename('NDWI')
+        ndbi = s2_composite.normalizedDifference(['B11', 'B8']).rename('NDBI')
+        mndwi = s2_composite.normalizedDifference(['B3', 'B11']).rename('MNDWI')
+        b8_smooth = s2_composite.select('B8').convolve(ee.Kernel.gaussian(radius=3, sigma=1.5)).rename('B8_smooth')
+        ndvi_smooth = ndvi.convolve(ee.Kernel.gaussian(radius=3, sigma=1.5)).rename('NDVI_smooth')
+        edge_gradient = s2_composite.select('B4').convolve(ee.Kernel.laplacian8(1)).rename('Edge_gradient')
+        feature_bands = [
+            'B2', 'B3', 'B4', 'B8', 'B11', 'B12',
+            'NDVI', 'NDWI', 'NDBI', 'MNDWI',
+            'B8_smooth', 'NDVI_smooth', 'Edge_gradient'
+        ]
+        feature_image = s2_composite.select(['B2', 'B3', 'B4', 'B8', 'B11', 'B12']).addBands([
+            ndvi, ndwi, ndbi, mndwi,
+            b8_smooth, ndvi_smooth, edge_gradient
+        ])
 
     # If Sentinel-1 SAR composite is provided, fuse C-band microwave backscatter
     if sar_composite is not None:

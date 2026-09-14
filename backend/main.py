@@ -46,6 +46,10 @@ from change_service import (
 from pdf_service import (
     generate_executive_pdf
 )
+from stac_service import (
+    search_stac_scenes,
+    get_landsat_composite
+)
 
 # Configure Logger
 logging.basicConfig(level=logging.INFO)
@@ -119,6 +123,30 @@ class ClassifyRequest(AOIRequest):
     sample_points: int = Field(150, description="Number of sample pixels to extract per class for training")
     model_type: str = Field("random_forest", description="Model type: 'random_forest', 'deep_learning', or 'dynamic_world'")
     use_sar_fusion: Optional[bool] = Field(False, description="Whether to fuse Sentinel-1 C-band SAR backscatter features (VV, VH, VV/VH ratio) with optical imagery")
+    sensor: Optional[str] = Field("sentinel_2", description="Sensor constellation: 'sentinel_2' (Sentinel-2 MSI 10m) or 'landsat' (Landsat 8/9 OLI 30m)")
+
+class STACSearchRequest(BaseModel):
+    coords: List[List[float]] = Field(
+        ...,
+        description="Coordinates of the polygon in GeoJSON format: [[lng1, lat1], [lng2, lat2], ...]"
+    )
+    start_date: str = Field("2024-01-01", description="Start date YYYY-MM-DD")
+    end_date: str = Field("2024-12-31", description="End date YYYY-MM-DD")
+    collections: Optional[List[str]] = Field(
+        None,
+        description="STAC collections to query, e.g. ['sentinel-2', 'landsat-8', 'landsat-9', 'sentinel-1']"
+    )
+    max_cloud_cover: Optional[float] = Field(30.0, description="Max scene cloud cover percentage")
+    limit: Optional[int] = Field(25, description="Maximum number of scenes to return")
+
+class LandsatCompositeRequest(BaseModel):
+    coords: List[List[float]] = Field(
+        ...,
+        description="Coordinates of the polygon in GeoJSON format: [[lng1, lat1], [lng2, lat2], ...]"
+    )
+    start_date: str = Field("2024-01-01", description="Start date YYYY-MM-DD")
+    end_date: str = Field("2024-12-31", description="End date YYYY-MM-DD")
+    cloud_percentage: Optional[float] = Field(20.0, description="Max cloud cover threshold")
 
 class SmartSelectRequest(BaseModel):
     point: List[float] = Field(
@@ -390,48 +418,53 @@ def classify_aoi(payload: ClassifyRequest):
             except Exception as sar_err:
                 logger.warning(f"Failed to fetch SAR composite for fusion: {sar_err}")
         
+        sensor_choice = payload.sensor or "sentinel_2"
+
         if payload.model_type == "dynamic_world":
             # Use precomputed Dynamic World composite directly
             classified_image = dw_labels
             stats = get_precomputed_statistics(dw_labels, aoi)
-        elif payload.model_type == "deep_learning":
-            # Deep Learning Spatial Contextual U-Net Classification
-            s2_composite = get_s2_composite(
-                aoi=aoi,
-                start_date=payload.start_date,
-                end_date=payload.end_date,
-                cloud_percentage=payload.cloud_cover,
-                cloud_mask_type=payload.cloud_mask_type or "both",
-                mask_shadows=payload.mask_shadows if payload.mask_shadows is not None else True,
-                seasonal_filter=payload.seasonal_filter or "all"
-            )
-            classified_image, stats = train_and_classify_deep_learning_gee(
-                s2_composite=s2_composite,
-                label_composite=dw_labels,
-                aoi=aoi,
-                num_trees=payload.num_trees,
-                sample_points=payload.sample_points,
-                sar_composite=sar_composite
-            )
         else:
-            # Standard Random Forest Classification
-            s2_composite = get_s2_composite(
-                aoi=aoi,
-                start_date=payload.start_date,
-                end_date=payload.end_date,
-                cloud_percentage=payload.cloud_cover,
-                cloud_mask_type=payload.cloud_mask_type or "both",
-                mask_shadows=payload.mask_shadows if payload.mask_shadows is not None else True,
-                seasonal_filter=payload.seasonal_filter or "all"
-            )
-            classified_image, stats = train_and_classify_gee(
-                s2_composite=s2_composite,
-                label_composite=dw_labels,
-                aoi=aoi,
-                num_trees=payload.num_trees,
-                sample_points=payload.sample_points,
-                sar_composite=sar_composite
-            )
+            # Fetch optical imagery based on sensor selection
+            if sensor_choice == "landsat":
+                landsat_res = get_landsat_composite(
+                    aoi=aoi,
+                    start_date=payload.start_date,
+                    end_date=payload.end_date,
+                    cloud_percentage=payload.cloud_cover
+                )
+                optical_composite = landsat_res["image"]
+            else:
+                optical_composite = get_s2_composite(
+                    aoi=aoi,
+                    start_date=payload.start_date,
+                    end_date=payload.end_date,
+                    cloud_percentage=payload.cloud_cover,
+                    cloud_mask_type=payload.cloud_mask_type or "both",
+                    mask_shadows=payload.mask_shadows if payload.mask_shadows is not None else True,
+                    seasonal_filter=payload.seasonal_filter or "all"
+                )
+
+            if payload.model_type == "deep_learning":
+                classified_image, stats = train_and_classify_deep_learning_gee(
+                    s2_composite=optical_composite,
+                    label_composite=dw_labels,
+                    aoi=aoi,
+                    num_trees=payload.num_trees,
+                    sample_points=payload.sample_points,
+                    sar_composite=sar_composite,
+                    sensor=sensor_choice
+                )
+            else:
+                classified_image, stats = train_and_classify_gee(
+                    s2_composite=optical_composite,
+                    label_composite=dw_labels,
+                    aoi=aoi,
+                    num_trees=payload.num_trees,
+                    sample_points=payload.sample_points,
+                    sar_composite=sar_composite,
+                    sensor=sensor_choice
+                )
 
         # Visual params for LULC classes
         vis_params = {
@@ -447,6 +480,7 @@ def classify_aoi(payload: ClassifyRequest):
             "statistics": stats["classes"],
             "total_area_ha": stats["total_area_ha"],
             "model_used": payload.model_type,
+            "sensor_used": sensor_choice,
             "sar_fusion_active": payload.use_sar_fusion and (sar_composite is not None)
         }
 
@@ -1161,6 +1195,84 @@ def api_v1_change_detection(payload: ChangeDetectionRequest):
     Returns annual disturbance breakdown, net canopy loss/gain, and Earth Engine map tile URLs.
     """
     return analyze_temporal_change(payload)
+
+
+@app.post("/api/stac/search")
+def search_stac(payload: STACSearchRequest):
+    """
+    Search multi-mission open EO scenes across user AOI via Earth Engine STAC-compliant collections.
+    """
+    try:
+        scenes = search_stac_scenes(
+            aoi_coords=payload.coords,
+            start_date=payload.start_date,
+            end_date=payload.end_date,
+            collections=payload.collections,
+            max_cloud=payload.max_cloud_cover or 30.0,
+            limit=payload.limit or 25
+        )
+        return {
+            "total_found": len(scenes),
+            "features": scenes,
+            "query": {
+                "start_date": payload.start_date,
+                "end_date": payload.end_date,
+                "collections": payload.collections or ["sentinel-2", "landsat-8", "landsat-9", "sentinel-1"],
+                "max_cloud_cover": payload.max_cloud_cover or 30.0
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error in STAC search: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"STAC search failed: {e}"
+        )
+
+
+@app.post("/api/v1/stac/search", tags=["Developer API v1"])
+def api_v1_stac_search(payload: STACSearchRequest):
+    """
+    Developer API v1 endpoint querying STAC-compliant Earth Observation scenes for Copernicus and USGS constellations.
+    """
+    return search_stac(payload)
+
+
+@app.post("/api/landsat/map-id")
+def get_landsat_map_tiles(payload: LandsatCompositeRequest):
+    """
+    Generate Google Earth Engine XYZ tile URLs for Landsat 8/9 Collection 2 Tier 1 Surface Reflectance.
+    Returns True Color, False Color (SWIR/NIR/Red), and NDVI visualization tile URLs.
+    """
+    try:
+        aoi = ee.Geometry.Polygon(payload.coords)
+        composite = get_landsat_composite(
+            aoi=aoi,
+            start_date=payload.start_date,
+            end_date=payload.end_date,
+            cloud_percentage=payload.cloud_percentage or 20.0
+        )
+        return {
+            "true_color_url": composite["true_color_url"],
+            "false_color_url": composite["false_color_url"],
+            "ndvi_url": composite["ndvi_url"],
+            "sensor": "Landsat 8/9 OLI Collection 2 Tier 1",
+            "resolution": "30m"
+        }
+    except Exception as e:
+        logger.error(f"Error generating Landsat tiles: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Landsat composite generation failed: {e}"
+        )
+
+
+@app.post("/api/v1/landsat-composite", tags=["Developer API v1"])
+def api_v1_landsat_composite(payload: LandsatCompositeRequest):
+    """
+    Developer API v1 endpoint generating Landsat 8/9 Level 2 Tier 1 composites and map tile URLs.
+    """
+    return get_landsat_map_tiles(payload)
+
 
 
 
