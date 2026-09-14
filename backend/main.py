@@ -1203,7 +1203,7 @@ def search_stac(payload: STACSearchRequest):
     Search multi-mission open EO scenes across user AOI via Earth Engine STAC-compliant collections.
     """
     try:
-        scenes = search_stac_scenes(
+        stac_res = search_stac_scenes(
             aoi_coords=payload.coords,
             start_date=payload.start_date,
             end_date=payload.end_date,
@@ -1211,9 +1211,10 @@ def search_stac(payload: STACSearchRequest):
             max_cloud=payload.max_cloud_cover or 30.0,
             limit=payload.limit or 25
         )
+        features_list = stac_res.get("features", []) if isinstance(stac_res, dict) else stac_res
         return {
-            "total_found": len(scenes),
-            "features": scenes,
+            "total_found": len(features_list),
+            "features": features_list,
             "query": {
                 "start_date": payload.start_date,
                 "end_date": payload.end_date,

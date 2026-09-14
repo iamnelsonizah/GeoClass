@@ -145,12 +145,14 @@ def search_stac_scenes(
                     "collection_title": "Sentinel-2 MSI Level-2A",
                     "platform": "Sentinel-2" + ("A" if "S2A" in feat.get('id', '') else "B"),
                     "sensor": "MSI (MultiSpectral Instrument)",
+                    "datetime": dt_str,
                     "acquisition_datetime": dt_str,
                     "date": date_only,
                     "cloud_cover": round(float(props.get('CLOUDY_PIXEL_PERCENTAGE', 0.0)), 1),
                     "sun_elevation": round(float(props.get('MEAN_SOLAR_ZENITH_ANGLE', 0.0)), 1),
                     "resolution_m": 10,
                     "bands": ["B2", "B3", "B4", "B5", "B6", "B7", "B8", "B8A", "B11", "B12"],
+                    "properties": props,
                     "stac_assets": {
                         "visual": f"https://earthsearch.element84.com/v1/collections/sentinel-2-l2a/items/{feat.get('id', '')}",
                         "provider": "ESA Copernicus"
@@ -193,12 +195,14 @@ def search_stac_scenes(
                         "collection_title": "Landsat 9 OLI-2" if is_l9 else "Landsat 8 OLI",
                         "platform": "Landsat 9" if is_l9 else "Landsat 8",
                         "sensor": "OLI/TIRS Collection 2 Tier 1",
+                        "datetime": dt_str,
                         "acquisition_datetime": dt_str,
                         "date": date_only,
                         "cloud_cover": round(float(props.get('CLOUD_COVER', 0.0)), 1),
                         "sun_elevation": round(float(props.get('SUN_ELEVATION', 0.0)), 1),
                         "resolution_m": 30,
                         "bands": ["SR_B2", "SR_B3", "SR_B4", "SR_B5", "SR_B6", "SR_B7"],
+                        "properties": props,
                         "stac_assets": {
                             "visual": f"https://landsatlook.usgs.gov/stac-server/collections/landsat-c2l2-sr/items/{feat.get('id', '')}",
                             "provider": "USGS / NASA"
@@ -230,12 +234,14 @@ def search_stac_scenes(
                     "collection_title": "Sentinel-1 C-SAR GRD",
                     "platform": "Sentinel-1",
                     "sensor": "C-SAR (Synthetic Aperture Radar)",
+                    "datetime": dt_str,
                     "acquisition_datetime": dt_str,
                     "date": date_only,
                     "cloud_cover": 0.0,  # Radar penetrates clouds
                     "sun_elevation": 0.0,
                     "resolution_m": 10,
                     "bands": ["VV", "VH"],
+                    "properties": props,
                     "stac_assets": {
                         "visual": f"https://browser.dataspace.copernicus.eu/?item={feat.get('id', '')}",
                         "provider": "ESA Copernicus"

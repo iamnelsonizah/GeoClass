@@ -3430,6 +3430,7 @@ export default function Home() {
               aoiCoords={coords}
               startDate={startDate}
               endDate={endDate}
+              apiBase={API_BASE}
               onApplySceneSettings={(newStart, newEnd, newSensor) => {
                 setStartDate(newStart);
                 setEndDate(newEnd);

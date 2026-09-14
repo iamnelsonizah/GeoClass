@@ -22,13 +22,15 @@ export interface STACScene {
   id: string;
   collection: string;
   platform: string;
-  datetime: string;
+  datetime?: string;
+  acquisition_datetime?: string;
+  date?: string;
   cloud_cover: number | null;
   resolution_m: number;
-  bands: string[];
-  bounds: number[][];
+  bands?: string[];
+  bounds?: number[][];
   thumbnail_url?: string;
-  properties: Record<string, any>;
+  properties?: Record<string, any>;
 }
 
 interface STACBrowserModalProps {
@@ -37,6 +39,7 @@ interface STACBrowserModalProps {
   aoiCoords: number[][] | null;
   startDate: string;
   endDate: string;
+  apiBase?: string;
   onApplySceneSettings?: (startDate: string, endDate: string, sensor: string) => void;
 }
 
@@ -53,6 +56,7 @@ export function STACBrowserModal({
   aoiCoords,
   startDate: initialStart,
   endDate: initialEnd,
+  apiBase,
   onApplySceneSettings
 }: STACBrowserModalProps) {
   const [selectedCollections, setSelectedCollections] = useState<string[]>([
@@ -103,7 +107,17 @@ export function STACBrowserModal({
     setError(null);
     setSelectedScene(null);
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+    const rawApiBase = (
+      apiBase ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      'http://localhost:8000'
+    ).trim();
+    const normalizedApiBase =
+      rawApiBase.startsWith('http://') || rawApiBase.startsWith('https://')
+        ? rawApiBase
+        : `https://${rawApiBase}`;
+    const backendUrl = normalizedApiBase.replace(/\/$/, '');
 
     try {
       const res = await fetch(`${backendUrl}/api/stac/search`, {
@@ -125,19 +139,35 @@ export function STACBrowserModal({
       }
 
       const data = await res.json();
-      setScenes(data.features || []);
-      if (data.features && data.features.length > 0) {
-        setSelectedScene(data.features[0]);
+      
+      // Defensively extract feature array from all potential response structures
+      let parsedScenes: STACScene[] = [];
+      if (Array.isArray(data?.features)) {
+        parsedScenes = data.features;
+      } else if (data?.features && Array.isArray(data.features.features)) {
+        parsedScenes = data.features.features;
+      } else if (Array.isArray(data)) {
+        parsedScenes = data;
+      }
+
+      setScenes(parsedScenes);
+      if (parsedScenes.length > 0) {
+        setSelectedScene(parsedScenes[0]);
+      } else {
+        setSelectedScene(null);
       }
     } catch (err: any) {
       console.error('STAC query error:', err);
       setError(err.message || 'Failed to query STAC catalog scenes.');
+      setScenes([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredScenes = scenes.filter(s => {
+  const safeScenes = Array.isArray(scenes) ? scenes : [];
+  const filteredScenes = safeScenes.filter(s => {
+    if (!s || !s.collection) return false;
     if (filterType === 'optical') {
       return s.collection.includes('sentinel-2') || s.collection.includes('landsat');
     }
@@ -150,18 +180,36 @@ export function STACBrowserModal({
   const handleApplyScene = (scene: STACScene) => {
     if (!onApplySceneSettings) return;
 
-    // Determine target date window around scene acquisition date (plus/minus 15 days for robust composite)
-    const sceneDate = new Date(scene.datetime);
+    // Extract acquisition date safely
+    const rawDate = scene.date || scene.datetime || scene.acquisition_datetime;
+    const sceneDate = rawDate ? new Date(rawDate) : new Date();
+    
+    // Determine target date window around scene acquisition date (plus/minus 15 days)
     const startWindow = new Date(sceneDate);
     startWindow.setDate(sceneDate.getDate() - 15);
     const endWindow = new Date(sceneDate);
     endWindow.setDate(sceneDate.getDate() + 15);
 
     const fmt = (d: Date) => d.toISOString().split('T')[0];
-    const targetSensor = scene.collection.includes('landsat') ? 'landsat' : 'sentinel_2';
+    const targetSensor = (scene.collection || '').includes('landsat') ? 'landsat' : 'sentinel_2';
 
     onApplySceneSettings(fmt(startWindow), fmt(endWindow), targetSensor);
     onClose();
+  };
+
+  const getSceneDisplayDate = (scene: STACScene): string => {
+    if (scene.date) return scene.date;
+    if (scene.acquisition_datetime) return scene.acquisition_datetime.split(' ')[0];
+    if (scene.datetime) {
+      return scene.datetime.includes('T') ? scene.datetime.split('T')[0] : scene.datetime.split(' ')[0];
+    }
+    return '';
+  };
+
+  const getSceneFullDatetime = (scene: STACScene): string => {
+    return (scene.acquisition_datetime || scene.datetime || scene.date || '')
+      .replace('T', ' ')
+      .replace('Z', ' UTC');
   };
 
   return (
@@ -188,7 +236,7 @@ export function STACBrowserModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#8B8C7F] hover:text-white hover:bg-[#22261E] transition-colors"
+            className="p-1.5 rounded-lg text-[#8B8C7F] hover:text-white hover:bg-[#22261E] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -207,7 +255,7 @@ export function STACBrowserModal({
                 <button
                   key={col.id}
                   onClick={() => handleCollectionToggle(col.id)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all border flex items-center gap-1.5 ${
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all border flex items-center gap-1.5 cursor-pointer ${
                     active
                       ? 'bg-[#22261E] border-[#4B6445] text-[#E0DCD3] shadow-sm'
                       : 'bg-[#1A1D17] border-[#2E3429] text-[#8B8C7F] hover:text-[#D0D0D0]'
@@ -259,7 +307,7 @@ export function STACBrowserModal({
             <button
               onClick={handleSearch}
               disabled={loading}
-              className="px-3.5 py-1 rounded-md bg-[#306840] hover:bg-[#3d8352] text-[#F9FAFB] font-medium text-[11px] flex items-center gap-1.5 transition-colors shadow-sm disabled:opacity-50"
+              className="px-3.5 py-1 rounded-md bg-[#306840] hover:bg-[#3d8352] text-[#F9FAFB] font-medium text-[11px] flex items-center gap-1.5 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -287,7 +335,7 @@ export function STACBrowserModal({
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setFilterType('all')}
-                  className={`px-2 py-0.5 rounded text-[10px] ${
+                  className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${
                     filterType === 'all' ? 'bg-[#2E3429] text-[#E0DCD3]' : 'text-[#8B8C7F] hover:text-white'
                   }`}
                 >
@@ -295,7 +343,7 @@ export function STACBrowserModal({
                 </button>
                 <button
                   onClick={() => setFilterType('optical')}
-                  className={`px-2 py-0.5 rounded text-[10px] ${
+                  className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${
                     filterType === 'optical' ? 'bg-[#2E3429] text-[#E0DCD3]' : 'text-[#8B8C7F] hover:text-white'
                   }`}
                 >
@@ -303,7 +351,7 @@ export function STACBrowserModal({
                 </button>
                 <button
                   onClick={() => setFilterType('radar')}
-                  className={`px-2 py-0.5 rounded text-[10px] ${
+                  className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${
                     filterType === 'radar' ? 'bg-[#2E3429] text-[#E0DCD3]' : 'text-[#8B8C7F] hover:text-white'
                   }`}
                 >
@@ -334,8 +382,9 @@ export function STACBrowserModal({
             <div className="flex-1 overflow-y-auto divide-y divide-[#1F241C] p-2 space-y-1">
               {filteredScenes.map((scene) => {
                 const isSelected = selectedScene?.id === scene.id;
-                const isRadar = scene.collection.includes('sentinel-1');
-                const isLandsat = scene.collection.includes('landsat');
+                const isRadar = (scene.collection || '').includes('sentinel-1');
+                const isLandsat = (scene.collection || '').includes('landsat');
+                const bandsList = scene.bands || [];
 
                 return (
                   <div
@@ -365,7 +414,7 @@ export function STACBrowserModal({
                         </span>
                       </div>
                       <span className="text-[11px] text-[#E0DCD3] font-mono font-medium">
-                        {scene.datetime.split('T')[0]}
+                        {getSceneDisplayDate(scene)}
                       </span>
                     </div>
 
@@ -375,7 +424,7 @@ export function STACBrowserModal({
 
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#22261E] text-[10px]">
                       <div className="flex items-center gap-3">
-                        {scene.cloud_cover !== null ? (
+                        {scene.cloud_cover !== null && scene.cloud_cover !== undefined ? (
                           <span className="flex items-center gap-1 text-[#A0A59A]">
                             <Cloud className="w-3 h-3" />
                             {scene.cloud_cover.toFixed(1)}% cloud
@@ -384,7 +433,7 @@ export function STACBrowserModal({
                           <span className="text-[#8e44ad]">Cloud-Penetrating SAR</span>
                         )}
                         <span className="text-[#8B8C7F]">
-                          {scene.bands.length} bands
+                          {bandsList.length} bands
                         </span>
                       </div>
                       <button
@@ -392,7 +441,7 @@ export function STACBrowserModal({
                           e.stopPropagation();
                           handleApplyScene(scene);
                         }}
-                        className="px-2 py-0.5 rounded bg-[#2E3429] hover:bg-[#306840] text-[#E0DCD3] hover:text-white flex items-center gap-1 transition-colors"
+                        className="px-2 py-0.5 rounded bg-[#2E3429] hover:bg-[#306840] text-[#E0DCD3] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
                       >
                         Load <ArrowRight className="w-2.5 h-2.5" />
                       </button>
@@ -429,7 +478,7 @@ export function STACBrowserModal({
                   <div className="p-2.5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
                     <span className="text-[10px] text-[#8B8C7F] block">Acquisition Date</span>
                     <span className="text-[12px] font-mono text-[#F9FAFB] mt-0.5 block">
-                      {selectedScene.datetime.replace('T', ' ').replace('Z', ' UTC')}
+                      {getSceneFullDatetime(selectedScene)}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
@@ -441,7 +490,7 @@ export function STACBrowserModal({
                   <div className="p-2.5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
                     <span className="text-[10px] text-[#8B8C7F] block">Cloud Screening</span>
                     <span className="text-[12px] font-mono text-[#F9FAFB] mt-0.5 block">
-                      {selectedScene.cloud_cover !== null
+                      {selectedScene.cloud_cover !== null && selectedScene.cloud_cover !== undefined
                         ? `${selectedScene.cloud_cover.toFixed(2)}%`
                         : 'N/A (SAR Microwave)'}
                     </span>
@@ -449,7 +498,7 @@ export function STACBrowserModal({
                   <div className="p-2.5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
                     <span className="text-[10px] text-[#8B8C7F] block">Spectral Bands</span>
                     <span className="text-[12px] font-mono text-[#F9FAFB] mt-0.5 block">
-                      {selectedScene.bands.length} available
+                      {(selectedScene.bands || []).length} available
                     </span>
                   </div>
                 </div>
@@ -460,7 +509,7 @@ export function STACBrowserModal({
                     Available Sensor Channels
                   </span>
                   <div className="flex flex-wrap gap-1">
-                    {selectedScene.bands.map(b => (
+                    {(selectedScene.bands || []).map(b => (
                       <span
                         key={b}
                         className="px-2 py-0.5 rounded bg-[#1A1D17] border border-[#2E3429] text-[10px] font-mono text-[#A0A59A]"
@@ -472,33 +521,35 @@ export function STACBrowserModal({
                 </div>
 
                 {/* Additional Properties Table */}
-                <div>
-                  <span className="text-[11px] font-medium text-[#E0DCD3] block mb-1.5">
-                    Metadata Attributes
-                  </span>
-                  <div className="rounded-lg bg-[#1A1D17] border border-[#2E3429] p-2.5 divide-y divide-[#22261E] text-[10px] font-mono">
-                    {Object.entries(selectedScene.properties).map(([k, v]) => (
-                      <div key={k} className="py-1 flex justify-between gap-2">
-                        <span className="text-[#8B8C7F] truncate">{k}:</span>
-                        <span className="text-[#D0D0D0] truncate text-right">
-                          {typeof v === 'number' ? v.toFixed(2) : String(v)}
-                        </span>
-                      </div>
-                    ))}
+                {selectedScene.properties && Object.keys(selectedScene.properties).length > 0 && (
+                  <div>
+                    <span className="text-[11px] font-medium text-[#E0DCD3] block mb-1.5">
+                      Metadata Attributes
+                    </span>
+                    <div className="rounded-lg bg-[#1A1D17] border border-[#2E3429] p-2.5 divide-y divide-[#22261E] text-[10px] font-mono">
+                      {Object.entries(selectedScene.properties).map(([k, v]) => (
+                        <div key={k} className="py-1 flex justify-between gap-2">
+                          <span className="text-[#8B8C7F] truncate">{k}:</span>
+                          <span className="text-[#D0D0D0] truncate text-right">
+                            {typeof v === 'number' ? v.toFixed(2) : String(v)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Apply Button */}
                 <div className="pt-2">
                   <button
                     onClick={() => handleApplyScene(selectedScene)}
-                    className="w-full py-2.5 rounded-lg bg-[#306840] hover:bg-[#3d8352] text-[#F9FAFB] font-medium text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+                    className="w-full py-2.5 rounded-lg bg-[#306840] hover:bg-[#3d8352] text-[#F9FAFB] font-medium text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#E0DCD3]" />
                     Apply Scene to Classification Workflow
                   </button>
                   <p className="text-[10px] text-center text-[#8B8C7F] mt-1.5">
-                    Sets active sensor ({selectedScene.collection.includes('landsat') ? 'Landsat 8/9' : 'Sentinel-2'}) and composite acquisition window.
+                    Sets active sensor ({(selectedScene.collection || '').includes('landsat') ? 'Landsat 8/9' : 'Sentinel-2'}) and composite acquisition window.
                   </p>
                 </div>
               </div>
