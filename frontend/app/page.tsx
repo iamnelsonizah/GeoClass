@@ -1796,6 +1796,8 @@ export default function Home() {
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
         setProcessingTime(parseFloat(elapsed));
         setSuccessMessage(`Landsat 8/9 composite generated in ${elapsed}s (30m GSD).`);
+        setPhase3Open(true);
+        setLeftRailCollapsed(false);
         return;
       }
 
@@ -1882,6 +1884,8 @@ export default function Home() {
       setProcessingTime(parseFloat(elapsed));
       setActiveLayer('true_color');
       setSuccessMessage(`Sentinel-2 cloud-free composites fetched in ${elapsed}s.`);
+      setPhase3Open(true);
+      setLeftRailCollapsed(false);
       fetchQualityScore();
     } catch (e: any) {
       setErrorMessage(e.message || "An error occurred fetching GEE map tiles.");
@@ -2443,17 +2447,48 @@ export default function Home() {
 
         {/* Desktop Steps Nav */}
         <div className="steps-nav hidden md:flex text-xs font-medium text-slate-400">
-          <div className={`step ${workflowStep >= 1 ? 'active text-[#E0DCD3] font-semibold' : ''}`}>1. Area</div>
+          <button 
+            type="button"
+            onClick={() => { setLeftRailCollapsed(false); setPhase1Open(true); }}
+            className={`step cursor-pointer hover:text-white transition ${workflowStep >= 1 ? 'active text-[#E0DCD3] font-semibold' : ''}`}
+            title="Go to Step 1: Area of Interest"
+          >
+            1. Area
+          </button>
           <span className="sep text-slate-600">›</span>
-          <div className={`step ${workflowStep >= 2 ? 'active text-[#E0DCD3] font-semibold' : ''}`}>2. Imagery</div>
+          <button 
+            type="button"
+            onClick={() => { setLeftRailCollapsed(false); setPhase2Open(true); }}
+            className={`step cursor-pointer hover:text-white transition ${workflowStep >= 2 ? 'active text-[#E0DCD3] font-semibold' : ''}`}
+            title="Go to Step 2: Satellite Imagery"
+          >
+            2. Imagery
+          </button>
           <span className="sep text-slate-600">›</span>
-          <div className={`step ${workflowStep >= 3 ? 'active text-[#E0DCD3] font-semibold' : ''}`}>3. Classification</div>
+          <button 
+            type="button"
+            onClick={() => { setLeftRailCollapsed(false); setPhase3Open(true); }}
+            className={`step cursor-pointer hover:text-white transition ${workflowStep >= 3 ? 'active text-[#E0DCD3] font-semibold' : ''}`}
+            title="Go to Step 3: Classification & Analysis"
+          >
+            3. Classification
+          </button>
           <span className="sep text-slate-600">›</span>
-          <div className={`step ${workflowStep >= 4 ? 'active text-[#E0DCD3] font-semibold' : ''}`}>4. Analytics</div>
+          <button 
+            type="button"
+            onClick={() => { setAnalyticsExpanded(true); }}
+            className={`step cursor-pointer hover:text-white transition ${workflowStep >= 4 ? 'active text-[#E0DCD3] font-semibold' : ''}`}
+            title="Go to Step 4: Analytics Drawer"
+          >
+            4. Analytics
+          </button>
         </div>
 
         {/* Mobile Step Badge */}
-        <div className="md:hidden flex items-center gap-1.5 text-xs text-neutral-300 bg-[#1A1D17] border border-[#2E3429] px-2.5 py-1 rounded">
+        <div 
+          onClick={() => { setLeftRailCollapsed(false); }}
+          className="md:hidden flex items-center gap-1.5 text-xs text-neutral-300 bg-[#1A1D17] border border-[#2E3429] px-2.5 py-1 rounded cursor-pointer"
+        >
           <span className="text-[#E0DCD3] font-medium">Step {workflowStep}/4</span>
           <span className="text-neutral-600">•</span>
           <span className="truncate max-w-[85px]">
@@ -2888,6 +2923,20 @@ export default function Home() {
                     </>
                   )}
                 </button>
+
+                {(tileUrls.trueColor || tileUrls.landsatTrueColor) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhase3Open(true);
+                      setLeftRailCollapsed(false);
+                    }}
+                    className="w-full mt-2.5 py-2 px-3 bg-[#306840]/25 hover:bg-[#306840]/40 border border-[#306840] text-[#E0DCD3] hover:text-white rounded text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  >
+                    <span>Next: Analyze & Classify Land Cover</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-[#306840]" />
+                  </button>
+                )}
                     </div>
                   </motion.div>
                 )}
@@ -3003,17 +3052,19 @@ export default function Home() {
                 )}
 
                 <button
+                  type="button"
                   onClick={runClassification}
                   disabled={loadingClassify || coords.length === 0}
                   className="run-btn"
+                  title="Train machine learning model and analyze land cover"
                 >
                   {loadingClassify ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Training & Classifying...
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Training Model & Analyzing...
                     </>
                   ) : (
                     <>
-                      <span className="tri"></span> Run classification
+                      <Sparkles className="w-3.5 h-3.5 mr-1 text-emerald-300" /> Analyze & Classify Land Cover
                     </>
                   )}
                 </button>
@@ -3087,6 +3138,20 @@ export default function Home() {
               <div className="status-item">
                 <div className="k">Processing</div>
                 <div className="v font-medium text-slate-300">{processingTime}s</div>
+              </div>
+            )}
+
+            {(tileUrls.trueColor || tileUrls.landsatTrueColor) && !tileUrls.classified && !loadingClassify && (
+              <div className="status-item !border-r-0 ml-auto">
+                <button
+                  type="button"
+                  onClick={runClassification}
+                  className="px-3 py-1 bg-[#306840] hover:bg-[#265433] text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                  title="Run land cover classification and analysis on fetched imagery"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+                  <span>Analyze & Classify AOI</span>
+                </button>
               </div>
             )}
           </div>
