@@ -763,8 +763,8 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 .toolstrip .tool-tip {
   position: absolute;
   top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%) translateY(-4px);
+  left: 0;
+  transform: translateY(-4px);
   background: var(--gc-paper-50);
   border: 1px solid var(--gc-line);
   border-radius: 6px;
@@ -784,7 +784,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   content: '';
   position: absolute;
   bottom: 100%;
-  left: 50%;
+  left: 16px;
   transform: translateX(-50%);
   border-width: 5px;
   border-style: solid;
@@ -795,17 +795,30 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   content: '';
   position: absolute;
   bottom: 100%;
-  left: 50%;
+  left: 16px;
   transform: translateX(-50%);
   border-width: 4px;
   border-style: solid;
   border-color: transparent transparent var(--gc-paper-50) transparent;
 }
 
+/* For buttons near the right end, align tooltip to the right */
+.toolstrip .t:nth-last-child(-n+3) .tool-tip {
+  left: auto;
+  right: 0;
+}
+
+.toolstrip .t:nth-last-child(-n+3) .tool-tip::before,
+.toolstrip .t:nth-last-child(-n+3) .tool-tip::after {
+  left: auto;
+  right: 16px;
+  transform: translateX(50%);
+}
+
 .toolstrip .t:hover .tool-tip {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
 
 .tool-tip-title {

@@ -3223,7 +3223,7 @@ export default function Home() {
               <Layers className="w-4 h-4" />
             </button>
 
-            {/* Custom Horizontal Toolstrip matching mockup */}
+            {/* Custom Horizontal Toolstrip */}
             {!toolstripCollapsed && (
               <div className="toolstrip">
                 {/* 1. Pan / Pointer */}
@@ -3231,7 +3231,7 @@ export default function Home() {
                   type="button"
                   onClick={() => triggerTool('pan')}
                   className={`t ${activeTool === 'pan' ? 'active' : ''}`}
-                  title="Select & Pan"
+                  aria-label="Select & Pan"
                 >
                   <MousePointer className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3248,7 +3248,7 @@ export default function Home() {
                   type="button"
                   onClick={() => triggerTool('rect')}
                   className={`t ${activeTool === 'rect' ? 'active' : ''}`}
-                  title="Draw Rectangle"
+                  aria-label="Draw Rectangle"
                 >
                   <Square className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3265,7 +3265,7 @@ export default function Home() {
                   type="button"
                   onClick={() => triggerTool('poly')}
                   className={`t ${activeTool === 'poly' ? 'active' : ''}`}
-                  title="Draw Polygon"
+                  aria-label="Draw Polygon"
                 >
                   <Pentagon className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3277,12 +3277,29 @@ export default function Home() {
                   </div>
                 </button>
 
-                {/* 4. Transect */}
+                {/* 4. Measure Distance (Ruler) */}
+                <button
+                  type="button"
+                  onClick={() => triggerTool('measure')}
+                  className={`t ${measurementMode ? 'active' : ''}`}
+                  aria-label="Measure Distance"
+                >
+                  <Ruler className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Measure Distance</span>
+                      <span className="tool-tip-badge">RULER</span>
+                    </div>
+                    <div className="tool-tip-desc">Click sequential points on the map to calculate linear distance in kilometers.</div>
+                  </div>
+                </button>
+
+                {/* 5. Elevation Transect */}
                 <button
                   type="button"
                   onClick={() => triggerTool('transect')}
                   className={`t ${transectMode ? 'active' : ''}`}
-                  title="Elevation Transect"
+                  aria-label="Elevation Transect"
                 >
                   <Activity className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3294,12 +3311,29 @@ export default function Home() {
                   </div>
                 </button>
 
-                {/* 5. Info / Smart Select */}
+                {/* 6. Text Annotation */}
+                <button
+                  type="button"
+                  onClick={() => triggerTool('text')}
+                  className={`t ${activeTool === 'text' ? 'active' : ''}`}
+                  aria-label="Text Annotation"
+                >
+                  <Type className="w-4 h-4" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Text Annotation</span>
+                      <span className="tool-tip-badge">TEXT</span>
+                    </div>
+                    <div className="tool-tip-desc">Click anywhere on the map to type and place custom notes or field labels.</div>
+                  </div>
+                </button>
+
+                {/* 7. Info / Smart Select */}
                 <button
                   type="button"
                   onClick={() => triggerTool('smart')}
                   className={`t ${smartSelectMode ? 'active' : ''}`}
-                  title="Smart Select & Inspect"
+                  aria-label="Smart Select & Inspect"
                 >
                   <Info className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3311,12 +3345,12 @@ export default function Home() {
                   </div>
                 </button>
 
-                {/* 6. MapPin / Notes */}
+                {/* 8. MapPin / Notes */}
                 <button
                   type="button"
                   onClick={() => triggerTool('notes')}
                   className={`t ${noteMode ? 'active' : ''}`}
-                  title="Field Note Pin"
+                  aria-label="Field Note Pin"
                 >
                   <MapPin className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3330,7 +3364,7 @@ export default function Home() {
 
                 <div className="divider" />
 
-                {/* 7. Crosshair (Center on AOI) */}
+                {/* 9. Crosshair (Center on AOI) */}
                 <button
                   type="button"
                   onClick={() => {
@@ -3345,7 +3379,7 @@ export default function Home() {
                     }
                   }}
                   className="t"
-                  title="Center on Target"
+                  aria-label="Center on Target"
                 >
                   <Crosshair className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3357,12 +3391,12 @@ export default function Home() {
                   </div>
                 </button>
 
-                {/* 8. Layers / Spectral Inspector */}
+                {/* 10. Layers / Spectral Inspector */}
                 <button
                   type="button"
                   onClick={() => triggerTool('spectral')}
                   className={`t ${spectralInspectorMode ? 'active' : ''}`}
-                  title="Spectral Inspector"
+                  aria-label="Spectral Inspector"
                 >
                   <Layers className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3374,12 +3408,12 @@ export default function Home() {
                   </div>
                 </button>
 
-                {/* 9. Swipe Split */}
+                {/* 11. Swipe Split */}
                 <button
                   type="button"
                   onClick={() => triggerTool('swipe')}
                   className={`t ${swipeActive ? 'active' : ''}`}
-                  title="Split Comparison"
+                  aria-label="Split Comparison"
                 >
                   <SplitSquareVertical className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3393,12 +3427,12 @@ export default function Home() {
 
                 <div className="divider" />
 
-                {/* 10. Zoom In */}
+                {/* 12. Zoom In */}
                 <button
                   type="button"
                   onClick={() => setMapZoom((z) => Math.min(18, z + 1))}
                   className="t"
-                  title="Zoom In"
+                  aria-label="Zoom In"
                 >
                   <Plus className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3410,12 +3444,12 @@ export default function Home() {
                   </div>
                 </button>
 
-                {/* 11. Zoom Out */}
+                {/* 13. Zoom Out */}
                 <button
                   type="button"
                   onClick={() => setMapZoom((z) => Math.max(3, z - 1))}
                   className="t"
-                  title="Zoom Out"
+                  aria-label="Zoom Out"
                 >
                   <Minus className="w-4 h-4" />
                   <div className="tool-tip">
@@ -3427,7 +3461,7 @@ export default function Home() {
                   </div>
                 </button>
 
-                {/* 12. Compass */}
+                {/* 14. Compass */}
                 <button
                   type="button"
                   onClick={() => {
@@ -3443,7 +3477,7 @@ export default function Home() {
                     }
                   }}
                   className="t"
-                  title="Reset North & Extent"
+                  aria-label="Reset North & Extent"
                 >
                   <Compass className="w-4 h-4" />
                   <div className="tool-tip">
