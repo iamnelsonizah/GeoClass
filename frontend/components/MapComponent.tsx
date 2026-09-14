@@ -519,8 +519,8 @@ function ScaleBar() {
 
   useEffect(() => {
     controlRef.current = L.control.scale({
-      position: 'bottomleft',
-      maxWidth: 150,
+      position: 'bottomright',
+      maxWidth: 140,
       metric: true,
       imperial: true,
     });
