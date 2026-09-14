@@ -193,6 +193,37 @@ def add_ndvi(image: ee.Image) -> ee.Image:
     ndvi = image.normalizedDifference(['B8', 'B4']).rename('NDVI')
     return image.addBands(ndvi)
 
+def get_s1_sar_composite(
+    aoi: ee.Geometry,
+    start_date: str,
+    end_date: str
+) -> ee.Image:
+    """
+    Fetches and processes Sentinel-1 C-band Synthetic Aperture Radar (SAR) GRD imagery.
+    Returns a speckle-reduced median composite with calibrated VV, VH, and VV/VH ratio bands.
+    Cloud-penetrating and functional under all weather and monsoon conditions.
+    """
+    s1 = (
+        ee.ImageCollection('COPERNICUS/S1_GRD')
+        .filterBounds(aoi)
+        .filterDate(start_date, end_date)
+        .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+        .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH'))
+        .filter(ee.Filter.eq('instrumentMode', 'IW'))
+    )
+    
+    # Compute median backscatter across date window and clip to AOI
+    composite = s1.median().clip(aoi)
+    
+    # Extract VV and VH backscatter in decibels (dB)
+    vv = composite.select('VV')
+    vh = composite.select('VH')
+    
+    # Cross-polarization ratio (in dB: VV - VH corresponds to linear VV/VH ratio)
+    ratio = vv.subtract(vh).rename('VV_VH_ratio')
+    
+    return composite.select(['VV', 'VH']).addBands(ratio)
+
 def get_map_tile_url(image: ee.Image, vis_params: Dict[str, Any]) -> str:
     """
     Generates a direct map tile URL from GEE using MapId.

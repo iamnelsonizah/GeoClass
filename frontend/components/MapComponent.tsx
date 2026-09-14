@@ -124,6 +124,15 @@ const LAYER_INFO: Record<string, { title: string; description: string; bands?: {
       { label: 'Unburned / Healthy Canopy (≥ 0.27)', color: '#2166ac' },
     ],
   },
+  sar: {
+    title: 'Sentinel-1 C-Band SAR Backscatter',
+    description: 'Cloud-penetrating radar backscatter composite: R: VV (-20 to 0 dB), G: VH (-25 to -5 dB), B: VV/VH ratio (0 to 15 dB). Volume scattering appears bright green, rough urban surfaces appear yellow/white, and specular water appears dark blue/black.',
+    bands: [
+      { label: 'VV - Co-polarization (dB)', color: '#ef4444' },
+      { label: 'VH - Cross-polarization (dB)', color: '#22c55e' },
+      { label: 'VV/VH - Cross Ratio (dB)', color: '#3b82f6' },
+    ],
+  },
 };
 
 
@@ -142,6 +151,7 @@ interface MapComponentProps {
   ndbiUrl?: string;
   mndwiUrl?: string;
   nbrUrl?: string;
+  sarUrl?: string;
   baselineTrueColorUrl?: string;
   baselineFalseColorUrl?: string;
   baselineNdviUrl?: string;
@@ -149,7 +159,7 @@ interface MapComponentProps {
   compareMode?: boolean;
   activeTimePeriod?: 'target' | 'baseline';
   opacity: number;
-  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr';
+  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar';
   mapCenter: [number, number];
   mapZoom: number;
   searchLocation?: SearchLocation | null;
@@ -2230,6 +2240,7 @@ export default function MapComponent({
   ndbiUrl,
   mndwiUrl,
   nbrUrl,
+  sarUrl,
   baselineTrueColorUrl,
   baselineFalseColorUrl,
   baselineNdviUrl,
@@ -2338,6 +2349,7 @@ export default function MapComponent({
     ndbiUrl ||
     mndwiUrl ||
     nbrUrl ||
+    sarUrl ||
     baselineTrueColorUrl ||
     baselineFalseColorUrl ||
     baselineNdviUrl ||
@@ -2356,6 +2368,7 @@ export default function MapComponent({
         baseline_false_color: baselineFalseColorUrl,
         target_ndvi: ndviUrl,
         baseline_ndvi: baselineNdviUrl,
+        sar: sarUrl,
         slope: slopeUrl,
         elevation: elevationUrl,
         hillshade: hillshadeUrl,
@@ -2367,6 +2380,7 @@ export default function MapComponent({
         true_color: trueColorUrl,
         false_color: falseColorUrl,
         ndvi: ndviUrl,
+        sar: sarUrl,
         classified: classifiedUrl,
         slope: slopeUrl,
         elevation: elevationUrl,
@@ -2405,6 +2419,7 @@ export default function MapComponent({
       true_color: 'True Color (Optical)',
       false_color: 'False Color (NIR)',
       ndvi: 'NDVI (Canopy Vigor)',
+      sar: 'Sentinel-1 SAR Radar',
       classified: 'Classified LULC',
       target_classified: 'Target Classified LULC',
       baseline_classified: 'Baseline Classified LULC',
@@ -2444,6 +2459,14 @@ export default function MapComponent({
         (layerUrls.target_classified || layerUrls.classified)
       ),
       badge: '🛰️ Sat vs LULC',
+    },
+    {
+      id: 'sar_vs_optical',
+      name: 'SAR Radar vs Optical',
+      left: 'sar',
+      right: compareMode ? (layerUrls.target_true_color ? 'target_true_color' : 'true_color') : 'true_color',
+      available: !!(layerUrls.sar && (layerUrls.target_true_color || layerUrls.true_color)),
+      badge: '📡 SAR vs Optical',
     },
     {
       id: 'ndvi_change',
@@ -2570,6 +2593,9 @@ export default function MapComponent({
         )}
         {!swipeActive && activeLayer === 'nbr' && nbrUrl && (
           <TileLayer key={nbrUrl} url={nbrUrl} opacity={opacity} zIndex={400} attribution="Sentinel-2 NBR Burn Ratio" />
+        )}
+        {!swipeActive && activeLayer === 'sar' && sarUrl && (
+          <TileLayer key={sarUrl} url={sarUrl} opacity={opacity} zIndex={400} attribution="Copernicus Sentinel-1 C-Band SAR" />
         )}
 
         {/* Building Footprints Vector Layer */}

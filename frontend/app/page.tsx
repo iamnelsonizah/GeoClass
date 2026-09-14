@@ -49,7 +49,9 @@ import {
   Wand2,
   Hand,
   Trash2,
-  Sparkles
+  Sparkles,
+  Share2,
+  BookOpen
 } from 'lucide-react';
 import DashboardCharts, { SpectralData } from '../components/DashboardCharts';
 import { DraggableContainer } from '../components/DraggableContainer';
@@ -465,7 +467,8 @@ export default function Home() {
   const [timelineTargetYear, setTimelineTargetYear] = useState(2024);
 
   // Overlay Layer States
-  const [activeLayer, setActiveLayer] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr'>('none');
+  const [activeLayer, setActiveLayer] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar'>('none');
+  const [useSarFusion, setUseSarFusion] = useState(false);
   const [opacity, setOpacity] = useState(0.82);
   const [swipeActive, setSwipeActive] = useState(false);
   const [confidenceVisible, setConfidenceVisible] = useState(false);
@@ -562,6 +565,7 @@ export default function Home() {
     ndbi?: string;
     mndwi?: string;
     nbr?: string;
+    sar?: string;
     baselineTrueColor?: string;
     baselineFalseColor?: string;
     baselineNdvi?: string;
@@ -666,6 +670,56 @@ export default function Home() {
     const year = getYearFromDate(value);
     if (year && timelineYears.includes(year)) setTimelineBaselineYear(year);
   };
+
+  const handleSharePermalink = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('start', startDate);
+    url.searchParams.set('end', endDate);
+    url.searchParams.set('model', modelType);
+    url.searchParams.set('layer', activeLayer);
+    url.searchParams.set('sar', useSarFusion ? '1' : '0');
+    if (coords.length > 0) {
+      url.searchParams.set('aoi', encodeURIComponent(JSON.stringify(coords)));
+    }
+    navigator.clipboard.writeText(url.toString()).then(() => {
+      setSuccessMessage('Shareable permalink copied to clipboard!');
+    }).catch(() => {
+      setErrorMessage('Could not copy link to clipboard.');
+    });
+  }, [startDate, endDate, modelType, activeLayer, useSarFusion, coords]);
+
+  // Read URL query parameters on mount to restore analysis state
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const aoiParam = params.get('aoi');
+    const startParam = params.get('start');
+    const endParam = params.get('end');
+    const modelParam = params.get('model');
+    const layerParam = params.get('layer');
+    const sarParam = params.get('sar');
+
+    if (aoiParam) {
+      try {
+        const parsedCoords = JSON.parse(decodeURIComponent(aoiParam));
+        if (Array.isArray(parsedCoords) && parsedCoords.length > 0) {
+          setCoords(parsedCoords);
+        }
+      } catch (e) {
+        console.error('Failed to parse aoi param from URL', e);
+      }
+    }
+    if (startParam) setStartDate(startParam);
+    if (endParam) setEndDate(endParam);
+    if (modelParam && ['random_forest', 'dynamic_world', 'deep_learning'].includes(modelParam)) {
+      setModelType(modelParam as any);
+    }
+    if (sarParam === '1') setUseSarFusion(true);
+    if (layerParam && ['none', 'true_color', 'false_color', 'ndvi', 'classified', 'slope', 'elevation', 'hillshade', 'ndbi', 'mndwi', 'nbr', 'sar'].includes(layerParam)) {
+      setActiveLayer(layerParam as any);
+    }
+  }, []);
 
   const selectLocation = (location: LocationSuggestion) => {
     setSelectedLocation(location);
@@ -1609,7 +1663,8 @@ export default function Home() {
           ...prev,
           trueColor: data.true_color_tile_url,
           falseColor: data.false_color_tile_url,
-          ndvi: data.ndvi_tile_url
+          ndvi: data.ndvi_tile_url,
+          sar: data.sar_tile_url
         }));
       } else {
         const [resA, resB] = await Promise.all([
@@ -1655,6 +1710,7 @@ export default function Home() {
           trueColor: dataA.true_color_tile_url,
           falseColor: dataA.false_color_tile_url,
           ndvi: dataA.ndvi_tile_url,
+          sar: dataA.sar_tile_url,
           baselineTrueColor: dataB.true_color_tile_url,
           baselineFalseColor: dataB.false_color_tile_url,
           baselineNdvi: dataB.ndvi_tile_url
@@ -1702,7 +1758,8 @@ export default function Home() {
         model_type: modelType,
         cloud_mask_type: cloudMaskType,
         mask_shadows: maskShadows,
-        seasonal_filter: seasonalFilter
+        seasonal_filter: seasonalFilter,
+        use_sar_fusion: useSarFusion
       };
 
       if (!compareMode) {
@@ -2151,6 +2208,12 @@ export default function Home() {
       sub: 'Burn severity & clearing',
       hasUrl: !!tileUrls.nbr,
     },
+    {
+      key: 'sar' as const,
+      label: 'SAR Radar (C-Band)',
+      sub: 'Cloud-penetrating VV/VH',
+      hasUrl: !!tileUrls.sar,
+    },
   ];
 
   const readyLayersCount = layerStack.filter(l => l.hasUrl).length;
@@ -2195,6 +2258,27 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <a
+            href="/methods"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#1A1D17] border border-[#2E3429] text-[#E0DCD3] hover:text-white hover:border-[#306840] text-xs font-medium transition cursor-pointer"
+            title="Explore band physics, SAR microwave equations, and developer API"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-[#306840]" />
+            <span>Methods & API</span>
+          </a>
+
+          <button
+            type="button"
+            onClick={handleSharePermalink}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#1A1D17] border border-[#2E3429] text-[#E0DCD3] hover:text-white hover:border-[#306840] text-xs font-medium transition cursor-pointer"
+            title="Copy shareable permalink with current AOI and parameters"
+          >
+            <Share2 className="w-3.5 h-3.5 text-[#306840]" />
+            <span className="hidden sm:inline">Share View</span>
+          </button>
+
           <div className="flex items-center gap-1 bg-[#1A1D17] border border-[#2E3429] rounded p-0.5">
             <button
               type="button"
@@ -2662,6 +2746,29 @@ export default function Home() {
                   </>
                 )}
 
+                {(modelType === 'random_forest' || modelType === 'deep_learning') && (
+                  <div className="mt-3 p-2.5 rounded bg-[#161912] border border-[#2E3429]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Satellite className="w-3.5 h-3.5 text-[#306840]" />
+                        <span className="text-xs font-medium text-white">Sentinel-1 SAR Fusion</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={useSarFusion}
+                          onChange={(e) => setUseSarFusion(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-8 h-4 bg-[#2E3429] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#306840]"></div>
+                      </label>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1.5 leading-relaxed">
+                      Fuses C-band SAR microwave backscatter (VV, VH, VV/VH ratio) to penetrate cloud cover and separate soil moisture from canopy roughness.
+                    </p>
+                  </div>
+                )}
+
                 <button
                   onClick={runClassification}
                   disabled={loadingClassify || coords.length === 0}
@@ -3123,6 +3230,7 @@ export default function Home() {
               ndbiUrl={tileUrls.ndbi}
               mndwiUrl={tileUrls.mndwi}
               nbrUrl={tileUrls.nbr}
+              sarUrl={tileUrls.sar}
               spectralInspectorMode={spectralInspectorMode}
               onSpectralInspectorClick={handleSpectralInspect}
               inspectedSpectralCoord={spectralPixelData?.coordinate}

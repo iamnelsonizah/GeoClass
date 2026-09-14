@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 import ee
 
 logger = logging.getLogger(__name__)
@@ -45,13 +45,14 @@ def train_and_classify_gee(
     label_composite: ee.Image,
     aoi: ee.Geometry,
     num_trees: int = 100,
-    sample_points: int = 150
+    sample_points: int = 150,
+    sar_composite: Optional[ee.Image] = None
 ) -> Tuple[ee.Image, Dict[str, Any]]:
     """
     Trains an ee.Classifier.smileRandomForest on the GEE server.
     - Samples points from the label_composite (Dynamic World labels) in the AOI.
-    - Uses Sentinel-2 bands + NDVI as features.
-    - Classifies the S2 composite.
+    - Uses Sentinel-2 optical bands, spectral indices, and optional Sentinel-1 SAR features.
+    - Classifies the multi-sensor composite.
     - Computes area statistics in hectares.
     """
     logger.info("Starting GEE Random Forest training and classification...")
@@ -84,9 +85,16 @@ def train_and_classify_gee(
     # Calculate NDWI (Water Index) and add it: (B3 - B8) / (B3 + B8)
     ndwi = s2_composite.normalizedDifference(['B3', 'B8']).rename('NDWI')
     
-    # Create feature image
+    # Create feature image with optical bands
     feature_bands = ['B2', 'B3', 'B4', 'B8', 'B11', 'B12', 'NDVI', 'NDWI']
     feature_image = s2_composite.select(['B2', 'B3', 'B4', 'B8', 'B11', 'B12']).addBands([ndvi, ndwi])
+
+    # If Sentinel-1 SAR composite is provided, fuse C-band microwave backscatter
+    if sar_composite is not None:
+        logger.info("Fusing Sentinel-1 C-band SAR backscatter features (VV, VH, VV_VH_ratio)...")
+        sar_bands = ['VV', 'VH', 'VV_VH_ratio']
+        feature_image = feature_image.addBands(sar_composite.select(sar_bands))
+        feature_bands.extend(sar_bands)
 
     # Combine features with target label
     # The label image must be integer
@@ -183,14 +191,16 @@ def train_and_classify_deep_learning_gee(
     label_composite: ee.Image,
     aoi: ee.Geometry,
     num_trees: int = 150,
-    sample_points: int = 200
+    sample_points: int = 200,
+    sar_composite: Optional[ee.Image] = None
 ) -> Tuple[ee.Image, Dict[str, Any]]:
     """
-    Deep Learning–inspired Spatial Contextual Segmentation on GEE.
+    Deep Learning spatial contextual segmentation on GEE.
     - Computes multi-spectral bands + 4 indices (NDVI, NDWI, NDBI, MNDWI).
     - Generates multi-scale spatial convolution feature maps (Gaussian blur, Laplacian gradients).
     - Samples balanced spatial training points from Dynamic World labels.
-    - Applies spatial majority filter (focal_mode) to eliminate salt-and-pepper noise and enforce spatial coherence.
+    - Fuses optional Sentinel-1 SAR microwave backscatter.
+    - Applies spatial majority filter (focal_mode) to eliminate noise and enforce spatial coherence.
     """
     logger.info("Starting Deep Learning spatial classification on GEE...")
 
@@ -231,6 +241,13 @@ def train_and_classify_deep_learning_gee(
         ndvi, ndwi, ndbi, mndwi,
         b8_smooth, ndvi_smooth, edge_gradient
     ])
+
+    # If Sentinel-1 SAR composite is provided, fuse C-band microwave backscatter
+    if sar_composite is not None:
+        logger.info("Fusing Sentinel-1 C-band SAR backscatter into deep learning pipeline...")
+        sar_bands = ['VV', 'VH', 'VV_VH_ratio']
+        feature_image = feature_image.addBands(sar_composite.select(sar_bands))
+        feature_bands.extend(sar_bands)
 
     target_label = label_composite.select('label').toInt().rename('label')
     training_src = feature_image.addBands(target_label)

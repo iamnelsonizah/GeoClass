@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, model_validator
 import ee
 
-from gee_service import initialize_gee, get_s2_composite, get_dynamic_world_composite, get_map_tile_url, add_ndvi
+from gee_service import initialize_gee, get_s2_composite, get_s1_sar_composite, get_dynamic_world_composite, get_map_tile_url, add_ndvi
 from classifier import (
     train_and_classify_gee,
     train_and_classify_deep_learning_gee,
@@ -114,7 +114,8 @@ class AOIRequest(BaseModel):
 class ClassifyRequest(AOIRequest):
     num_trees: int = Field(100, description="Number of decision trees for Random Forest")
     sample_points: int = Field(150, description="Number of sample pixels to extract per class for training")
-    model_type: str = Field("random_forest", description="Model type: 'random_forest' or 'dynamic_world'")
+    model_type: str = Field("random_forest", description="Model type: 'random_forest', 'deep_learning', or 'dynamic_world'")
+    use_sar_fusion: Optional[bool] = Field(False, description="Whether to fuse Sentinel-1 C-band SAR backscatter features (VV, VH, VV/VH ratio) with optical imagery")
 
 class SmartSelectRequest(BaseModel):
     point: List[float] = Field(
@@ -316,10 +317,24 @@ def get_s2_map_id(payload: AOIRequest):
         }
         ndvi_url = get_map_tile_url(composite_with_ndvi, vis_ndvi)
 
+        # Generate Sentinel-1 SAR False-Color composite URL (VV, VH, VV/VH ratio)
+        sar_url = None
+        try:
+            sar_comp = get_s1_sar_composite(aoi, payload.start_date, payload.end_date)
+            vis_sar = {
+                'bands': ['VV', 'VH', 'VV_VH_ratio'],
+                'min': [-20.0, -25.0, 0.0],
+                'max': [0.0, -5.0, 15.0]
+            }
+            sar_url = get_map_tile_url(sar_comp, vis_sar)
+        except Exception as sar_err:
+            logger.warning(f"Could not generate Sentinel-1 SAR tile URL: {sar_err}")
+
         return {
             "true_color_tile_url": true_color_url,
             "false_color_tile_url": false_color_url,
-            "ndvi_tile_url": ndvi_url
+            "ndvi_tile_url": ndvi_url,
+            "sar_tile_url": sar_url
         }
 
     except Exception as e:
@@ -341,6 +356,7 @@ def classify_aoi(payload: ClassifyRequest):
     Runs LULC classification on the specified AOI.
     - If model_type is 'random_forest', trains a Random Forest model on the fly using S2 bands and Dynamic World labels.
     - If model_type is 'dynamic_world', returns the raw Dynamic World classification mode composite.
+    - If use_sar_fusion is True, ingests Sentinel-1 C-band SAR backscatter features (VV, VH, VV/VH ratio).
     Returns the classified map tile URL along with land cover statistics.
     """
     if not initialize_gee():
@@ -354,6 +370,15 @@ def classify_aoi(payload: ClassifyRequest):
         
         # 1. Fetch Dynamic World labels
         dw_labels = get_dynamic_world_composite(aoi, payload.start_date, payload.end_date)
+
+        # 2. Optional Sentinel-1 SAR fusion
+        sar_composite = None
+        if payload.use_sar_fusion:
+            try:
+                sar_composite = get_s1_sar_composite(aoi, payload.start_date, payload.end_date)
+                logger.info("Successfully fetched Sentinel-1 SAR composite for multi-sensor fusion.")
+            except Exception as sar_err:
+                logger.warning(f"Failed to fetch SAR composite for fusion: {sar_err}")
         
         if payload.model_type == "dynamic_world":
             # Use precomputed Dynamic World composite directly
@@ -375,7 +400,8 @@ def classify_aoi(payload: ClassifyRequest):
                 label_composite=dw_labels,
                 aoi=aoi,
                 num_trees=payload.num_trees,
-                sample_points=payload.sample_points
+                sample_points=payload.sample_points,
+                sar_composite=sar_composite
             )
         else:
             # Standard Random Forest Classification
@@ -393,7 +419,8 @@ def classify_aoi(payload: ClassifyRequest):
                 label_composite=dw_labels,
                 aoi=aoi,
                 num_trees=payload.num_trees,
-                sample_points=payload.sample_points
+                sample_points=payload.sample_points,
+                sar_composite=sar_composite
             )
 
         # Visual params for LULC classes
@@ -409,7 +436,8 @@ def classify_aoi(payload: ClassifyRequest):
             "tile_url": tile_url,
             "statistics": stats["classes"],
             "total_area_ha": stats["total_area_ha"],
-            "model_used": payload.model_type
+            "model_used": payload.model_type,
+            "sar_fusion_active": payload.use_sar_fusion and (sar_composite is not None)
         }
 
     except Exception as e:
@@ -1014,6 +1042,84 @@ def export_pdf_briefing(payload: PDFBriefingRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Executive PDF briefing generation failed: {e}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Developer REST API v1
+# ---------------------------------------------------------------------------
+
+@app.get("/api/v1/health", tags=["Developer API v1"])
+def api_v1_health():
+    """
+    Developer API v1 health check endpoint verifying Earth Engine connectivity and system readiness.
+    """
+    return get_status()
+
+
+@app.post("/api/v1/classify", tags=["Developer API v1"])
+def api_v1_classify(payload: ClassifyRequest):
+    """
+    Developer API v1 endpoint to perform land cover classification on an arbitrary GeoJSON AOI polygon.
+    Supports Random Forest ML, Deep Learning Spatial Context, Dynamic World, and Sentinel-1 SAR microwave fusion.
+    """
+    return classify_aoi(payload)
+
+
+@app.post("/api/v1/sar-composite", tags=["Developer API v1"])
+def api_v1_sar_composite(payload: AOIRequest):
+    """
+    Developer API v1 endpoint generating a dual-polarization Sentinel-1 C-band SAR composite (VV, VH, VV/VH ratio).
+    Returns cloud-penetrating SAR false-color tile URLs and sensor metadata.
+    """
+    if not initialize_gee():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google Earth Engine is not initialized."
+        )
+    try:
+        aoi = coords_to_ee_geometry(payload.coords)
+        sar_composite = get_s1_sar_composite(aoi, payload.start_date, payload.end_date)
+        vis_sar = {
+            'bands': ['VV', 'VH', 'VV_VH_ratio'],
+            'min': [-20.0, -25.0, 0.0],
+            'max': [0.0, -5.0, 15.0]
+        }
+        tile_url = get_map_tile_url(sar_composite, vis_sar)
+        return {
+            "sar_tile_url": tile_url,
+            "bands": ["VV", "VH", "VV_VH_ratio"],
+            "polarization_mode": "IW (Interferometric Wide Swath)",
+            "frequency": "C-band (5.405 GHz)",
+            "spatial_resolution": "10m",
+            "date_range": {
+                "start_date": payload.start_date,
+                "end_date": payload.end_date
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error generating SAR composite in api_v1: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"SAR composite generation failed: {e}"
+        )
+
+
+@app.post("/api/v1/spectral", tags=["Developer API v1"])
+def api_v1_spectral(payload: SpectralAnalyzeRequest):
+    """
+    Developer API v1 endpoint computing multi-index spectral diagnostic metrics (NDBI, MNDWI, NBR)
+    and index visualization tile URLs.
+    """
+    return analyze_spectral(payload)
+
+
+@app.post("/api/v1/timeseries", tags=["Developer API v1"])
+def api_v1_timeseries(payload: PixelTimelineRequest):
+    """
+    Developer API v1 endpoint extracting multi-year pixel trajectory history with anomaly and trend detection.
+    """
+    return pixel_timeseries_history(payload)
+
 
 
 
