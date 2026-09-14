@@ -15,6 +15,10 @@ import {
   Printer, 
   ChevronDown, 
   ChevronUp, 
+  ChevronLeft,
+  ChevronRight,
+  GripHorizontal,
+  Wrench,
   Info, 
   MapPin, 
   Upload, 
@@ -554,7 +558,13 @@ export default function Home() {
   // Dual-Sidebar Architecture & Folding States
   const [leftRailCollapsed, setLeftRailCollapsed] = useState(false);
   const [rightRailCollapsed, setRightRailCollapsed] = useState(false);
+  const [toolstripCollapsed, setToolstripCollapsed] = useState(false);
   const [analyticsExpanded, setAnalyticsExpanded] = useState(true);
+  const [analyticsHeight, setAnalyticsHeight] = useState<number>(380);
+  const [isDraggingAnalytics, setIsDraggingAnalytics] = useState(false);
+  const dragStartYRef = useRef<number>(0);
+  const dragStartHeightRef = useRef<number>(380);
+  const isDraggingRef = useRef<boolean>(false);
 
   // Individual Phase Folding Accordion States
   const [phase1Open, setPhase1Open] = useState(true);
@@ -703,6 +713,54 @@ export default function Home() {
       setErrorMessage('Could not copy link to clipboard.');
     });
   }, [startDate, endDate, modelType, activeLayer, useSarFusion, coords]);
+ 
+  // Interactive Drawer Dragging (allows dragging up to expand or down to close)
+  const handleResizeStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    dragStartYRef.current = clientY;
+    dragStartHeightRef.current = analyticsExpanded ? analyticsHeight : 44;
+    isDraggingRef.current = true;
+    setIsDraggingAnalytics(true);
+  }, [analyticsExpanded, analyticsHeight]);
+
+  useEffect(() => {
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (!isDraggingRef.current) return;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      const deltaY = clientY - dragStartYRef.current;
+      // Moving cursor down (deltaY > 0) reduces height; moving up (deltaY < 0) increases height
+      const targetHeight = dragStartHeightRef.current - deltaY;
+
+      if (targetHeight < 90) {
+        // Dragged down past collapse threshold: snap closed
+        setAnalyticsExpanded(false);
+      } else {
+        const maxHeight = typeof window !== 'undefined' ? Math.min(window.innerHeight * 0.75, 700) : 600;
+        const clamped = Math.min(Math.max(targetHeight, 140), maxHeight);
+        setAnalyticsExpanded(true);
+        setAnalyticsHeight(clamped);
+      }
+    };
+
+    const handleEnd = () => {
+      if (!isDraggingRef.current) return;
+      isDraggingRef.current = false;
+      setIsDraggingAnalytics(false);
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('touchend', handleEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleEnd);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleEnd);
+    };
+  }, []);
 
   // Read URL query parameters on mount to restore analysis state
   useEffect(() => {
@@ -1888,6 +1946,12 @@ export default function Home() {
         setActiveLayer('classified');
         setConfidenceVisible(true);
         
+        // Auto-collapse sidebars and toolstrip so map and results take center stage
+        setLeftRailCollapsed(true);
+        setRightRailCollapsed(true);
+        setToolstripCollapsed(true);
+        setAnalyticsExpanded(true);
+        
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
         setProcessingTime(parseFloat(elapsed));
         setSuccessMessage(`Classification completed in ${elapsed}s (${Object.keys(data.statistics).length} classes).`);
@@ -1930,6 +1994,12 @@ export default function Home() {
         setTotalAreaHa(dataA.total_area_ha);
         setActiveLayer('classified');
         setConfidenceVisible(true);
+        
+        // Auto-collapse sidebars and toolstrip so map and results take center stage
+        setLeftRailCollapsed(true);
+        setRightRailCollapsed(true);
+        setToolstripCollapsed(true);
+        setAnalyticsExpanded(true);
         
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
         setProcessingTime(parseFloat(elapsed));
@@ -2958,30 +3028,6 @@ export default function Home() {
 
         {/* ---------- Map area ---------- */}
         <main className="map-area">
-          {/* Floating panel restore buttons */}
-          {leftRailCollapsed && (
-            <button
-              type="button"
-              onClick={() => setLeftRailCollapsed(false)}
-              className="absolute left-3 top-3 z-[1001] px-3 py-1.5 bg-[#1A1D17]/90 hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
-              title="Expand Workflow Controls"
-            >
-              <PanelLeftOpen className="w-3.5 h-3.5 text-[#E0DCD3]" />
-              <span>Workflow</span>
-            </button>
-          )}
-          {rightRailCollapsed && (
-            <button
-              type="button"
-              onClick={() => setRightRailCollapsed(false)}
-              className="absolute right-3 top-3 z-[1001] px-3 py-1.5 bg-[#1A1D17]/90 hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
-              title="Expand Layers & Tools"
-            >
-              <PanelRightOpen className="w-3.5 h-3.5 text-[#E0DCD3]" />
-              <span>Layers</span>
-            </button>
-          )}
-          
           {/* Status Telemetry Strip */}
           <div className="status-strip">
             <div className="status-item">
@@ -3048,8 +3094,68 @@ export default function Home() {
           {/* Map canvas */}
           <div className="map-canvas">
             
+            {/* Top-Left Floating Controls: Workflow and Tools restore pills */}
+            <div 
+              className="absolute top-3 z-[1001] flex items-center gap-2 pointer-events-auto transition-all"
+              style={{ left: !toolstripCollapsed ? '48px' : '12px' }}
+            >
+              {leftRailCollapsed && (
+                <button
+                  type="button"
+                  onClick={() => setLeftRailCollapsed(false)}
+                  className="px-2.5 py-1.5 bg-[#1A1D17]/95 hover:bg-[#22261E] border border-[#2E3429] text-[#E0DCD3] rounded-md shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer group"
+                  title="Expand Workflow Sidebar"
+                >
+                  <PanelLeftOpen className="w-3.5 h-3.5 text-[#306840] group-hover:text-[#4B6445]" />
+                  <span>Workflow</span>
+                </button>
+              )}
+              {toolstripCollapsed && (
+                <button
+                  type="button"
+                  onClick={() => setToolstripCollapsed(false)}
+                  className="px-2.5 py-1.5 bg-[#1A1D17]/95 hover:bg-[#22261E] border border-[#2E3429] text-[#E0DCD3] rounded-md shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer group"
+                  title="Expand Drawing & Analysis Tools"
+                >
+                  <Wrench className="w-3.5 h-3.5 text-[#306840] group-hover:text-[#4B6445]" />
+                  <span>Tools</span>
+                  <ChevronRight className="w-3 h-3 text-[#9A97A4]" />
+                </button>
+              )}
+            </div>
+
+            {/* Top-Right Floating Controls: Layers restore pill */}
+            {rightRailCollapsed && (
+              <button
+                type="button"
+                onClick={() => setRightRailCollapsed(false)}
+                className="absolute right-3 top-3 z-[1001] px-2.5 py-1.5 bg-[#1A1D17]/95 hover:bg-[#22261E] border border-[#2E3429] text-[#E0DCD3] rounded-md shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer group pointer-events-auto"
+                title="Expand Layers & Analysis Sidebar"
+              >
+                <PanelRightOpen className="w-3.5 h-3.5 text-[#306840] group-hover:text-[#4B6445]" />
+                <span>Layers</span>
+              </button>
+            )}
+
             {/* Custom Toolstrip */}
-            <div className="toolstrip">
+            {!toolstripCollapsed && (
+              <div className="toolstrip">
+                <button
+                  type="button"
+                  onClick={() => setToolstripCollapsed(true)}
+                  className="t hover:bg-[#22261E]"
+                  title="Collapse Toolstrip"
+                >
+                  <ChevronLeft className="w-4 h-4 text-[#9A97A4] hover:text-[#E0DCD3]" />
+                  <div className="tool-tip">
+                    <div className="tool-tip-title">
+                      <span>Collapse Tools</span>
+                    </div>
+                    <div className="tool-tip-desc">Hide the drawing and analysis toolbar to declutter the map view.</div>
+                  </div>
+                </button>
+
+                <div className="divider" />
               <button
                 type="button"
                 onClick={() => triggerTool('rect')}
@@ -3294,6 +3400,7 @@ export default function Home() {
                 </div>
               </button>
             </div>
+          )}
 
             {/* AOI Guidance Empty State */}
             {coords.length === 0 && !dismissedInvite && !selectedLocation && !locationQuery.trim() && (
@@ -3509,8 +3616,37 @@ export default function Home() {
             )}
           </div>
 
+          {/* Draggable Divider between Map Canvas and Analytics Report */}
+          <div
+            className={`analytics-resizer ${isDraggingAnalytics ? 'dragging' : ''}`}
+            onMouseDown={handleResizeStart}
+            onTouchStart={handleResizeStart}
+            onDoubleClick={() => setAnalyticsExpanded(prev => !prev)}
+            title={analyticsExpanded ? "Drag down to close report, drag up to expand. Double-click to toggle." : "Drag up to open report. Double-click to expand."}
+          >
+            <div className="analytics-resizer-handle" />
+            <div className="analytics-resizer-hint">
+              <GripHorizontal className="w-3.5 h-3.5 text-[#9A97A4]" />
+            </div>
+          </div>
+
           {/* ---------- Analytics area (Bottom) ---------- */}
-          <div className={`analytics ${analyticsExpanded ? 'expanded' : 'collapsed'}`}>
+          <div 
+            className={`analytics ${analyticsExpanded ? 'expanded' : 'collapsed'}`}
+            style={
+              analyticsExpanded 
+                ? { 
+                    height: `${analyticsHeight}px`, 
+                    maxHeight: '80vh',
+                    transition: isDraggingAnalytics ? 'none' : undefined 
+                  } 
+                : { 
+                    height: '44px', 
+                    maxHeight: '44px',
+                    transition: isDraggingAnalytics ? 'none' : undefined 
+                  }
+            }
+          >
             <div className="analytics-head">
               <div 
                 className="title cursor-pointer select-none flex items-center gap-2 hover:text-[#F8FAFC] transition"
