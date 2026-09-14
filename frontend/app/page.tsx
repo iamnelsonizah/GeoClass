@@ -11,45 +11,46 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0D1316] text-[#FFFFFF] selection:bg-[#B7E89F] selection:text-[#0D1316] font-sans relative overflow-x-hidden">
       
-      {/* ────────────────────────────────── Header Navigation (Matching #0D1316 Exactly) ────────────────────────────────── */}
+      {/* ────────────────────────────────── Header Navigation ────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-[#0D1316] border-b border-[#1B2428]">
         <div className="max-w-[1240px] mx-auto px-6 h-17 flex items-center justify-between">
           
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2.5 cursor-pointer group">
-              {/* Clean vector mountain contour emblem matching Image 1 */}
               <svg width="24" height="20" viewBox="0 0 28 22" fill="none" className="flex-shrink-0">
                 <path d="M14 2L2 19H26L14 2Z" stroke="#B7E89F" strokeWidth="2.2" strokeLinejoin="round" />
                 <path d="M8 14L14 7L20 14" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" />
               </svg>
-              <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-[#FFFFFF]">
+              <span style={{ color: '#FFFFFF' }} className="font-sans text-[18px] font-bold tracking-[-0.02em] !text-white">
                 GeoClass
               </span>
             </Link>
-            <span className="hidden sm:inline-block font-mono text-[11px] uppercase tracking-[0.12em] text-[#D1D7D3] border-l border-[#222E33] pl-4">
+            <span style={{ color: '#E2E8F0' }} className="hidden sm:inline-block font-mono text-[11px] uppercase tracking-[0.12em] border-l border-[#222E33] pl-4 !text-slate-200">
               Earth Observation
             </span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-[#FFFFFF]" aria-label="Main Navigation">
-            <a href="#platform" className="hover:text-[#B7E89F] transition-colors">Platform</a>
-            <a href="#workflow" className="hover:text-[#B7E89F] transition-colors">Workflow</a>
-            <a href="#tools" className="hover:text-[#B7E89F] transition-colors">Tools</a>
-            <a href="#use-cases" className="hover:text-[#B7E89F] transition-colors">Use cases</a>
-            <Link href="/methods" className="hover:text-[#B7E89F] transition-colors">Methods &amp; API</Link>
+          <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium" aria-label="Main Navigation">
+            <a href="#platform" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Platform</a>
+            <a href="#workflow" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Workflow</a>
+            <a href="#tools" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Tools</a>
+            <a href="#use-cases" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Use cases</a>
+            <Link href="/methods" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Methods &amp; API</Link>
           </nav>
 
           <div className="flex items-center gap-5">
             <Link 
               href="/login" 
-              className="text-[14px] font-medium text-[#FFFFFF] hover:text-[#B7E89F] transition-colors hidden sm:inline-block"
+              style={{ color: '#FFFFFF' }}
+              className="text-[14px] font-medium !text-white hover:!text-[#B7E89F] transition-colors hidden sm:inline-block"
             >
               Log in
             </Link>
             <Link 
               href="/app" 
-              className="inline-flex items-center gap-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-[13.5px] px-4 py-2 rounded-[4px] transition-colors"
+              style={{ backgroundColor: '#B7E89F', color: '#0D1316' }}
+              className="inline-flex items-center gap-2 font-semibold text-[13.5px] px-4 py-2 rounded-[4px] transition-colors hover:brightness-105 cursor-pointer"
             >
               <span>Launch Workspace</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -66,33 +67,41 @@ export default function LandingPage() {
             
             {/* Left Hero Content */}
             <div className="lg:col-span-5 space-y-6">
-              <div className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7E89F]">
+              <div style={{ color: '#B7E89F' }} className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] !text-[#B7E89F]">
                 SATELLITE ANALYTICS FOR REAL WORLD DECISIONS
               </div>
 
-              {/* Exact Hero Headline from Image 1: Crisp Pure White #FFFFFF */}
-              <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-normal leading-[1.05] tracking-[-0.035em] text-[#FFFFFF]">
+              {/* Exact Hero Headline: Explicit Pure White #FFFFFF with inline style and !text-white */}
+              <h1 
+                style={{ color: '#FFFFFF' }}
+                className="text-4xl sm:text-5xl lg:text-[54px] font-normal leading-[1.05] tracking-[-0.035em] !text-white"
+              >
                 Satellite analysis,<br />
                 without the GIS<br />
                 overhead.
               </h1>
 
-              {/* Hero Description: Crisp, clear, highly legible light text #E2E8F0 (not dim ash) */}
-              <p className="text-[17px] sm:text-[18px] leading-[1.6] font-normal text-[#E2E8F0] max-w-lg">
+              {/* Hero Description: Crisp, clear, highly legible pure white #FFFFFF */}
+              <p 
+                style={{ color: '#F1F5F9' }}
+                className="text-[17px] sm:text-[18px] leading-[1.6] font-normal !text-slate-100 max-w-lg"
+              >
                 GeoClass turns Earth observation data into maps and results you can actually use. Define an area, choose your imagery, run an analysis. No complex setup, no GIS software.
               </p>
 
               <div className="flex flex-wrap items-center gap-6 pt-2">
                 <Link 
                   href="/app" 
-                  className="inline-flex items-center justify-center gap-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-[14.5px] px-5 py-2.5 rounded-[4px] transition-colors cursor-pointer"
+                  style={{ backgroundColor: '#B7E89F', color: '#0D1316' }}
+                  className="inline-flex items-center justify-center gap-2 font-semibold text-[14.5px] px-5 py-2.5 rounded-[4px] transition-colors hover:brightness-105 cursor-pointer"
                 >
                   <span>Start classifying free</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a 
                   href="#workflow" 
-                  className="text-[14.5px] font-medium text-[#FFFFFF] hover:text-[#B7E89F] underline underline-offset-4 decoration-[#222E33] hover:decoration-[#B7E89F] transition-colors"
+                  style={{ color: '#FFFFFF' }}
+                  className="text-[14.5px] font-medium !text-white hover:!text-[#B7E89F] underline underline-offset-4 decoration-[#222E33] hover:decoration-[#B7E89F] transition-colors cursor-pointer"
                 >
                   See how it works
                 </a>
@@ -114,10 +123,10 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ────────────────────────────────── Section 2: How It Works (Exact Same #0D1316 Background) ────────────────────────────────── */}
+        {/* ────────────────────────────────── Section 2: How It Works ────────────────────────────────── */}
         <section id="workflow" className="py-20 bg-[#0D1316] border-t border-[#1B2428]">
           <div className="max-w-[1240px] mx-auto px-6">
-            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7E89F] mb-12">
+            <div style={{ color: '#B7E89F' }} className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] !text-[#B7E89F] mb-12">
               HOW IT WORKS
             </div>
 
@@ -125,44 +134,44 @@ export default function LandingPage() {
               
               {/* Step 01 */}
               <div className="space-y-3">
-                <div className="font-mono text-sm text-[#B7E89F] font-medium">01</div>
-                <h3 className="text-xl font-semibold text-[#FFFFFF]">
+                <div style={{ color: '#B7E89F' }} className="font-mono text-sm font-medium !text-[#B7E89F]">01</div>
+                <h3 style={{ color: '#FFFFFF' }} className="text-xl font-semibold !text-white">
                   Define your area
                 </h3>
-                <p className="text-[15px] font-normal text-[#E2E8F0] leading-relaxed">
+                <p style={{ color: '#F1F5F9' }} className="text-[15px] font-normal leading-relaxed !text-slate-100">
                   Draw or upload your boundary. Set your region and time range.
                 </p>
               </div>
 
               {/* Step 02 */}
               <div className="space-y-3">
-                <div className="font-mono text-sm text-[#B7E89F] font-medium">02</div>
-                <h3 className="text-xl font-semibold text-[#FFFFFF]">
+                <div style={{ color: '#B7E89F' }} className="font-mono text-sm font-medium !text-[#B7E89F]">02</div>
+                <h3 style={{ color: '#FFFFFF' }} className="text-xl font-semibold !text-white">
                   Choose your data
                 </h3>
-                <p className="text-[15px] font-normal text-[#E2E8F0] leading-relaxed">
+                <p style={{ color: '#F1F5F9' }} className="text-[15px] font-normal leading-relaxed !text-slate-100">
                   Use Sentinel, SAR, DEM and more. Pick from built-in analysis methods or bring your own data.
                 </p>
               </div>
 
               {/* Step 03 */}
               <div className="space-y-3">
-                <div className="font-mono text-sm text-[#B7E89F] font-medium">03</div>
-                <h3 className="text-xl font-semibold text-[#FFFFFF]">
+                <div style={{ color: '#B7E89F' }} className="font-mono text-sm font-medium !text-[#B7E89F]">03</div>
+                <h3 style={{ color: '#FFFFFF' }} className="text-xl font-semibold !text-white">
                   Run classification
                 </h3>
-                <p className="text-[15px] font-normal text-[#E2E8F0] leading-relaxed">
+                <p style={{ color: '#F1F5F9' }} className="text-[15px] font-normal leading-relaxed !text-slate-100">
                   Our ML models process your data in the cloud. No setup, no coding.
                 </p>
               </div>
 
               {/* Step 04 */}
               <div className="space-y-3">
-                <div className="font-mono text-sm text-[#B7E89F] font-medium">04</div>
-                <h3 className="text-xl font-semibold text-[#FFFFFF]">
+                <div style={{ color: '#B7E89F' }} className="font-mono text-sm font-medium !text-[#B7E89F]">04</div>
+                <h3 style={{ color: '#FFFFFF' }} className="text-xl font-semibold !text-white">
                   Get results
                 </h3>
-                <p className="text-[15px] font-normal text-[#E2E8F0] leading-relaxed">
+                <p style={{ color: '#F1F5F9' }} className="text-[15px] font-normal leading-relaxed !text-slate-100">
                   View your land cover map, explore analytics and export your report or data.
                 </p>
               </div>
@@ -171,7 +180,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ────────────────────────────────── Section 3: Built for Real-World Applications (Light Section Matching Image 1) ────────────────────────────────── */}
+        {/* ────────────────────────────────── Section 3: Built for Real-World Applications ────────────────────────────────── */}
         <section id="use-cases" className="py-24 bg-[#FFFFFF] text-[#1A1D23] border-t border-[#E5E5E0]">
           <div className="max-w-[1240px] mx-auto px-6">
             
@@ -301,13 +310,13 @@ export default function LandingPage() {
           <div className="max-w-[1240px] mx-auto px-6">
             
             <div className="max-w-xl mb-14">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7E89F] block mb-3">
+              <span style={{ color: '#B7E89F' }} className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] !text-[#B7E89F] block mb-3">
                 LAYER REGISTRY
               </span>
-              <h2 className="text-3xl sm:text-4xl font-normal leading-[1.1] tracking-[-0.03em] text-[#FFFFFF]">
+              <h2 style={{ color: '#FFFFFF' }} className="text-3xl sm:text-4xl font-normal leading-[1.1] tracking-[-0.03em] !text-white">
                 Authentic satellite layers ready on click
               </h2>
-              <p className="text-[#E2E8F0] text-[16px] mt-3 leading-relaxed">
+              <p style={{ color: '#F1F5F9' }} className="text-[16px] mt-3 leading-relaxed !text-slate-100">
                 Explore the exact earth observation layers computed on Google Earth Engine supercomputing clusters inside GeoClass.
               </p>
             </div>
@@ -341,10 +350,10 @@ export default function LandingPage() {
                     />
                   </div>
                   <div>
-                    <div className="text-[13px] font-semibold text-[#FFFFFF] leading-tight">
+                    <div style={{ color: '#FFFFFF' }} className="text-[13px] font-semibold !text-white leading-tight">
                       {layer.name}
                     </div>
-                    <div className="text-[11px] font-mono text-[#94A3B8] mt-1">
+                    <div style={{ color: '#E2E8F0' }} className="text-[11px] font-mono !text-slate-200 mt-1">
                       {layer.desc}
                     </div>
                   </div>
@@ -360,38 +369,38 @@ export default function LandingPage() {
           <div className="max-w-[1240px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             <div className="lg:col-span-6 space-y-6">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#B7E89F] block">
+              <span style={{ color: '#B7E89F' }} className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] !text-[#B7E89F] block">
                 DIAGNOSTIC TOOLS
               </span>
-              <h2 className="text-3xl sm:text-4xl font-normal leading-[1.1] tracking-[-0.03em] text-[#FFFFFF]">
+              <h2 style={{ color: '#FFFFFF' }} className="text-3xl sm:text-4xl font-normal leading-[1.1] tracking-[-0.03em] !text-white">
                 Inspect pixels, curves, and time series
               </h2>
-              <p className="text-[#E2E8F0] text-[16px] leading-[1.6]">
+              <p style={{ color: '#F1F5F9' }} className="text-[16px] leading-[1.6] !text-slate-100">
                 GeoClass is engineered for analysts who need to verify ground truth with physics-based diagnostics before publishing conclusions.
               </p>
 
               <div className="space-y-3 pt-2">
                 <div className="p-4 rounded-[4px] border border-[#1F2A30] bg-[#131C20] flex gap-3">
-                  <div className="font-mono text-xs text-[#B7E89F] font-medium w-24 flex-shrink-0 pt-0.5">10-BAND</div>
+                  <div style={{ color: '#B7E89F' }} className="font-mono text-xs font-medium w-24 flex-shrink-0 pt-0.5 !text-[#B7E89F]">10-BAND</div>
                   <div>
-                    <h4 className="text-sm font-semibold text-[#FFFFFF]">Full Spectral Signature Graph</h4>
-                    <p className="text-xs text-[#E2E8F0] mt-1">Click any pixel on Earth to graph its exact 10-band surface reflectance profile from coastal blue to SWIR-2.</p>
+                    <h4 style={{ color: '#FFFFFF' }} className="text-sm font-semibold !text-white">Full Spectral Signature Graph</h4>
+                    <p style={{ color: '#F1F5F9' }} className="text-xs !text-slate-100 mt-1">Click any pixel on Earth to graph its exact 10-band surface reflectance profile from coastal blue to SWIR-2.</p>
                   </div>
                 </div>
 
                 <div className="p-4 rounded-[4px] border border-[#1F2A30] bg-[#131C20] flex gap-3">
-                  <div className="font-mono text-xs text-[#B7E89F] font-medium w-24 flex-shrink-0 pt-0.5">5-YEAR</div>
+                  <div style={{ color: '#B7E89F' }} className="font-mono text-xs font-medium w-24 flex-shrink-0 pt-0.5 !text-[#B7E89F]">5-YEAR</div>
                   <div>
-                    <h4 className="text-sm font-semibold text-[#FFFFFF]">Pixel Trajectory &amp; LandTrendr</h4>
-                    <p className="text-xs text-[#E2E8F0] mt-1">Segment multi-year Sentinel-2 medians from 2018 to 2025 to separate permanent land conversion from seasonal phenology.</p>
+                    <h4 style={{ color: '#FFFFFF' }} className="text-sm font-semibold !text-white">Pixel Trajectory &amp; LandTrendr</h4>
+                    <p style={{ color: '#F1F5F9' }} className="text-xs !text-slate-100 mt-1">Segment multi-year Sentinel-2 medians from 2018 to 2025 to separate permanent land conversion from seasonal phenology.</p>
                   </div>
                 </div>
 
                 <div className="p-4 rounded-[4px] border border-[#1F2A30] bg-[#131C20] flex gap-3">
-                  <div className="font-mono text-xs text-[#B7E89F] font-medium w-24 flex-shrink-0 pt-0.5">SWIPE</div>
+                  <div style={{ color: '#B7E89F' }} className="font-mono text-xs font-medium w-24 flex-shrink-0 pt-0.5 !text-[#B7E89F]">SWIPE</div>
                   <div>
-                    <h4 className="text-sm font-semibold text-[#FFFFFF]">Split-Screen Comparison Curtain</h4>
-                    <p className="text-xs text-[#E2E8F0] mt-1">Drag an interactive vertical curtain to immediately detect what changed between two satellite passes or between RGB and classified masks.</p>
+                    <h4 style={{ color: '#FFFFFF' }} className="text-sm font-semibold !text-white">Split-Screen Comparison Curtain</h4>
+                    <p style={{ color: '#F1F5F9' }} className="text-xs !text-slate-100 mt-1">Drag an interactive vertical curtain to immediately detect what changed between two satellite passes or between RGB and classified masks.</p>
                   </div>
                 </div>
               </div>
@@ -400,27 +409,27 @@ export default function LandingPage() {
             {/* Deliverables Card Preview */}
             <div className="lg:col-span-6 bg-[#131C20] border border-[#1F2A30] rounded-[4px] p-8 space-y-6">
               <div className="flex items-center justify-between border-b border-[#1F2A30] pb-4">
-                <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#B7E89F] font-medium">EXPORT SUITE</span>
-                <span className="font-mono text-[11px] text-[#E2E8F0]">FIELD &amp; GIS READY</span>
+                <span style={{ color: '#B7E89F' }} className="font-mono text-[11px] uppercase tracking-[0.12em] font-medium !text-[#B7E89F]">EXPORT SUITE</span>
+                <span style={{ color: '#FFFFFF' }} className="font-mono text-[11px] !text-white">FIELD &amp; GIS READY</span>
               </div>
-              <h3 className="text-2xl font-semibold text-[#FFFFFF]">
+              <h3 style={{ color: '#FFFFFF' }} className="text-2xl font-semibold !text-white">
                 Every result exports in publication formats
               </h3>
-              <p className="text-sm text-[#E2E8F0] leading-relaxed">
+              <p style={{ color: '#F1F5F9' }} className="text-sm !text-slate-100 leading-relaxed">
                 Take classified layers directly into QGIS, ArcGIS, Google Earth, or send executive summary dossiers to leadership.
               </p>
-              <div className="grid grid-cols-2 gap-2.5 font-mono text-xs text-[#FFFFFF]">
-                <div className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2">
-                  <span className="text-[#B7E89F]">●</span> GeoTIFF (32-bit Float)
+              <div className="grid grid-cols-2 gap-2.5 font-mono text-xs">
+                <div style={{ color: '#FFFFFF' }} className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2 !text-white">
+                  <span style={{ color: '#B7E89F' }}>●</span> GeoTIFF (32-bit Float)
                 </div>
-                <div className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2">
-                  <span className="text-[#B7E89F]">●</span> GeoJSON Vector
+                <div style={{ color: '#FFFFFF' }} className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2 !text-white">
+                  <span style={{ color: '#B7E89F' }}>●</span> GeoJSON Vector
                 </div>
-                <div className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2">
-                  <span className="text-[#B7E89F]">●</span> KMZ Google Earth
+                <div style={{ color: '#FFFFFF' }} className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2 !text-white">
+                  <span style={{ color: '#B7E89F' }}>●</span> KMZ Google Earth
                 </div>
-                <div className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2">
-                  <span className="text-[#B7E89F]">●</span> Executive PDF Dossier
+                <div style={{ color: '#FFFFFF' }} className="bg-[#0D1316] p-2.5 rounded-[2px] border border-[#1F2A30] flex items-center gap-2 !text-white">
+                  <span style={{ color: '#B7E89F' }}>●</span> Executive PDF Dossier
                 </div>
               </div>
             </div>
@@ -431,23 +440,25 @@ export default function LandingPage() {
         {/* ────────────────────────────────── Section 6: Final CTA Band ────────────────────────────────── */}
         <section className="py-24 text-center bg-[#0D1316] border-t border-[#1B2428]">
           <div className="max-w-2xl mx-auto px-6 space-y-6">
-            <h2 className="text-3xl sm:text-5xl font-normal leading-[1.05] tracking-[-0.03em] text-[#FFFFFF]">
+            <h2 style={{ color: '#FFFFFF' }} className="text-3xl sm:text-5xl font-normal leading-[1.05] tracking-[-0.03em] !text-white">
               Start your first classification.
             </h2>
-            <p className="text-[#E2E8F0] text-base sm:text-lg leading-relaxed">
+            <p style={{ color: '#F1F5F9' }} className="text-base sm:text-lg leading-relaxed !text-slate-100">
               Launch the workspace, pick any coordinate on Earth, and receive instant land cover intelligence.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
               <Link 
                 href="/app" 
-                className="inline-flex items-center justify-center gap-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-[15px] px-6 py-3 rounded-[4px] transition-colors"
+                style={{ backgroundColor: '#B7E89F', color: '#0D1316' }}
+                className="inline-flex items-center justify-center gap-2 font-semibold text-[15px] px-6 py-3 rounded-[4px] transition-colors hover:brightness-105 cursor-pointer"
               >
                 <span>Launch Workspace Now</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link 
                 href="/login" 
-                className="inline-flex items-center justify-center border border-[#1F2A30] hover:border-[#E2E8F0] text-[#FFFFFF] font-medium text-[15px] px-6 py-3 rounded-[4px] transition-colors bg-[#131C20]"
+                style={{ color: '#FFFFFF' }}
+                className="inline-flex items-center justify-center border border-[#1F2A30] hover:border-[#FFFFFF] !text-white font-medium text-[15px] px-6 py-3 rounded-[4px] transition-colors bg-[#131C20] cursor-pointer"
               >
                 <span>Sign in</span>
               </Link>
@@ -466,22 +477,22 @@ export default function LandingPage() {
               <path d="M8 14L14 7L20 14" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span className="font-sans text-[16px] font-bold text-[#FFFFFF]">GeoClass</span>
-            <span className="text-[12px] text-[#94A3B8] ml-2">
+            <span style={{ color: '#FFFFFF' }} className="font-sans text-[16px] font-bold !text-white">GeoClass</span>
+            <span style={{ color: '#E2E8F0' }} className="text-[12px] ml-2 !text-slate-200">
               © {new Date().getFullYear()} GeoClass Geospatial Systems.
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6 text-[13.5px] text-[#FFFFFF]">
-            <a href="#platform" className="hover:text-[#B7E89F] transition-colors">Platform</a>
-            <a href="#workflow" className="hover:text-[#B7E89F] transition-colors">Workflow</a>
-            <a href="#tools" className="hover:text-[#B7E89F] transition-colors">Tools</a>
-            <a href="#use-cases" className="hover:text-[#B7E89F] transition-colors">Use cases</a>
-            <Link href="/methods" className="hover:text-[#B7E89F] transition-colors">Methods &amp; API</Link>
-            <Link href="/login" className="hover:text-[#B7E89F] transition-colors">Log in</Link>
+          <div className="flex flex-wrap items-center gap-6 text-[13.5px]">
+            <a href="#platform" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Platform</a>
+            <a href="#workflow" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Workflow</a>
+            <a href="#tools" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Tools</a>
+            <a href="#use-cases" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Use cases</a>
+            <Link href="/methods" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Methods &amp; API</Link>
+            <Link href="/login" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Log in</Link>
           </div>
 
-          <div className="font-mono text-[11px] text-[#94A3B8]">
+          <div style={{ color: '#E2E8F0' }} className="font-mono text-[11px] !text-slate-200">
             Sentinel-2 MSI · Sentinel-1 SAR · Copernicus 30m DEM
           </div>
         </div>

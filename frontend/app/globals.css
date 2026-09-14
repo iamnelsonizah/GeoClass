@@ -71,15 +71,10 @@
   --warning: #E7B84B;
   --danger: #EF4444;
 
-  /* Theme tokens */
-  --background: var(--gc-paper-50);
-  --foreground: var(--gc-ink-900);
   --paper: var(--gc-paper-50);
   --ink: var(--gc-ink-900);
   --ink-dim: var(--gc-ink-700);
   --ink-subtle: var(--gc-ink-500);
-  --border: var(--gc-line);
-  --border-strong: var(--gc-line-strong);
 
   /* LULC Color Palette (Standard ESA/Copernicus Land Cover) */
   --color-lulc-water: #419BDF;
@@ -137,8 +132,8 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--gc-paper-50);
-  color: var(--gc-ink-900);
+  background: #0D1316;
+  color: #FFFFFF;
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
   letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
@@ -147,9 +142,8 @@ html, body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
-  font-weight: 700;
   letter-spacing: -0.024em;
-  color: var(--gc-ink-900);
+  color: inherit;
 }
 
 .display-metric {
