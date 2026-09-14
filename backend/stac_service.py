@@ -84,10 +84,14 @@ def get_landsat_composite(
 
     return {
         "composite_image": composite_with_ndvi,
+        "image": composite_with_ndvi,
         "true_color_tile_url": true_color_url,
+        "true_color_url": true_color_url,
         "false_color_tile_url": false_color_url,
+        "false_color_url": false_color_url,
         "ndvi_tile_url": ndvi_url,
-        "sensor": "Landsat 8/9 OLI-TIRS",
+        "ndvi_url": ndvi_url,
+        "sensor": "Landsat 8/9 OLI Collection 2 Tier 1",
         "spatial_resolution": "30m",
         "date_range": {
             "start_date": start_date,

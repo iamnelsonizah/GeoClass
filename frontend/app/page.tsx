@@ -1721,14 +1721,18 @@ export default function Home() {
         }
 
         const data = await response.json();
+        const tcUrl = data.true_color_url || data.true_color_tile_url;
+        const fcUrl = data.false_color_url || data.false_color_tile_url;
+        const ndviUrl = data.ndvi_url || data.ndvi_tile_url;
+
         setTileUrls(prev => ({
           ...prev,
-          landsatTrueColor: data.true_color_url,
-          landsatFalseColor: data.false_color_url,
-          landsatNdvi: data.ndvi_url,
-          trueColor: data.true_color_url,
-          falseColor: data.false_color_url,
-          ndvi: data.ndvi_url
+          landsatTrueColor: tcUrl,
+          landsatFalseColor: fcUrl,
+          landsatNdvi: ndviUrl,
+          trueColor: tcUrl,
+          falseColor: fcUrl,
+          ndvi: ndviUrl
         }));
         setActiveLayer('true_color');
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);

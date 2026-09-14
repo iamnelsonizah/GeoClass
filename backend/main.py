@@ -1245,17 +1245,21 @@ def get_landsat_map_tiles(payload: LandsatCompositeRequest):
     Returns True Color, False Color (SWIR/NIR/Red), and NDVI visualization tile URLs.
     """
     try:
-        aoi = ee.Geometry.Polygon(payload.coords)
+        aoi = coords_to_ee_geometry(payload.coords)
         composite = get_landsat_composite(
             aoi=aoi,
             start_date=payload.start_date,
             end_date=payload.end_date,
             cloud_percentage=payload.cloud_percentage or 20.0
         )
+        tc_url = composite.get("true_color_url") or composite.get("true_color_tile_url")
+        fc_url = composite.get("false_color_url") or composite.get("false_color_tile_url")
+        ndvi_url = composite.get("ndvi_url") or composite.get("ndvi_tile_url")
+
         return {
-            "true_color_url": composite["true_color_url"],
-            "false_color_url": composite["false_color_url"],
-            "ndvi_url": composite["ndvi_url"],
+            "true_color_url": tc_url,
+            "false_color_url": fc_url,
+            "ndvi_url": ndvi_url,
             "sensor": "Landsat 8/9 OLI Collection 2 Tier 1",
             "resolution": "30m"
         }
