@@ -2,12 +2,16 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/AuthContext';
 import { 
   ArrowRight, 
-  ExternalLink
+  ExternalLink,
+  LogOut,
+  User as UserIcon
 } from 'lucide-react';
 
 export default function LandingPage() {
+  const { user, isAuthenticated, logout } = useAuth();
   return (
     <div className="min-h-screen bg-[#0D1316] text-[#FFFFFF] selection:bg-[#B7E89F] selection:text-[#0D1316] font-sans relative overflow-x-hidden">
       
@@ -39,22 +43,49 @@ export default function LandingPage() {
             <Link href="/methods" style={{ color: '#FFFFFF' }} className="!text-white hover:!text-[#B7E89F] transition-colors">Methods &amp; API</Link>
           </nav>
 
-          <div className="flex items-center gap-5">
-            <Link 
-              href="/login" 
-              style={{ color: '#FFFFFF' }}
-              className="text-[14px] font-medium !text-white hover:!text-[#B7E89F] transition-colors hidden sm:inline-block"
-            >
-              Log in
-            </Link>
-            <Link 
-              href="/app" 
-              style={{ backgroundColor: '#B7E89F', color: '#0D1316' }}
-              className="inline-flex items-center gap-2 font-semibold text-[13.5px] px-4 py-2 rounded-[4px] transition-colors hover:brightness-105 cursor-pointer"
-            >
-              <span>Launch Workspace</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+          <div className="flex items-center gap-4">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3">
+                <span style={{ color: '#E2E8F0' }} className="text-xs font-mono hidden md:inline">
+                  {user?.fullName}
+                </span>
+                <Link 
+                  href="/app" 
+                  style={{ backgroundColor: '#B7E89F', color: '#0D1316' }}
+                  className="inline-flex items-center gap-2 font-semibold text-[13.5px] px-4 py-2 rounded-[4px] transition-colors hover:brightness-105 cursor-pointer"
+                >
+                  <span>Open Workspace</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  style={{ color: '#94A3B8' }}
+                  className="hover:!text-white text-xs cursor-pointer p-1"
+                  title="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-5">
+                <Link 
+                  href="/login" 
+                  style={{ color: '#FFFFFF' }}
+                  className="text-[14px] font-medium !text-white hover:!text-[#B7E89F] transition-colors hidden sm:inline-block"
+                >
+                  Log in
+                </Link>
+                <Link 
+                  href="/signup" 
+                  style={{ backgroundColor: '#B7E89F', color: '#0D1316' }}
+                  className="inline-flex items-center gap-2 font-semibold text-[13.5px] px-4 py-2 rounded-[4px] transition-colors hover:brightness-105 cursor-pointer"
+                >
+                  <span>Launch Workspace</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -91,7 +122,7 @@ export default function LandingPage() {
 
               <div className="flex flex-wrap items-center gap-6 pt-2">
                 <Link 
-                  href="/app" 
+                  href={isAuthenticated ? "/app" : "/signup"} 
                   style={{ backgroundColor: '#B7E89F', color: '#0D1316' }}
                   className="inline-flex items-center justify-center gap-2 font-semibold text-[14.5px] px-5 py-2.5 rounded-[4px] transition-colors hover:brightness-105 cursor-pointer"
                 >
@@ -448,7 +479,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
               <Link 
-                href="/app" 
+                href={isAuthenticated ? "/app" : "/signup"} 
                 style={{ backgroundColor: '#B7E89F', color: '#0D1316' }}
                 className="inline-flex items-center justify-center gap-2 font-semibold text-[15px] px-6 py-3 rounded-[4px] transition-colors hover:brightness-105 cursor-pointer"
               >

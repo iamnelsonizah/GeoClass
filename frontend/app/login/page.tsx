@@ -1,22 +1,61 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowRight, Shield, ArrowLeft, KeyRound } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { 
+  ArrowRight, 
+  Shield, 
+  ArrowLeft, 
+  AlertCircle, 
+  CheckCircle2,
+} from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams?.get('redirect') || '/app';
+
+  const { login, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // If already authenticated, redirect immediately
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push(redirectTarget);
+    }
+  }, [isAuthenticated, redirectTarget, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
+    setSuccessMsg(null);
     setLoading(true);
+
+    const res = login({ email, password });
+    setLoading(false);
+
+    if (!res.success) {
+      if (res.requiresVerification) {
+        setErrorMsg(res.message);
+        setTimeout(() => {
+          router.push(`/signup`);
+        }, 1500);
+        return;
+      }
+      setErrorMsg(res.message);
+      return;
+    }
+
+    setSuccessMsg('Authentication confirmed. Accessing mapping engine...');
     setTimeout(() => {
-      router.push('/app');
-    }, 350);
+      router.push(redirectTarget);
+    }, 450);
   };
 
   return (
@@ -55,7 +94,7 @@ export default function LoginPage() {
 
       {/* ────────────────────────────────── Main Login Card ────────────────────────────────── */}
       <main className="relative z-10 flex-1 flex items-center justify-center p-6 my-10">
-        <div className="w-full max-w-md bg-[#131C20] border border-[#1F2A30] rounded-[4px] p-8 sm:p-9 space-y-6">
+        <div className="w-full max-w-md bg-[#131C20] border border-[#1F2A30] rounded-[6px] p-8 sm:p-9 space-y-6 shadow-2xl">
           
           <div className="space-y-2 text-center">
             <div className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-[#B7E89F]">
@@ -66,11 +105,25 @@ export default function LoginPage() {
               Sign in to GeoClass
             </h2>
             <p className="text-xs text-[#E2E8F0] leading-relaxed">
-              Enter credentials for organizational Earth Engine compute access
+              Enter credentials to access the remote sensing compute workspace
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          {errorMsg && (
+            <div className="p-3.5 rounded-[4px] bg-[#2A1517] border border-[#EF4444]/40 text-[#FCA5A5] text-xs flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
+              <div className="leading-relaxed">{errorMsg}</div>
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="p-3.5 rounded-[4px] bg-[#112419] border border-[#4CAF6A]/40 text-[#A7F3D0] text-xs flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-[#4CAF6A] flex-shrink-0 mt-0.5" />
+              <div className="leading-relaxed">{successMsg}</div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4 pt-1">
             <div className="space-y-1.5">
               <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#FFFFFF]">
                 Work / Academic Email
@@ -90,7 +143,12 @@ export default function LoginPage() {
                 <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#FFFFFF]">
                   Password
                 </label>
-                <span className="text-[11px] text-[#94A3B8] hover:text-[#FFFFFF] cursor-pointer">Forgot password?</span>
+                <Link 
+                  href="/forgot-password" 
+                  className="text-[11px] text-[#B7E89F] hover:underline cursor-pointer"
+                >
+                  Forgot password?
+                </Link>
               </div>
               <input 
                 type="password" 
@@ -107,24 +165,13 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full mt-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>{loading ? 'Authenticating...' : 'Sign in to Console'}</span>
+              <span>{loading ? 'Authenticating...' : 'Sign in to Workspace'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          {/* Quick Guest / Demo Access Button */}
-          <div className="pt-3 border-t border-[#1F2A30]">
-            <Link
-              href="/app"
-              className="w-full border border-[#1F2A30] hover:border-[#B7E89F] bg-[#0D1316] hover:bg-[#182328] text-[#FFFFFF] font-medium text-xs py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-[#B7E89F]" />
-              <span>Instant Guest Access (Launch Workspace)</span>
-            </Link>
-          </div>
-
-          <div className="text-center text-xs text-[#E2E8F0]">
-            Don&apos;t have an enterprise account?{' '}
+          <div className="text-center text-xs text-[#E2E8F0] pt-2 border-t border-[#1F2A30]">
+            Don&apos;t have an authenticated account?{' '}
             <Link href="/signup" className="text-[#B7E89F] hover:underline font-medium">
               Create an account
             </Link>
@@ -138,5 +185,17 @@ export default function LoginPage() {
         GEOCLASS · SECURE SATELLITE TELEMETRY &amp; GEE COMPUTE CLUSTER
       </footer>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0D1316] text-[#FFFFFF] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-[#1F2A30] border-t-[#B7E89F] animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

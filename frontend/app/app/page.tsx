@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/lib/AuthContext';
 import { 
   Loader2, 
   BarChart3, 
@@ -12,7 +14,8 @@ import {
   AlertTriangle, 
   CheckCircle, 
   ShieldAlert, 
-  FileText, 
+  FileText,
+  LogOut, 
   Printer, 
   ChevronDown, 
   ChevronUp, 
@@ -461,6 +464,17 @@ const getTemporalChangeTone = (className: string, areaChange: number) => {
 };
 
 export default function Home() {
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  // Authentication Route Guard
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login?redirect=/app');
+    }
+  }, [authLoading, isAuthenticated, router]);
+
   // Map State
   const [coords, setCoords] = useState<number[][]>([]);
   const [aoiAreaHa, setAoiAreaHa] = useState<number | null>(null);
@@ -2499,6 +2513,15 @@ export default function Home() {
 
   const readyLayersCount = layerStack.filter(l => l.hasUrl).length;
 
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0D1316] text-[#FFFFFF] flex flex-col items-center justify-center p-6 space-y-4">
+        <div className="w-8 h-8 rounded-full border-2 border-[#1F2A30] border-t-[#B7E89F] animate-spin" />
+        <div className="text-xs font-mono tracking-widest text-[#B7E89F] uppercase">Authenticating Geospatial Node...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="geo-app">
       
@@ -2573,12 +2596,48 @@ export default function Home() {
             <Bell className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2 pl-2 cursor-pointer select-none">
-            <div className="w-7 h-7 rounded-full bg-[#2D4A34] text-white flex items-center justify-center text-[11px] font-bold">
-              NI
-            </div>
-            <span className="text-xs font-semibold text-[#1A1D23] hidden md:inline">Nelson Izah</span>
-            <ChevronDown className="w-3.5 h-3.5 text-[#69706A]" />
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              className="flex items-center gap-2 pl-2 cursor-pointer select-none group"
+            >
+              <div className="w-7 h-7 rounded-full bg-[#2D4A34] text-[#B7E89F] border border-[#306840] flex items-center justify-center text-[11px] font-bold">
+                {user?.fullName 
+                  ? user.fullName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+                  : 'NI'}
+              </div>
+              <span className="text-xs font-semibold text-[#1A1D23] hidden md:inline">
+                {user?.fullName || 'Nelson Izah'}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 text-[#69706A] transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {userDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-[#FAF9F5] border border-[#D8D5CA] rounded-[6px] shadow-xl p-3 space-y-2 z-50 text-xs">
+                <div className="border-b border-[#E3E0D5] pb-2">
+                  <div className="font-semibold text-[#1A1D23]">{user?.fullName || 'Analyst'}</div>
+                  <div className="text-[11px] text-[#676E7D] truncate">{user?.email || 'analyst@organization.org'}</div>
+                  <div className="inline-block mt-1.5 font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#E4E9DF] text-[#2D4A34] font-medium">
+                    {user?.role?.replace(/_/g, ' ') || 'Remote Sensing Analyst'}
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      router.push('/login');
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] text-xs font-medium text-[#A84E42] hover:bg-[#FCECE4] transition cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out / Logout</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
