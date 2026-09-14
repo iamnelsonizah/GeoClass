@@ -7,13 +7,11 @@ import {
   ArrowRight, 
   Shield, 
   ArrowLeft, 
-  Mail, 
-  KeyRound, 
   AlertCircle, 
   CheckCircle2, 
   Clock, 
   RotateCcw,
-  Sparkles
+  Mail
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -34,7 +32,6 @@ export default function SignupPage() {
 
   // 6-digit OTP state
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
-  const [simulatedCode, setSimulatedCode] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -69,7 +66,7 @@ export default function SignupPage() {
   }, [step]);
 
   // Step 1 Submit: Register and request OTP
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -85,7 +82,7 @@ export default function SignupPage() {
     }
 
     setLoading(true);
-    const res = register({
+    const res = await register({
       fullName,
       email,
       password,
@@ -100,10 +97,9 @@ export default function SignupPage() {
     }
 
     // Move to step 2: 6-digit code verification
-    setSimulatedCode(res.otpCode || null);
     setCooldown(60);
     setStep(2);
-    setSuccessMsg(`A 6-digit verification code has been dispatched to ${email}.`);
+    setSuccessMsg(`A 6-digit verification code has been dispatched to ${email}. Please check your inbox.`);
   };
 
   // Handle individual OTP digit change
@@ -140,14 +136,6 @@ export default function SignupPage() {
     }
   };
 
-  // Auto-fill from simulated badge
-  const handleAutoFill = () => {
-    if (!simulatedCode) return;
-    const digits = simulatedCode.slice(0, 6).split('');
-    setOtpDigits(digits);
-    inputRefs.current[5]?.focus();
-  };
-
   // Step 2 Submit: Verify OTP code
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,10 +163,12 @@ export default function SignupPage() {
   };
 
   // Resend code with 60s cooldown rate limit
-  const handleResend = () => {
+  const handleResend = async () => {
     if (cooldown > 0) return;
     setErrorMsg(null);
-    const res = resendOTP(email);
+    setLoading(true);
+    const res = await resendOTP(email);
+    setLoading(false);
 
     if (!res.success) {
       setErrorMsg(res.message);
@@ -186,9 +176,8 @@ export default function SignupPage() {
       return;
     }
 
-    setSimulatedCode(res.otpCode || null);
     setCooldown(res.cooldownSeconds || 60);
-    setSuccessMsg('A new 6-digit verification code has been dispatched.');
+    setSuccessMsg(`A new 6-digit verification code has been dispatched to ${email}.`);
     setOtpDigits(['', '', '', '', '', '']);
     inputRefs.current[0]?.focus();
   };
@@ -259,24 +248,6 @@ export default function SignupPage() {
             <div className="p-3.5 rounded-[4px] bg-[#112419] border border-[#4CAF6A]/40 text-[#A7F3D0] text-xs flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-[#4CAF6A] flex-shrink-0 mt-0.5" />
               <div className="leading-relaxed">{successMsg}</div>
-            </div>
-          )}
-
-          {/* Simulated Code Helper Pill (Zero Friction for User) */}
-          {step === 2 && simulatedCode && (
-            <div className="p-3 rounded-[4px] bg-[#0D1316] border border-[#1F2A30] flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-[#B7E89F]" />
-                <span className="text-[#94A3B8] font-mono">Demo OTP Dispatch:</span>
-                <span className="font-mono font-bold text-[#B7E89F] tracking-widest text-sm">{simulatedCode}</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleAutoFill}
-                className="text-xs font-semibold text-[#B7E89F] hover:underline cursor-pointer"
-              >
-                Auto-fill
-              </button>
             </div>
           )}
 
@@ -376,9 +347,9 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-3 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full mt-3 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
-                <span>{loading ? 'Generating Security Code...' : 'Continue to Verification'}</span>
+                <span>{loading ? 'Dispatching Verification Email...' : 'Continue to Verification'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
@@ -388,6 +359,12 @@ export default function SignupPage() {
           {step === 2 && (
             <form onSubmit={handleVerify} className="space-y-6 pt-2">
               
+              {/* Notice that code was sent to their email */}
+              <div className="p-3 rounded-[4px] bg-[#0D1316] border border-[#1F2A30] flex items-center gap-3 text-xs text-[#CBD5E1]">
+                <Mail className="w-4 h-4 text-[#B7E89F] flex-shrink-0" />
+                <span>Verification code sent to <strong className="text-[#FFFFFF]">{email}</strong>. Please check your inbox and spam folder.</span>
+              </div>
+
               {/* 6 Auto-Advancing Digit Boxes */}
               <div className="flex items-center justify-center gap-2 sm:gap-3">
                 {otpDigits.map((digit, idx) => (
@@ -419,7 +396,7 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-3 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-3 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                 >
                   <span>{loading ? 'Verifying Code...' : 'Verify Code & Launch Workspace'}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -438,15 +415,15 @@ export default function SignupPage() {
                   <button
                     type="button"
                     onClick={handleResend}
-                    disabled={cooldown > 0}
+                    disabled={cooldown > 0 || loading}
                     className={`inline-flex items-center gap-1 font-mono transition-colors cursor-pointer ${
-                      cooldown > 0 
+                      cooldown > 0 || loading
                         ? 'text-[#94A3B8] cursor-not-allowed' 
                         : 'text-[#B7E89F] hover:underline'
                     }`}
                   >
-                    <RotateCcw className={`w-3 h-3 ${cooldown > 0 ? '' : 'text-[#B7E89F]'}`} />
-                    <span>{cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend Code'}</span>
+                    <RotateCcw className={`w-3 h-3 ${cooldown > 0 || loading ? '' : 'text-[#B7E89F]'}`} />
+                    <span>{cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend Code via Email'}</span>
                   </button>
                 </div>
               </div>

@@ -20,10 +20,10 @@ interface AuthContextType {
     password: string;
     role?: string;
     organization?: string;
-  }) => { success: boolean; message: string; otpCode?: string };
+  }) => Promise<{ success: boolean; message: string; otpCode?: string }>;
   verifyOTP: (email: string, code: string) => { success: boolean; message: string; user?: User };
-  resendOTP: (email: string) => { success: boolean; message: string; otpCode?: string; cooldownSeconds?: number };
-  requestPasswordReset: (email: string) => { success: boolean; message: string; otpCode?: string };
+  resendOTP: (email: string) => Promise<{ success: boolean; message: string; otpCode?: string; cooldownSeconds?: number }>;
+  requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string; otpCode?: string }>;
   resetPassword: (email: string, code: string, newPassword: string) => { success: boolean; message: string };
   logout: () => void;
   refreshSession: () => void;
@@ -53,14 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return res;
   };
 
-  const register = (params: {
+  const register = async (params: {
     fullName: string;
     email: string;
     password: string;
     role?: string;
     organization?: string;
   }) => {
-    return authService.register(params);
+    return await authService.register(params);
   };
 
   const verifyOTP = (email: string, code: string) => {
@@ -71,12 +71,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return res;
   };
 
-  const resendOTP = (email: string) => {
-    return authService.resendOTP(email);
+  const resendOTP = async (email: string) => {
+    return await authService.resendOTP(email);
   };
 
-  const requestPasswordReset = (email: string) => {
-    return authService.requestPasswordReset(email);
+  const requestPasswordReset = async (email: string) => {
+    return await authService.requestPasswordReset(email);
   };
 
   const resetPassword = (email: string, code: string, newPassword: string) => {

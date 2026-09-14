@@ -11,7 +11,7 @@ import {
   CheckCircle2, 
   Clock, 
   RotateCcw,
-  Sparkles,
+  Mail,
   KeyRound
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
@@ -26,7 +26,6 @@ export default function ForgotPasswordPage() {
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [simulatedCode, setSimulatedCode] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -50,13 +49,13 @@ export default function ForgotPasswordPage() {
     }
   }, [step]);
 
-  const handleRequestCode = (e: React.FormEvent) => {
+  const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
     setLoading(true);
 
-    const res = requestPasswordReset(email);
+    const res = await requestPasswordReset(email);
     setLoading(false);
 
     if (!res.success) {
@@ -64,10 +63,9 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    setSimulatedCode(res.otpCode || null);
     setCooldown(60);
     setStep(2);
-    setSuccessMsg(`A 6-digit password reset code has been dispatched to ${email}.`);
+    setSuccessMsg(`A 6-digit password reset code has been dispatched to ${email}. Please check your inbox.`);
   };
 
   const handleDigitChange = (index: number, value: string) => {
@@ -97,12 +95,6 @@ export default function ForgotPasswordPage() {
     if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
-  };
-
-  const handleAutoFill = () => {
-    if (!simulatedCode) return;
-    setOtpDigits(simulatedCode.slice(0, 6).split(''));
-    inputRefs.current[5]?.focus();
   };
 
   const handleReset = (e: React.FormEvent) => {
@@ -140,19 +132,20 @@ export default function ForgotPasswordPage() {
     }, 1200);
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (cooldown > 0) return;
     setErrorMsg(null);
-    const res = requestPasswordReset(email);
+    setLoading(true);
+    const res = await requestPasswordReset(email);
+    setLoading(false);
 
     if (!res.success) {
       setErrorMsg(res.message);
       return;
     }
 
-    setSimulatedCode(res.otpCode || null);
     setCooldown(60);
-    setSuccessMsg('A new 6-digit reset code has been dispatched.');
+    setSuccessMsg(`A new 6-digit reset code has been dispatched to ${email}.`);
     setOtpDigits(['', '', '', '', '', '']);
     inputRefs.current[0]?.focus();
   };
@@ -224,23 +217,6 @@ export default function ForgotPasswordPage() {
             </div>
           )}
 
-          {step === 2 && simulatedCode && (
-            <div className="p-3 rounded-[4px] bg-[#0D1316] border border-[#1F2A30] flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-[#B7E89F]" />
-                <span className="text-[#94A3B8] font-mono">Recovery Code:</span>
-                <span className="font-mono font-bold text-[#B7E89F] tracking-widest text-sm">{simulatedCode}</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleAutoFill}
-                className="text-xs font-semibold text-[#B7E89F] hover:underline cursor-pointer"
-              >
-                Auto-fill
-              </button>
-            </div>
-          )}
-
           {step === 1 && (
             <form onSubmit={handleRequestCode} className="space-y-4 pt-1">
               <div className="space-y-1.5">
@@ -260,9 +236,9 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full mt-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
-                <span>{loading ? 'Sending Security Code...' : 'Send 6-Digit Reset Code'}</span>
+                <span>{loading ? 'Dispatching Recovery Code...' : 'Send 6-Digit Reset Code'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
@@ -270,6 +246,13 @@ export default function ForgotPasswordPage() {
 
           {step === 2 && (
             <form onSubmit={handleReset} className="space-y-5 pt-1">
+              
+              {/* Notice that code was sent to their email */}
+              <div className="p-3 rounded-[4px] bg-[#0D1316] border border-[#1F2A30] flex items-center gap-3 text-xs text-[#CBD5E1]">
+                <Mail className="w-4 h-4 text-[#B7E89F] flex-shrink-0" />
+                <span>Recovery code sent to <strong className="text-[#FFFFFF]">{email}</strong>. Please check your inbox and spam folder.</span>
+              </div>
+
               <div className="space-y-2">
                 <label className="block text-center text-xs font-mono uppercase tracking-[0.12em] text-[#FFFFFF]">
                   6-Digit Recovery Code
@@ -324,7 +307,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
                 <span>{loading ? 'Resetting Password...' : 'Save New Password & Sign In'}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -342,13 +325,13 @@ export default function ForgotPasswordPage() {
                 <button
                   type="button"
                   onClick={handleResend}
-                  disabled={cooldown > 0}
+                  disabled={cooldown > 0 || loading}
                   className={`inline-flex items-center gap-1 font-mono transition-colors cursor-pointer ${
-                    cooldown > 0 ? 'text-[#94A3B8] cursor-not-allowed' : 'text-[#B7E89F] hover:underline'
+                    cooldown > 0 || loading ? 'text-[#94A3B8] cursor-not-allowed' : 'text-[#B7E89F] hover:underline'
                   }`}
                 >
-                  <RotateCcw className={`w-3 h-3 ${cooldown > 0 ? '' : 'text-[#B7E89F]'}`} />
-                  <span>{cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Code'}</span>
+                  <RotateCcw className={`w-3 h-3 ${cooldown > 0 || loading ? '' : 'text-[#B7E89F]'}`} />
+                  <span>{cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Code via Email'}</span>
                 </button>
               </div>
             </form>

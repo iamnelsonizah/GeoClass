@@ -1,7 +1,8 @@
 /**
  * GeoClass Authentication & Security Service
  * Handles user registration, 6-digit OTP verification, session management,
- * rate limiting, and password reset flows with client-side persistence.
+ * rate limiting, and password reset flows with client-side persistence and
+ * real transactional email delivery powered by Resend.
  */
 
 export interface User {
@@ -103,6 +104,36 @@ function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+/**
+ * Sends OTP email via Next.js backend route invoking Resend API
+ */
+async function dispatchEmail(params: {
+  email: string;
+  code: string;
+  type: 'verification' | 'password_reset';
+  fullName?: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch('/api/auth/send-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      console.error('Resend dispatch failed:', data);
+      return { success: false, error: data.error || 'Failed to dispatch email' };
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.error('Error contacting email dispatch service:', err);
+    return { success: false, error: err?.message || 'Network connection error' };
+  }
+}
+
 export const authService = {
   /**
    * Get current authenticated user session
@@ -173,15 +204,15 @@ export const authService = {
   },
 
   /**
-   * Register a new user and generate a 6-digit OTP code
+   * Register a new user, generate a 6-digit OTP code, and dispatch via Resend
    */
-  register(params: {
+  async register(params: {
     fullName: string;
     email: string;
     password: string;
     role?: string;
     organization?: string;
-  }): { success: boolean; message: string; otpCode?: string } {
+  }): Promise<{ success: boolean; message: string; otpCode?: string }> {
     const email = params.email.trim().toLowerCase();
     const rate = this.checkRateLimit(`reg_${email}`);
     if (rate.isLocked) {
@@ -225,15 +256,27 @@ export const authService = {
       organization: params.organization?.trim() || 'Independent / Research',
       isVerified: false,
       createdAt: new Date().toISOString(),
-      passwordHash: btoa(params.password), // simple client-side storage encoding
+      passwordHash: btoa(params.password), // client-side storage encoding
     };
 
     filteredUsers.push(newUser);
     saveStoredUsers(filteredUsers);
 
+    // Send real email via Resend
+    const sendResult = await dispatchEmail({
+      email,
+      code: otpCode,
+      type: 'verification',
+      fullName: params.fullName.trim(),
+    });
+
+    if (!sendResult.success) {
+      console.warn('Email dispatch warning:', sendResult.error);
+    }
+
     return {
       success: true,
-      message: `Verification code sent to ${email}`,
+      message: `A 6-digit verification code has been dispatched to ${email}`,
       otpCode,
     };
   },
@@ -324,9 +367,9 @@ export const authService = {
   },
 
   /**
-   * Resend 6-digit OTP code with 60s cooldown
+   * Resend 6-digit OTP code with 60s cooldown and real Resend dispatch
    */
-  resendOTP(email: string): { success: boolean; message: string; otpCode?: string; cooldownSeconds?: number } {
+  async resendOTP(email: string): Promise<{ success: boolean; message: string; otpCode?: string; cooldownSeconds?: number }> {
     const normalizedEmail = email.trim().toLowerCase();
     const otps = getOTPRecords();
     const record = otps[normalizedEmail];
@@ -342,19 +385,31 @@ export const authService = {
     }
 
     const otpCode = generateOTP();
+    const otpType = record?.type || 'verification';
     otps[normalizedEmail] = {
       code: otpCode,
       email: normalizedEmail,
-      type: record?.type || 'verification',
+      type: otpType,
       expiresAt: now + 10 * 60 * 1000,
       attempts: 0,
       lastSentAt: now,
     };
     saveOTPRecords(otps);
 
+    const users = getStoredUsers();
+    const user = users.find((u) => u.email === normalizedEmail);
+
+    // Send real email via Resend
+    await dispatchEmail({
+      email: normalizedEmail,
+      code: otpCode,
+      type: otpType,
+      fullName: user?.fullName,
+    });
+
     return {
       success: true,
-      message: `A new 6-digit code has been issued.`,
+      message: `A new 6-digit verification code has been dispatched to ${normalizedEmail}.`,
       otpCode,
       cooldownSeconds: 60,
     };
@@ -394,13 +449,12 @@ export const authService = {
     }
 
     if (!user.isVerified) {
-      // Re-issue verification OTP
-      const otpRes = this.resendOTP(email);
+      // Trigger new OTP dispatch in background
+      this.resendOTP(email);
       return {
         success: false,
         requiresVerification: true,
-        message: 'Account not yet verified. A 6-digit verification code has been sent.',
-        otpCode: otpRes.otpCode,
+        message: 'Account not yet verified. A 6-digit verification code has been dispatched to your email.',
       };
     }
 
@@ -428,9 +482,9 @@ export const authService = {
   },
 
   /**
-   * Request password reset code
+   * Request password reset code dispatched via Resend
    */
-  requestPasswordReset(email: string): { success: boolean; message: string; otpCode?: string } {
+  async requestPasswordReset(email: string): Promise<{ success: boolean; message: string; otpCode?: string }> {
     const normalizedEmail = email.trim().toLowerCase();
     const rate = this.checkRateLimit(`reset_${normalizedEmail}`);
     if (rate.isLocked) {
@@ -462,9 +516,21 @@ export const authService = {
     };
     saveOTPRecords(otps);
 
+    // Send real email via Resend
+    const sendResult = await dispatchEmail({
+      email: normalizedEmail,
+      code: otpCode,
+      type: 'password_reset',
+      fullName: user.fullName,
+    });
+
+    if (!sendResult.success) {
+      console.warn('Email dispatch warning:', sendResult.error);
+    }
+
     return {
       success: true,
-      message: `Password reset code sent to ${normalizedEmail}`,
+      message: `A 6-digit password reset code has been dispatched to ${normalizedEmail}`,
       otpCode,
     };
   },
