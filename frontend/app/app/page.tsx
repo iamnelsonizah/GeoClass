@@ -2507,15 +2507,17 @@ export default function Home() {
       <header className="topbar bg-[#FAF9F5] border-b border-[#D8D5CA] px-5 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2.5">
-            <Link href="/" className="flex items-center group cursor-pointer" title="Return to Overview">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src="/geoclass-logo.png" 
-                alt="GeoClass" 
-                className="h-7 w-auto mix-blend-multiply object-contain select-none group-hover:opacity-85 transition"
-              />
-              <span className="hidden xl:inline-block text-xs text-[#69706A] font-normal border-l border-[#D8D5CA] pl-3 ml-3 group-hover:text-[#1A1D23] transition">
-                Earth Observation & Land Cover Analysis
+            <Link href="/" className="flex items-center gap-2.5 cursor-pointer group" title="Return to Overview">
+              <svg width="24" height="20" viewBox="0 0 28 22" fill="none" className="flex-shrink-0">
+                <path d="M14 2L2 19H26L14 2Z" stroke="#2D4A34" strokeWidth="2.2" strokeLinejoin="round" />
+                <path d="M8 14L14 7L20 14" stroke="#2D4A34" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#2D4A34" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-[#1A1D23]">
+                GeoClass
+              </span>
+              <span className="hidden xl:inline-block text-xs font-mono uppercase tracking-[0.1em] text-[#69706A] border-l border-[#D8D5CA] pl-3 ml-2 group-hover:text-[#1A1D23] transition">
+                Earth Observation
               </span>
             </Link>
           </div>

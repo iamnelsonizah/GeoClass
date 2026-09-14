@@ -9,7 +9,6 @@ export default function SignupPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [organization, setOrganization] = useState('');
   const [role, setRole] = useState('remote_sensing_analyst');
   const [loading, setLoading] = useState(false);
 
@@ -24,39 +23,52 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-[#07100D] text-[#F1F3EF] selection:bg-[#B7F36B] selection:text-[#07100D] font-sans flex flex-col justify-between relative">
       
-      {/* Header */}
-      <header className="relative z-10 px-6 py-6 max-w-[1240px] mx-auto w-full flex items-center justify-between">
-        <Link 
-          href="/" 
-          className="inline-flex items-center gap-2 text-xs font-mono text-[#A5B2AB] hover:text-[#F1F3EF] transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>RETURN TO OVERVIEW</span>
-        </Link>
-        <div className="font-mono text-[11px] text-[#69766F] hidden sm:block">
-          NEW USER PROVISIONING
-        </div>
-      </header>
-
-      {/* Main Signup Card */}
-      <main className="relative z-10 flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-[#101C18] border border-[#26332E] rounded-[4px] p-8 space-y-6">
-          
-          <div className="text-center space-y-3">
-            <Link href="/" className="inline-flex items-center gap-2.5 mx-auto">
-              <svg width="26" height="22" viewBox="0 0 28 22" fill="none">
+      {/* ────────────────────────────────── Master Top Bar ────────────────────────────────── */}
+      <header className="relative z-10 border-b border-[#26332E] bg-[#07100D]">
+        <div className="max-w-[1240px] mx-auto px-6 h-17 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2.5 cursor-pointer group">
+              <svg width="24" height="20" viewBox="0 0 28 22" fill="none" className="flex-shrink-0">
                 <path d="M14 2L2 19H26L14 2Z" stroke="#B7F36B" strokeWidth="2.2" strokeLinejoin="round" />
                 <path d="M8 14L14 7L20 14" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" />
               </svg>
-              <span className="font-sans text-[20px] font-bold tracking-[-0.02em] text-[#F1F3EF]">
+              <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-[#F1F3EF]">
                 GeoClass
               </span>
             </Link>
-            <div className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-[#B7F36B]">
-              <Shield className="w-3 h-3 text-[#B7F36B]" />
+            <span className="hidden sm:inline-block font-mono text-[11px] uppercase tracking-[0.12em] text-[#69766F] border-l border-[#26332E] pl-4">
+              Earth Observation
+            </span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <Link 
+              href="/" 
+              className="inline-flex items-center gap-2 text-xs font-mono text-[#A5B2AB] hover:text-[#F1F3EF] transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>RETURN TO OVERVIEW</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ────────────────────────────────── Main Signup Card ────────────────────────────────── */}
+      <main className="relative z-10 flex-1 flex items-center justify-center p-6 my-10">
+        <div className="w-full max-w-md bg-[#101C18] border border-[#26332E] rounded-[4px] p-8 sm:p-9 space-y-6">
+          
+          <div className="space-y-2 text-center">
+            <div className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-[#B7F36B]">
+              <Shield className="w-3.5 h-3.5 text-[#B7F36B]" />
               <span>REQUEST CONSOLE ACCESS</span>
             </div>
+            <h2 className="text-2xl font-normal tracking-[-0.03em] text-[#F1F3EF]">
+              Create your account
+            </h2>
+            <p className="text-xs text-[#A5B2AB] leading-relaxed">
+              Activate access to Sentinel-2 MSI and Sentinel-1 SAR classification engines
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 pt-1">
@@ -90,7 +102,7 @@ export default function SignupPage() {
 
             <div className="space-y-1.5">
               <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#A5B2AB]">
-                Primary Role
+                Primary Domain / Specialty
               </label>
               <select
                 value={role}
@@ -99,10 +111,10 @@ export default function SignupPage() {
               >
                 <option value="remote_sensing_analyst">Remote Sensing / GIS Analyst</option>
                 <option value="environmental_scientist">Environmental Scientist / Forestry</option>
+                <option value="mineral_exploration">Mineral Exploration &amp; Geology</option>
                 <option value="urban_planner">Urban Planner / Infrastructure Engineer</option>
-                <option value="agronomist">Agronomist / Farm Manager</option>
+                <option value="agronomist">Agronomist / Precision Agriculture</option>
                 <option value="academic_researcher">Academic / University Researcher</option>
-                <option value="executive">Executive / Policy Decision-Maker</option>
               </select>
             </div>
 
@@ -126,9 +138,9 @@ export default function SignupPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 py-6 text-center text-xs font-mono text-[#69766F]">
-        GEOCLASS · SATELLITE MACHINE INTELLIGENCE
+      {/* ────────────────────────────────── Footer ────────────────────────────────── */}
+      <footer className="relative z-10 py-6 text-center text-xs font-mono text-[#69766F] border-t border-[#26332E]">
+        GEOCLASS · SATELLITE MACHINE INTELLIGENCE ENGINE
       </footer>
     </div>
   );

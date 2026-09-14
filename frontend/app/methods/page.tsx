@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { 
   Layers, 
   ArrowLeft, 
+  ArrowRight,
   Satellite, 
   Cpu, 
-  Database, 
   BookOpen, 
   Code2, 
   Check, 
@@ -21,8 +21,7 @@ import {
   Droplets,
   Building,
   Trees,
-  History,
-  TrendingDown
+  History
 } from 'lucide-react';
 
 export default function MethodsPage() {
@@ -92,87 +91,107 @@ for class_name, metrics in data["statistics"].items():
   }'`;
 
   return (
-    <div className="min-h-screen bg-[#121410] text-[#E0DCD3] font-sans antialiased selection:bg-[#306840] selection:text-white">
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-50 border-b border-[#2E3429] bg-[#121410]/90 backdrop-blur-md px-4 lg:px-8 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link 
-            href="/" 
-            className="flex items-center gap-2 text-xs text-[#E0DCD3] hover:text-white transition px-2.5 py-1.5 rounded-md bg-[#1A1D17] border border-[#2E3429]"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 text-[#306840]" />
-            <span>Return to Map Engine</span>
-          </Link>
-          <div className="h-4 w-px bg-[#2E3429] hidden sm:block" />
-          <div className="flex items-center gap-2">
-            <div className="bg-[#306840]/20 border border-[#306840]/40 rounded-lg p-1.5 text-[#E0DCD3]">
-              <Layers className="w-4 h-4" />
-            </div>
-            <div>
-              <h1 className="text-sm font-semibold tracking-tight text-white flex items-center gap-2">
-                GeoClass Scientific Methods & API
-              </h1>
-              <p className="text-[11px] text-neutral-400">Earth Observation Remote Sensing Physics & Architecture</p>
-            </div>
+    <div className="min-h-screen bg-[#07100D] text-[#F1F3EF] selection:bg-[#B7F36B] selection:text-[#07100D] font-sans antialiased relative overflow-x-hidden">
+      
+      {/* ────────────────────────────────── Master Header Navigation ────────────────────────────────── */}
+      <header className="sticky top-0 z-50 bg-[#07100D] border-b border-[#26332E]">
+        <div className="max-w-[1240px] mx-auto px-6 h-17 flex items-center justify-between">
+          
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2.5 cursor-pointer group">
+              <svg width="24" height="20" viewBox="0 0 28 22" fill="none" className="flex-shrink-0">
+                <path d="M14 2L2 19H26L14 2Z" stroke="#B7F36B" strokeWidth="2.2" strokeLinejoin="round" />
+                <path d="M8 14L14 7L20 14" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-[#F1F3EF]">
+                GeoClass
+              </span>
+            </Link>
+            <span className="hidden sm:inline-block font-mono text-[11px] uppercase tracking-[0.12em] text-[#69766F] border-l border-[#26332E] pl-4">
+              Earth Observation
+            </span>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <a
-            href="/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1A1D17] border border-[#2E3429] text-xs font-medium text-[#E0DCD3] hover:text-white hover:border-[#306840] transition"
-          >
-            <ExternalLink className="w-3.5 h-3.5 text-[#306840]" />
-            <span>Interactive OpenAPI Docs</span>
-          </a>
+          <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-[#A5B2AB]" aria-label="Main Navigation">
+            <Link href="/#platform" className="hover:text-[#F1F3EF] transition-colors">Platform</Link>
+            <Link href="/#workflow" className="hover:text-[#F1F3EF] transition-colors">Workflow</Link>
+            <Link href="/#tools" className="hover:text-[#F1F3EF] transition-colors">Tools</Link>
+            <Link href="/#use-cases" className="hover:text-[#F1F3EF] transition-colors">Use cases</Link>
+            <Link href="/methods" className="text-[#B7F36B] font-semibold transition-colors">Methods &amp; API</Link>
+          </nav>
+
+          <div className="flex items-center gap-5">
+            <Link 
+              href="/login" 
+              className="text-[14px] font-medium text-[#A5B2AB] hover:text-[#F1F3EF] transition-colors hidden sm:inline-block"
+            >
+              Log in
+            </Link>
+            <Link 
+              href="/app" 
+              className="inline-flex items-center gap-2 bg-[#B7F36B] hover:bg-[#C8FF82] text-[#07100D] font-semibold text-[13.5px] px-4 py-2 rounded-[4px] transition-colors"
+            >
+              <span>Launch Workspace</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
       </header>
 
-      {/* Hero Banner */}
-      <div className="border-b border-[#2E3429] bg-gradient-to-b from-[#1A1D17] to-[#121410] px-4 lg:px-8 py-10 lg:py-14">
-        <div className="max-w-5xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#306840]/20 border border-[#306840]/40 text-[#E0DCD3] text-xs font-medium mb-4">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#306840]" />
-            <span>Peer-Reviewed Earth Observation Methodology</span>
+      {/* ────────────────────────────────── Hero Banner ────────────────────────────────── */}
+      <div className="border-b border-[#26332E] bg-[#0B1713] px-6 py-14">
+        <div className="max-w-[1240px] mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] bg-[#101C18] border border-[#26332E] text-[#B7F36B] text-xs font-mono tracking-wide">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#B7F36B]" />
+              <span>PEER-REVIEWED EARTH OBSERVATION METHODOLOGY</span>
+            </div>
+            <Link 
+              href="/app" 
+              className="hidden sm:inline-flex items-center gap-2 text-xs font-mono text-[#A5B2AB] hover:text-[#B7F36B] transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>RETURN TO WORKSPACE</span>
+            </Link>
           </div>
-          <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-white mb-3">
-            Algorithmic Pipeline, Sensor Physics, and Machine Learning Specifications
-          </h2>
-          <p className="text-sm lg:text-base text-neutral-300 max-w-3xl leading-relaxed">
+
+          <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-normal leading-[1.1] tracking-[-0.03em] text-[#F1F3EF] mb-4 max-w-4xl">
+            Algorithmic pipeline, sensor physics, and machine learning specifications
+          </h1>
+          <p className="text-[16px] text-[#A5B2AB] max-w-3xl leading-[1.6]">
             GeoClass integrates multi-spectral optical surface reflectance from Copernicus Sentinel-2 MSI with dual-polarization C-band microwave backscatter from Sentinel-1 SAR. Ground truth labels derive from Dynamic World near-real-time global land cover predictions, classified via an on-the-fly Random Forest or Spatial Contextual architecture.
           </p>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8">
-            <div className="p-3.5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-              <div className="text-[11px] text-neutral-400">Spatial Ground Resolution</div>
-              <div className="text-base font-semibold text-white mt-1">10 meters / pixel</div>
-              <div className="text-[10px] text-[#4B6445] mt-0.5">Sentinel-2 & Sentinel-1</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
+            <div className="p-4 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+              <div className="text-[11px] font-mono text-[#69766F] uppercase tracking-wider">Spatial Ground Resolution</div>
+              <div className="text-lg font-semibold text-[#F1F3EF] mt-1">10 meters / pixel</div>
+              <div className="text-[11px] text-[#B7F36B] font-mono mt-0.5">Sentinel-2 &amp; Sentinel-1</div>
             </div>
-            <div className="p-3.5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-              <div className="text-[11px] text-neutral-400">Optical Band Coverage</div>
-              <div className="text-base font-semibold text-white mt-1">10 Diagnostic Bands</div>
-              <div className="text-[10px] text-[#4B6445] mt-0.5">VNIR to Shortwave Infrared</div>
+            <div className="p-4 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+              <div className="text-[11px] font-mono text-[#69766F] uppercase tracking-wider">Optical Band Coverage</div>
+              <div className="text-lg font-semibold text-[#F1F3EF] mt-1">10 Diagnostic Bands</div>
+              <div className="text-[11px] text-[#B7F36B] font-mono mt-0.5">VNIR to Shortwave Infrared</div>
             </div>
-            <div className="p-3.5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-              <div className="text-[11px] text-neutral-400">SAR Radar Frequency</div>
-              <div className="text-base font-semibold text-white mt-1">5.405 GHz C-Band</div>
-              <div className="text-[10px] text-[#4B6445] mt-0.5">All-weather cloud penetrating</div>
+            <div className="p-4 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+              <div className="text-[11px] font-mono text-[#69766F] uppercase tracking-wider">SAR Radar Frequency</div>
+              <div className="text-lg font-semibold text-[#F1F3EF] mt-1">5.405 GHz C-Band</div>
+              <div className="text-[11px] text-[#B7F36B] font-mono mt-0.5">All-weather cloud penetrating</div>
             </div>
-            <div className="p-3.5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-              <div className="text-[11px] text-neutral-400">Classification Topology</div>
-              <div className="text-base font-semibold text-white mt-1">9 LULC Classes</div>
-              <div className="text-[10px] text-[#4B6445] mt-0.5">Dynamic World Harmonized</div>
+            <div className="p-4 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+              <div className="text-[11px] font-mono text-[#69766F] uppercase tracking-wider">Classification Topology</div>
+              <div className="text-lg font-semibold text-[#F1F3EF] mt-1">9 LULC Classes</div>
+              <div className="text-[11px] text-[#B7F36B] font-mono mt-0.5">Dynamic World Harmonized</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="border-b border-[#2E3429] bg-[#161912] px-4 lg:px-8">
-        <div className="max-w-5xl mx-auto flex items-center gap-1 overflow-x-auto py-2">
+      {/* ────────────────────────────────── Navigation Subtabs ────────────────────────────────── */}
+      <div className="border-b border-[#26332E] bg-[#07100D] sticky top-17 z-40">
+        <div className="max-w-[1240px] mx-auto px-6 flex items-center gap-2 overflow-x-auto py-3">
           {[
             { id: 'methods', label: '1. Pipeline Overview', icon: Cpu },
             { id: 'sar', label: '2. Sentinel-1 SAR Physics', icon: Satellite },
@@ -187,13 +206,13 @@ for class_name, metrics in data["statistics"].items():
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-medium transition whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-[4px] text-xs font-medium transition whitespace-nowrap cursor-pointer ${
                   active
-                    ? 'bg-[#22261E] text-white border border-[#306840]/60 shadow-sm'
-                    : 'text-neutral-400 hover:text-white hover:bg-[#1A1D17]'
+                    ? 'bg-[#101C18] text-[#F1F3EF] border border-[#B7F36B]'
+                    : 'text-[#A5B2AB] hover:text-[#F1F3EF] border border-transparent hover:border-[#26332E]'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${active ? 'text-[#306840]' : 'text-neutral-500'}`} />
+                <Icon className={`w-3.5 h-3.5 ${active ? 'text-[#B7F36B]' : 'text-[#69766F]'}`} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -201,128 +220,133 @@ for class_name, metrics in data["statistics"].items():
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <main className="max-w-5xl mx-auto px-4 lg:px-8 py-10 space-y-12">
+      {/* ────────────────────────────────── Main Documentation Content ────────────────────────────────── */}
+      <main className="max-w-[1240px] mx-auto px-6 py-12 space-y-12">
         
         {/* TAB 1: PIPELINE OVERVIEW */}
         {activeTab === 'methods' && (
           <section className="space-y-8">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">End-to-End Remote Sensing Architecture</h3>
-              <p className="text-sm text-neutral-300 leading-relaxed">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#B7F36B] block mb-2">
+                SYSTEM ARCHITECTURE
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.03em] text-[#F1F3EF] mb-3">
+                End-to-End Remote Sensing Architecture
+              </h2>
+              <p className="text-[15px] text-[#A5B2AB] leading-relaxed max-w-4xl">
                 GeoClass executes all heavy computation serverless-side on Google Earth Engine supercomputing clusters. Client requests specify an Area of Interest (AOI) polygon, a temporal observation window, cloud cover thresholds, and masking preferences.
               </p>
             </div>
 
             {/* Pipeline Stage Cards */}
-            <div className="space-y-4">
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#E0DCD3] mb-2">
-                  <span className="w-5 h-5 rounded-full bg-[#306840]/30 text-[#E0DCD3] flex items-center justify-center text-[11px] font-mono">1</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E] space-y-2">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF]">
+                  <span className="w-5 h-5 rounded-[2px] bg-[#07100D] border border-[#26332E] text-[#B7F36B] flex items-center justify-center text-[11px] font-mono">1</span>
                   <span>Atmospheric Correction and Quality Screening</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed">
                   Raw Sentinel-2 Level-2A surface reflectance granules undergo rigorous masking using both the Scene Classification Layer (SCL) and QA60 opaque cloud and cirrus bitmasks. Cloud shadows (SCL 2), defective pixels, and saturated artifacts are eliminated prior to temporal compositing.
                 </p>
               </div>
 
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#E0DCD3] mb-2">
-                  <span className="w-5 h-5 rounded-full bg-[#306840]/30 text-[#E0DCD3] flex items-center justify-center text-[11px] font-mono">2</span>
-                  <span>Temporal Median Reducer & Seasonal Compositing</span>
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E] space-y-2">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF]">
+                  <span className="w-5 h-5 rounded-[2px] bg-[#07100D] border border-[#26332E] text-[#B7F36B] flex items-center justify-center text-[11px] font-mono">2</span>
+                  <span>Temporal Median Reducer &amp; Seasonal Compositing</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed">
                   Pixels are aggregated over the specified date window using a median reducer. This rejects intermittent cloud fringes, sensor anomalies, and transient haze while preserving persistent land cover reflectance signatures. Optional seasonal partitioning isolates dry or wet phenological cycles.
                 </p>
               </div>
 
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#E0DCD3] mb-2">
-                  <span className="w-5 h-5 rounded-full bg-[#306840]/30 text-[#E0DCD3] flex items-center justify-center text-[11px] font-mono">3</span>
-                  <span>Feature Extraction: Spectral Indices & SAR Fusion</span>
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E] space-y-2">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF]">
+                  <span className="w-5 h-5 rounded-[2px] bg-[#07100D] border border-[#26332E] text-[#B7F36B] flex items-center justify-center text-[11px] font-mono">3</span>
+                  <span>Feature Extraction: Spectral Indices &amp; SAR Fusion</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed">
                   On top of 10 optical surface reflectance bands (B2, B3, B4, B5, B6, B7, B8, B8A, B11, B12), mathematical diagnostic indices (NDVI, MNDWI, NDBI, NBR) are computed and added. When enabled, dual-polarized Sentinel-1 C-band SAR backscatter features (VV, VH, and VV/VH cross-polarization ratio) are fused directly into the feature stack.
                 </p>
               </div>
 
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#E0DCD3] mb-2">
-                  <span className="w-5 h-5 rounded-full bg-[#306840]/30 text-[#E0DCD3] flex items-center justify-center text-[11px] font-mono">4</span>
-                  <span>Supervised Machine Learning Training & Inference</span>
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E] space-y-2">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF]">
+                  <span className="w-5 h-5 rounded-[2px] bg-[#07100D] border border-[#26332E] text-[#B7F36B] flex items-center justify-center text-[11px] font-mono">4</span>
+                  <span>Supervised Machine Learning Training &amp; Inference</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed">
                   Ground truth pixels are sampled stratified across 9 Land Use / Land Cover classes using Dynamic World modal predictions. A Random Forest ensemble of decision trees is trained on the fly on Earth Engine, classifying every pixel within the AOI at 10-meter spatial resolution.
                 </p>
               </div>
             </div>
 
-            {/* Land Cover Classification Scheme Table */}
-            <div className="mt-8">
-              <h4 className="text-sm font-semibold text-white mb-3">Harmonized 9-Class LULC Taxonomy</h4>
-              <div className="overflow-x-auto rounded-lg border border-[#2E3429]">
+            {/* Harmonized 9-Class LULC Taxonomy */}
+            <div className="mt-10">
+              <h3 className="text-lg font-semibold text-[#F1F3EF] mb-3">Harmonized 9-Class LULC Taxonomy</h3>
+              <div className="overflow-x-auto rounded-[4px] border border-[#26332E]">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-[#1A1D17] border-b border-[#2E3429] text-neutral-400 font-mono">
+                    <tr className="bg-[#0B1713] border-b border-[#26332E] text-[#A5B2AB] font-mono">
                       <th className="p-3">Class ID</th>
                       <th className="p-3">Class Name</th>
-                      <th className="p-3">Palette Color</th>
-                      <th className="p-3">Diagnostic Spectral & SAR Characteristics</th>
+                      <th className="p-3">Color Value</th>
+                      <th className="p-3">Diagnostic Spectral &amp; SAR Characteristics</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#2E3429] text-neutral-300">
+                  <tbody className="divide-y divide-[#26332E] text-[#A5B2AB] bg-[#101C18]">
                     <tr>
-                      <td className="p-3 font-mono">0</td>
-                      <td className="p-3 font-medium text-white">Water</td>
-                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded bg-[#419BDF] border border-black/40 align-middle mr-2" />#419BDF</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">0</td>
+                      <td className="p-3 font-medium text-[#F1F3EF]">Water</td>
+                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded-[2px] bg-[#419BDF] align-middle mr-2" />#419BDF</td>
                       <td className="p-3">High NIR absorption, high MNDWI (&gt;0.1), specular microwave reflection (very low VV/VH backscatter).</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono">1</td>
-                      <td className="p-3 font-medium text-white">Trees / Forest</td>
-                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded bg-[#397D49] border border-black/40 align-middle mr-2" />#397D49</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">1</td>
+                      <td className="p-3 font-medium text-[#F1F3EF]">Trees / Forest</td>
+                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded-[2px] bg-[#397D49] align-middle mr-2" />#397D49</td>
                       <td className="p-3">High red edge and NIR reflectance (NDVI &gt;0.6), high cross-polarized VH microwave volume scattering.</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono">2</td>
-                      <td className="p-3 font-medium text-white">Grass</td>
-                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded bg-[#88B053] border border-black/40 align-middle mr-2" />#88B053</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">2</td>
+                      <td className="p-3 font-medium text-[#F1F3EF]">Grass</td>
+                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded-[2px] bg-[#88B053] align-middle mr-2" />#88B053</td>
                       <td className="p-3">Moderate NDVI (0.3 to 0.6), low surface roughness, lower VH return than mature forest canopy.</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono">3</td>
-                      <td className="p-3 font-medium text-white">Flooded Vegetation</td>
-                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded bg-[#7A87C6] border border-black/40 align-middle mr-2" />#7A87C6</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">3</td>
+                      <td className="p-3 font-medium text-[#F1F3EF]">Flooded Vegetation</td>
+                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded-[2px] bg-[#7A87C6] align-middle mr-2" />#7A87C6</td>
                       <td className="p-3">Mixed water/canopy response, double-bounce microwave scattering between water surface and emergent stalks.</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono">4</td>
-                      <td className="p-3 font-medium text-white">Crops</td>
-                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded bg-[#E49635] border border-black/40 align-middle mr-2" />#E49635</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">4</td>
+                      <td className="p-3 font-medium text-[#F1F3EF]">Crops</td>
+                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded-[2px] bg-[#E49635] align-middle mr-2" />#E49635</td>
                       <td className="p-3">Periodic phenological variations in NDVI, geometric field parcel structures, moderate SAR backscatter.</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono">5</td>
-                      <td className="p-3 font-medium text-white">Shrub & Scrub</td>
-                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded bg-[#DFC35A] border border-black/40 align-middle mr-2" />#DFC35A</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">5</td>
+                      <td className="p-3 font-medium text-[#F1F3EF]">Shrub &amp; Scrub</td>
+                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded-[2px] bg-[#DFC35A] align-middle mr-2" />#DFC35A</td>
                       <td className="p-3">Low-stature woody vegetation, intermediate NIR reflectance between grass and closed canopy.</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono">6</td>
-                      <td className="p-3 font-medium text-white">Built-Up / Urban</td>
-                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded bg-[#C4281B] border border-black/40 align-middle mr-2" />#C4281B</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">6</td>
+                      <td className="p-3 font-medium text-[#F1F3EF]">Built-Up / Urban</td>
+                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded-[2px] bg-[#C4281B] align-middle mr-2" />#C4281B</td>
                       <td className="p-3">High NDBI (&gt;0.05), high SWIR reflectance, corner-reflector dihedral microwave bounce (intense VV return).</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono">7</td>
-                      <td className="p-3 font-medium text-white">Bare Ground</td>
-                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded bg-[#A59B8F] border border-black/40 align-middle mr-2" />#A59B8F</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">7</td>
+                      <td className="p-3 font-medium text-[#F1F3EF]">Bare Ground</td>
+                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded-[2px] bg-[#A59B8F] align-middle mr-2" />#A59B8F</td>
                       <td className="p-3">Flat spectral response across visible to NIR, low NDVI (&lt;0.1), surface roughness driven SAR response.</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono">8</td>
-                      <td className="p-3 font-medium text-white">Snow & Ice</td>
-                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded bg-[#B39FE1] border border-black/40 align-middle mr-2" />#B39FE1</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">8</td>
+                      <td className="p-3 font-medium text-[#F1F3EF]">Snow &amp; Ice</td>
+                      <td className="p-3"><span className="inline-block w-3.5 h-3.5 rounded-[2px] bg-[#B39FE1] align-middle mr-2" />#B39FE1</td>
                       <td className="p-3">Extremely high visible reflectance, sharp absorption in SWIR bands B11 and B12.</td>
                     </tr>
                   </tbody>
@@ -330,16 +354,16 @@ for class_name, metrics in data["statistics"].items():
               </div>
             </div>
 
-            {/* Multi-Sensor Constellation Comparative Specifications */}
-            <div className="mt-8">
-              <h4 className="text-sm font-semibold text-white mb-2">Multi-Mission Earth Observation Constellations</h4>
-              <p className="text-xs text-neutral-300 leading-relaxed mb-4">
+            {/* Multi-Mission Sensor Comparison */}
+            <div className="mt-10">
+              <h3 className="text-lg font-semibold text-[#F1F3EF] mb-2">Multi-Mission Earth Observation Constellations</h3>
+              <p className="text-xs text-[#A5B2AB] leading-relaxed mb-4">
                 GeoClass bridges European Space Agency (Copernicus) and NASA / USGS constellations. Through our STAC catalog integration and Earth Engine bindings, users can dynamically switch optical baselines between Sentinel-2 and Landsat 8/9, or fuse Sentinel-1 synthetic aperture radar.
               </p>
-              <div className="overflow-x-auto rounded-lg border border-[#2E3429]">
+              <div className="overflow-x-auto rounded-[4px] border border-[#26332E]">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-[#1A1D17] border-b border-[#2E3429] text-neutral-400 font-mono">
+                    <tr className="bg-[#0B1713] border-b border-[#26332E] text-[#A5B2AB] font-mono">
                       <th className="p-3">Constellation</th>
                       <th className="p-3">Operator</th>
                       <th className="p-3">Sensor Type</th>
@@ -349,32 +373,32 @@ for class_name, metrics in data["statistics"].items():
                       <th className="p-3">Primary Role in GeoClass</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#2E3429] text-neutral-300">
+                  <tbody className="divide-y divide-[#26332E] text-[#A5B2AB] bg-[#101C18]">
                     <tr>
-                      <td className="p-3 font-semibold text-white">Copernicus Sentinel-2</td>
+                      <td className="p-3 font-semibold text-[#F1F3EF]">Copernicus Sentinel-2</td>
                       <td className="p-3">ESA / European Union</td>
                       <td className="p-3">MSI (Multi-Spectral 13 Bands)</td>
-                      <td className="p-3 font-mono text-[#E0DCD3]">10m / 20m</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">10m / 20m</td>
                       <td className="p-3">5 days (Constellation 2A + 2B)</td>
-                      <td className="p-3 text-amber-300">SCL & QA60 Cloud Screening</td>
+                      <td className="p-3 text-amber-300">SCL &amp; QA60 Cloud Screening</td>
                       <td className="p-3">High-resolution optical classification, 10m spectral indices (NDVI, NDRE)</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-white">USGS / NASA Landsat 8 & 9</td>
+                      <td className="p-3 font-semibold text-[#F1F3EF]">USGS / NASA Landsat 8 &amp; 9</td>
                       <td className="p-3">USGS / NASA</td>
                       <td className="p-3">OLI / OLI-2 + TIRS (11 Bands)</td>
-                      <td className="p-3 font-mono text-[#E0DCD3]">30m (Optical) / 100m (Thermal)</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">30m (Optical) / 100m (Thermal)</td>
                       <td className="p-3">8 days (Combined 8 + 9)</td>
                       <td className="p-3 text-amber-300">QA_PIXEL Bitmask Screening</td>
                       <td className="p-3">Decadal historical continuity, 30m Level-2 Tier-1 surface reflectance cross-validation</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-white">Copernicus Sentinel-1</td>
+                      <td className="p-3 font-semibold text-[#F1F3EF]">Copernicus Sentinel-1</td>
                       <td className="p-3">ESA / European Union</td>
                       <td className="p-3">C-SAR (Active Microwave 5.405 GHz)</td>
-                      <td className="p-3 font-mono text-[#E0DCD3]">10m (IW Ground Range Detected)</td>
+                      <td className="p-3 font-mono text-[#B7F36B]">10m (IW Ground Range Detected)</td>
                       <td className="p-3">6-12 days</td>
-                      <td className="p-3 text-emerald-400 font-semibold">100% Cloud-Penetrating (All-Weather)</td>
+                      <td className="p-3 text-[#B7F36B] font-semibold">100% Cloud-Penetrating (All-Weather)</td>
                       <td className="p-3">Cloud-penetrating radar backscatter fusion (VV, VH), canopy moisture and structural roughness</td>
                     </tr>
                   </tbody>
@@ -388,82 +412,87 @@ for class_name, metrics in data["statistics"].items():
         {activeTab === 'sar' && (
           <section className="space-y-8">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Sentinel-1 C-Band Synthetic Aperture Radar (SAR)</h3>
-              <p className="text-sm text-neutral-300 leading-relaxed">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#B7F36B] block mb-2">
+                ACTIVE MICROWAVE REMOTE SENSING
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.03em] text-[#F1F3EF] mb-3">
+                Sentinel-1 C-Band Synthetic Aperture Radar (SAR)
+              </h2>
+              <p className="text-[15px] text-[#A5B2AB] leading-relaxed max-w-4xl">
                 Optical sensors such as Sentinel-2 rely on solar illumination in the visible, near-infrared, and shortwave infrared spectrum (0.4 to 2.2 micrometers). Consequently, persistent cloud cover, haze, smog, and monsoons frequently obstruct optical observations. Sentinel-1 operates an active C-band radar at 5.405 GHz (wavelength of 5.55 cm), transmitting microwave pulses that penetrate atmospheric hydrometeors unimpeded.
               </p>
             </div>
 
             {/* Physics Concept Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-white mb-2">
-                  <div className="w-2 h-2 rounded-full bg-[#ef4444]" />
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF] mb-2">
+                  <div className="w-2 h-2 rounded-full bg-[#EF4444]" />
                   <span>VV Co-Polarization (Vertical Transmit, Vertical Receive)</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed mb-3">
                   VV polarization measures microwave backscatter with minimal polarization rotation. It is sensitive to surface roughness, vertical structure (such as stalks and building facades), and soil moisture dielectric properties.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Value Range: -20.0 dB to 0.0 dB
                 </div>
               </div>
 
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-white mb-2">
-                  <div className="w-2 h-2 rounded-full bg-[#22c55e]" />
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF] mb-2">
+                  <div className="w-2 h-2 rounded-full bg-[#4CAF6A]" />
                   <span>VH Cross-Polarization (Vertical Transmit, Horizontal Receive)</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed mb-3">
                   VH backscatter arises when transmitted vertical waves experience multiple internal reflections inside a 3D volumetric medium, depolarizing into horizontal return waves. Dense vegetation canopies generate high VH returns.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Value Range: -25.0 dB to -5.0 dB
                 </div>
               </div>
 
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-white mb-2">
-                  <div className="w-2 h-2 rounded-full bg-[#3b82f6]" />
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF] mb-2">
+                  <div className="w-2 h-2 rounded-full bg-[#3B82F6]" />
                   <span>VV / VH Cross-Polarization Ratio</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed mb-3">
                   In decibel scale, the cross ratio is computed as VV minus VH. This metric isolates volume scatterers from specular planar surfaces. Water bodies absorb or reflect away both polarizations, yielding very high ratio contrast.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Ratio Equation: VV_VH_ratio = VV - VH (dB)
                 </div>
               </div>
 
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-white mb-2">
-                  <Activity className="w-3.5 h-3.5 text-[#306840]" />
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF] mb-2">
+                  <Activity className="w-3.5 h-3.5 text-[#B7F36B]" />
                   <span>Optical-SAR Multi-Sensor Fusion Rationale</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed mb-3">
                   Combining optical spectral reflectance with SAR microwave backscatter eliminates spectral confusion between spectrally similar classes with different structural geometry, such as dark asphalt vs calm water, or bare soil vs dry crops.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Multi-Sensor Depth: 13 Total Input Features
                 </div>
               </div>
             </div>
 
             {/* SAR False Color Composite Spec */}
-            <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-              <h4 className="text-sm font-semibold text-white mb-2">False-Color SAR Backscatter RGB Representation</h4>
-              <p className="text-xs text-neutral-300 leading-relaxed mb-4">
+            <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+              <h3 className="text-sm font-semibold text-[#F1F3EF] mb-2">False-Color SAR Backscatter RGB Representation</h3>
+              <p className="text-xs text-[#A5B2AB] leading-relaxed mb-4">
                 When rendering the Sentinel-1 SAR layer, GeoClass maps backscatter bands into an informative RGB composite:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429]">
-                  <span className="font-semibold text-[#ef4444]">Red Channel:</span> VV Co-polarization (-20 to 0 dB). Highlights building corners and rough terrain.
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E]">
+                  <span className="font-semibold text-[#EF4444]">Red Channel:</span> VV Co-polarization (-20 to 0 dB). Highlights building corners and rough terrain.
                 </div>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429]">
-                  <span className="font-semibold text-[#22c55e]">Green Channel:</span> VH Cross-polarization (-25 to -5 dB). Highlights tree canopies and biomass.
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E]">
+                  <span className="font-semibold text-[#4CAF6A]">Green Channel:</span> VH Cross-polarization (-25 to -5 dB). Highlights tree canopies and biomass.
                 </div>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429]">
-                  <span className="font-semibold text-[#3b82f6]">Blue Channel:</span> VV/VH Ratio (0 to 15 dB). Highlights specular water contrast and planar surfaces.
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E]">
+                  <span className="font-semibold text-[#3B82F6]">Blue Channel:</span> VV/VH Ratio (0 to 15 dB). Highlights specular water contrast and planar surfaces.
                 </div>
               </div>
             </div>
@@ -474,77 +503,82 @@ for class_name, metrics in data["statistics"].items():
         {activeTab === 'indices' && (
           <section className="space-y-8">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Spectral Indices & Biophysical Band Math</h3>
-              <p className="text-sm text-neutral-300 leading-relaxed">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#B7F36B] block mb-2">
+                OPTICAL BAND MATHEMATICS
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.03em] text-[#F1F3EF] mb-3">
+                Spectral Indices &amp; Biophysical Band Math
+              </h2>
+              <p className="text-[15px] text-[#A5B2AB] leading-relaxed max-w-4xl">
                 Sentinel-2 MultiSpectral Instrument (MSI) captures 13 spectral bands from 443 nm to 2190 nm. GeoClass utilizes 10 surface reflectance bands to compute publication-standard biophysical diagnostic indices.
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* NDVI */}
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center justify-between mb-2">
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E] space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Trees className="w-4 h-4 text-[#397D49]" />
-                    <span className="text-sm font-semibold text-white">NDVI: Normalized Difference Vegetation Index</span>
+                    <Trees className="w-4 h-4 text-[#4CAF6A]" />
+                    <span className="text-sm font-semibold text-[#F1F3EF]">NDVI: Normalized Difference Vegetation</span>
                   </div>
-                  <span className="text-xs font-mono text-[#E0DCD3]">Rouse et al., 1974</span>
+                  <span className="text-xs font-mono text-[#69766F]">Rouse et al., 1974</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed">
                   Exploits strong chlorophyll absorption in red wavelengths (Band 4, 665 nm) and vigorous mesophyll scattering in the near-infrared spectrum (Band 8, 842 nm). Evaluates photosynthetic capacity, biomass density, and canopy vigor.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Formula: NDVI = (B8 - B4) / (B8 + B4)
                 </div>
               </div>
 
               {/* MNDWI */}
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center justify-between mb-2">
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E] space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Droplets className="w-4 h-4 text-[#419BDF]" />
-                    <span className="text-sm font-semibold text-white">MNDWI: Modified Normalized Difference Water Index</span>
+                    <span className="text-sm font-semibold text-[#F1F3EF]">MNDWI: Modified Normalized Difference Water</span>
                   </div>
-                  <span className="text-xs font-mono text-[#E0DCD3]">Xu, 2006</span>
+                  <span className="text-xs font-mono text-[#69766F]">Xu, 2006</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed">
                   Replaces near-infrared with shortwave infrared (Band 11, 1610 nm) to significantly suppress noise from built-up urban features and dry soils while maximizing open water body delineations.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Formula: MNDWI = (B3 - B11) / (B3 + B11)
                 </div>
               </div>
 
               {/* NDBI */}
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center justify-between mb-2">
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E] space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4 text-[#C4281B]" />
-                    <span className="text-sm font-semibold text-white">NDBI: Normalized Difference Built-Up Index</span>
+                    <Building className="w-4 h-4 text-[#EF4444]" />
+                    <span className="text-sm font-semibold text-[#F1F3EF]">NDBI: Normalized Difference Built-Up</span>
                   </div>
-                  <span className="text-xs font-mono text-[#E0DCD3]">Zha et al., 2003</span>
+                  <span className="text-xs font-mono text-[#69766F]">Zha et al., 2003</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed">
                   Capitalizes on higher SWIR reflectance compared to NIR for impervious man-made materials, concrete, asphalt, and quarry rocks, delineating urban boundaries and built infrastructure footprints.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Formula: NDBI = (B11 - B8) / (B11 + B8)
                 </div>
               </div>
 
               {/* NBR */}
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center justify-between mb-2">
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E] space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Flame className="w-4 h-4 text-[#E49635]" />
-                    <span className="text-sm font-semibold text-white">NBR: Normalized Burn Ratio</span>
+                    <Flame className="w-4 h-4 text-[#E7B84B]" />
+                    <span className="text-sm font-semibold text-[#F1F3EF]">NBR: Normalized Burn Ratio</span>
                   </div>
-                  <span className="text-xs font-mono text-[#E0DCD3]">Key & Benson, 2006</span>
+                  <span className="text-xs font-mono text-[#69766F]">Key &amp; Benson, 2006</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed">
                   Combines near-infrared (Band 8) with deep shortwave infrared (Band 12, 2190 nm) to highlight wildfire burn scars, charcoal deposition, soil exposure, and post-fire canopy mortality.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Formula: NBR = (B8 - B12) / (B8 + B12)
                 </div>
               </div>
@@ -552,53 +586,58 @@ for class_name, metrics in data["statistics"].items():
           </section>
         )}
 
-        {/* TAB 4: TEMPORAL TREND BREAKS & LANDTRENDR */}
+        {/* TAB 4: TEMPORAL TREND BREAKS */}
         {activeTab === 'change' && (
           <section className="space-y-8">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Multi-Temporal Trajectory Segmentation & Trend Breaks</h3>
-              <p className="text-sm text-neutral-300 leading-relaxed">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#B7F36B] block mb-2">
+                LONGITUDINAL TIME SERIES
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.03em] text-[#F1F3EF] mb-3">
+                Multi-Temporal Trajectory Segmentation &amp; Trend Breaks
+              </h2>
+              <p className="text-[15px] text-[#A5B2AB] leading-relaxed max-w-4xl">
                 Single-date or bitemporal satellite comparisons often confuse seasonal phenological shifts or brief agricultural harvests with permanent land degradation. GeoClass implements continuous annual trajectory segmentation based on the LandTrendr framework (Kennedy et al., 2010), tracking vegetation and built-up trends across annual Sentinel-2 median composites from 2018 to 2025.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-white mb-2">
-                  <Trees className="w-4 h-4 text-emerald-400" />
-                  <span>Canopy Disturbance & Deforestation (NBR)</span>
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF] mb-2">
+                  <Trees className="w-4 h-4 text-[#4CAF6A]" />
+                  <span>Canopy Disturbance &amp; Deforestation (NBR)</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed mb-3">
                   Normalized Burn Ratio (NBR) is highly sensitive to canopy moisture and structural density. A sharp drop in annual median NBR represents acute disturbance: timber clear-cutting, wildfire mortality, or infrastructure clearing.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Onset: Year of Maximum Negative Deviation (Delta &gt; 0.15)
                 </div>
               </div>
 
-              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-white mb-2">
-                  <Building className="w-4 h-4 text-[#ef4444]" />
-                  <span>Urban Sprawl & Impervious Expansion (NDBI)</span>
+              <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E]">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#F1F3EF] mb-2">
+                  <Building className="w-4 h-4 text-[#EF4444]" />
+                  <span>Urban Sprawl &amp; Impervious Expansion (NDBI)</span>
                 </div>
-                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                <p className="text-xs text-[#A5B2AB] leading-relaxed mb-3">
                   Normalized Difference Built-Up Index (NDBI) tracks replacement of natural vegetation with asphalt, concrete, and industrial roofscapes. A sustained positive jump indicates permanent urban expansion.
                 </p>
-                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                <div className="p-3 rounded-[2px] bg-[#07100D] border border-[#26332E] font-mono text-xs text-[#B7F36B]">
                   Onset: Year of Persistent Positive Built-Up Jump (Delta &gt; 0.12)
                 </div>
               </div>
             </div>
 
             {/* LandTrendr Algorithm Steps */}
-            <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429] space-y-3">
-              <h4 className="text-sm font-semibold text-white">LandTrendr Server-Side Earth Engine Process</h4>
-              <ol className="list-decimal list-inside text-xs text-neutral-300 space-y-2 leading-relaxed">
-                <li><strong className="text-white">Annual Cloud-Free Compositing:</strong> For every year $t$, Sentinel-2 granules are filtered during the optimal vegetative season and masked for clouds/shadows via SCL and QA60.</li>
-                <li><strong className="text-white">Baseline Anchoring:</strong> The initial year defines the undisturbed pre-event spectral baseline.</li>
-                <li><strong className="text-white">Trajectory Delta & Break Detection:</strong> Pixel-wise differences are computed across consecutive years. Pixels exceeding the user sensitivity threshold are tagged as disturbed.</li>
-                <li><strong className="text-white">Onset Year Assignment:</strong> The exact calendar year exhibiting the steepest trajectory break is recorded into the Onset Year raster band.</li>
-                <li><strong className="text-white">Post-Disturbance Regrowth Modeling:</strong> Consecutive years following the onset year are analyzed to identify vegetative recovery slopes vs permanent non-forest conversion.</li>
+            <div className="p-5 rounded-[4px] bg-[#101C18] border border-[#26332E] space-y-3">
+              <h3 className="text-sm font-semibold text-[#F1F3EF]">LandTrendr Server-Side Earth Engine Process</h3>
+              <ol className="list-decimal list-inside text-xs text-[#A5B2AB] space-y-2 leading-relaxed">
+                <li><strong className="text-[#F1F3EF]">Annual Cloud-Free Compositing:</strong> For every year $t$, Sentinel-2 granules are filtered during the optimal vegetative season and masked for clouds/shadows via SCL and QA60.</li>
+                <li><strong className="text-[#F1F3EF]">Baseline Anchoring:</strong> The initial year defines the undisturbed pre-event spectral baseline.</li>
+                <li><strong className="text-[#F1F3EF]">Trajectory Delta &amp; Break Detection:</strong> Pixel-wise differences are computed across consecutive years. Pixels exceeding the user sensitivity threshold are tagged as disturbed.</li>
+                <li><strong className="text-[#F1F3EF]">Onset Year Assignment:</strong> The exact calendar year exhibiting the steepest trajectory break is recorded into the Onset Year raster band.</li>
+                <li><strong className="text-[#F1F3EF]">Post-Disturbance Regrowth Modeling:</strong> Consecutive years following the onset year are analyzed to identify vegetative recovery slopes vs permanent non-forest conversion.</li>
               </ol>
             </div>
           </section>
@@ -608,124 +647,134 @@ for class_name, metrics in data["statistics"].items():
         {activeTab === 'api' && (
           <section className="space-y-8">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Developer REST API v1 & Python SDK</h3>
-              <p className="text-sm text-neutral-300 leading-relaxed">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#B7F36B] block mb-2">
+                PROGRAMMATIC INTEGRATION
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.03em] text-[#F1F3EF] mb-3">
+                Developer REST API v1 &amp; Python SDK
+              </h2>
+              <p className="text-[15px] text-[#A5B2AB] leading-relaxed max-w-4xl">
                 GeoClass provides programmatically accessible REST endpoints allowing researchers, data scientists, and autonomous pipelines to trigger land cover classification, extract SAR radar composites, and query spectral time-series.
               </p>
             </div>
 
             {/* Endpoints Table */}
-            <div className="overflow-x-auto rounded-lg border border-[#2E3429]">
+            <div className="overflow-x-auto rounded-[4px] border border-[#26332E]">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#1A1D17] border-b border-[#2E3429] text-neutral-400 font-mono">
+                  <tr className="bg-[#0B1713] border-b border-[#26332E] text-[#A5B2AB] font-mono">
                     <th className="p-3">HTTP Method</th>
                     <th className="p-3">Endpoint</th>
                     <th className="p-3">Description</th>
                     <th className="p-3">Key Parameters</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#2E3429] text-neutral-300">
+                <tbody className="divide-y divide-[#26332E] text-[#A5B2AB] bg-[#101C18]">
                   <tr>
-                    <td className="p-3 font-mono font-semibold text-emerald-400">GET</td>
-                    <td className="p-3 font-mono text-white">/api/v1/health</td>
+                    <td className="p-3 font-mono font-semibold text-[#B7F36B]">GET</td>
+                    <td className="p-3 font-mono text-[#F1F3EF]">/api/v1/health</td>
                     <td className="p-3">Checks Earth Engine cluster connection and system health.</td>
-                    <td className="p-3 text-neutral-400">None</td>
+                    <td className="p-3 font-mono text-[#69766F]">None</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
-                    <td className="p-3 font-mono text-white">/api/v1/classify</td>
+                    <td className="p-3 font-mono font-semibold text-[#3B82F6]">POST</td>
+                    <td className="p-3 font-mono text-[#F1F3EF]">/api/v1/classify</td>
                     <td className="p-3">Runs Random Forest or Deep Learning classification on GeoJSON AOI.</td>
-                    <td className="p-3 font-mono text-[11px]">coords, start_date, end_date, use_sar_fusion</td>
+                    <td className="p-3 font-mono text-[11px] text-[#B7F36B]">coords, start_date, end_date, use_sar_fusion</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
-                    <td className="p-3 font-mono text-white">/api/v1/sar-composite</td>
+                    <td className="p-3 font-mono font-semibold text-[#3B82F6]">POST</td>
+                    <td className="p-3 font-mono text-[#F1F3EF]">/api/v1/sar-composite</td>
                     <td className="p-3">Generates cloud-penetrating Sentinel-1 SAR dual-polarization composite.</td>
-                    <td className="p-3 font-mono text-[11px]">coords, start_date, end_date</td>
+                    <td className="p-3 font-mono text-[11px] text-[#B7F36B]">coords, start_date, end_date</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
-                    <td className="p-3 font-mono text-white">/api/v1/spectral</td>
+                    <td className="p-3 font-mono font-semibold text-[#3B82F6]">POST</td>
+                    <td className="p-3 font-mono text-[#F1F3EF]">/api/v1/spectral</td>
                     <td className="p-3">Computes zonal multi-index spectral analysis (NDBI, MNDWI, NBR).</td>
-                    <td className="p-3 font-mono text-[11px]">coords, start_date, end_date</td>
+                    <td className="p-3 font-mono text-[11px] text-[#B7F36B]">coords, start_date, end_date</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
-                    <td className="p-3 font-mono text-white">/api/v1/timeseries</td>
+                    <td className="p-3 font-mono font-semibold text-[#3B82F6]">POST</td>
+                    <td className="p-3 font-mono text-[#F1F3EF]">/api/v1/timeseries</td>
                     <td className="p-3">Extracts multi-year pixel trajectory history with anomaly detection.</td>
-                    <td className="p-3 font-mono text-[11px]">lat, lng, start_year, end_year</td>
+                    <td className="p-3 font-mono text-[11px] text-[#B7F36B]">lat, lng, start_year, end_year</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
-                    <td className="p-3 font-mono text-white">/api/v1/change-detection</td>
+                    <td className="p-3 font-mono font-semibold text-[#3B82F6]">POST</td>
+                    <td className="p-3 font-mono text-[#F1F3EF]">/api/v1/change-detection</td>
                     <td className="p-3">Runs multi-temporal LandTrendr disturbance onset and trajectory segmentation.</td>
-                    <td className="p-3 font-mono text-[11px]">coords, start_year, end_year, index_name, sensitivity</td>
+                    <td className="p-3 font-mono text-[11px] text-[#B7F36B]">coords, start_year, end_year, index_name, sensitivity</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
-                    <td className="p-3 font-mono text-white">/api/v1/stac/search</td>
+                    <td className="p-3 font-mono font-semibold text-[#3B82F6]">POST</td>
+                    <td className="p-3 font-mono text-[#F1F3EF]">/api/v1/stac/search</td>
                     <td className="p-3">Queries STAC-compliant scenes for Sentinel-2, Landsat 8/9, and Sentinel-1.</td>
-                    <td className="p-3 font-mono text-[11px]">coords, start_date, end_date, collections, max_cloud_cover</td>
+                    <td className="p-3 font-mono text-[11px] text-[#B7F36B]">coords, start_date, end_date, collections, max_cloud_cover</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
-                    <td className="p-3 font-mono text-white">/api/v1/landsat-composite</td>
+                    <td className="p-3 font-mono font-semibold text-[#3B82F6]">POST</td>
+                    <td className="p-3 font-mono text-[#F1F3EF]">/api/v1/landsat-composite</td>
                     <td className="p-3">Generates Landsat 8/9 Collection 2 Tier 1 Surface Reflectance composites &amp; tiles.</td>
-                    <td className="p-3 font-mono text-[11px]">coords, start_date, end_date, cloud_percentage</td>
+                    <td className="p-3 font-mono text-[11px] text-[#B7F36B]">coords, start_date, end_date, cloud_percentage</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
             {/* Code Snippet: Python */}
-            <div className="rounded-lg bg-[#1A1D17] border border-[#2E3429] overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#161912] border-b border-[#2E3429]">
+            <div className="rounded-[4px] bg-[#101C18] border border-[#26332E] overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-[#0B1713] border-b border-[#26332E]">
                 <div className="flex items-center gap-2">
-                  <Terminal className="w-3.5 h-3.5 text-[#306840]" />
-                  <span className="text-xs font-semibold text-white font-mono">Python 3 SDK Example</span>
+                  <Terminal className="w-3.5 h-3.5 text-[#B7F36B]" />
+                  <span className="text-xs font-semibold text-[#F1F3EF] font-mono">Python 3 SDK Example</span>
                 </div>
                 <button
                   onClick={() => copyToClipboard(pythonSnippet, 'python')}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#22261E] border border-[#2E3429] text-neutral-300 hover:text-white text-xs transition cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#07100D] border border-[#26332E] hover:border-[#B7F36B] text-[#A5B2AB] hover:text-[#F1F3EF] text-xs transition cursor-pointer"
                 >
-                  {copiedSnippet === 'python' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  {copiedSnippet === 'python' ? <Check className="w-3 h-3 text-[#B7F36B]" /> : <Copy className="w-3 h-3" />}
                   <span>{copiedSnippet === 'python' ? 'Copied' : 'Copy Code'}</span>
                 </button>
               </div>
-              <pre className="p-4 text-xs font-mono text-neutral-200 overflow-x-auto leading-relaxed">
+              <pre className="p-4 text-xs font-mono text-[#F1F3EF] overflow-x-auto leading-relaxed bg-[#07100D]">
                 <code>{pythonSnippet}</code>
               </pre>
             </div>
 
             {/* Code Snippet: cURL */}
-            <div className="rounded-lg bg-[#1A1D17] border border-[#2E3429] overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#161912] border-b border-[#2E3429]">
+            <div className="rounded-[4px] bg-[#101C18] border border-[#26332E] overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-[#0B1713] border-b border-[#26332E]">
                 <div className="flex items-center gap-2">
-                  <Code2 className="w-3.5 h-3.5 text-[#306840]" />
-                  <span className="text-xs font-semibold text-white font-mono">cURL Command Line Example</span>
+                  <Code2 className="w-3.5 h-3.5 text-[#B7F36B]" />
+                  <span className="text-xs font-semibold text-[#F1F3EF] font-mono">cURL Command Line Example</span>
                 </div>
                 <button
                   onClick={() => copyToClipboard(curlSnippet, 'curl')}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#22261E] border border-[#2E3429] text-neutral-300 hover:text-white text-xs transition cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#07100D] border border-[#26332E] hover:border-[#B7F36B] text-[#A5B2AB] hover:text-[#F1F3EF] text-xs transition cursor-pointer"
                 >
-                  {copiedSnippet === 'curl' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  {copiedSnippet === 'curl' ? <Check className="w-3 h-3 text-[#B7F36B]" /> : <Copy className="w-3 h-3" />}
                   <span>{copiedSnippet === 'curl' ? 'Copied' : 'Copy Code'}</span>
                 </button>
               </div>
-              <pre className="p-4 text-xs font-mono text-neutral-200 overflow-x-auto leading-relaxed">
+              <pre className="p-4 text-xs font-mono text-[#F1F3EF] overflow-x-auto leading-relaxed bg-[#07100D]">
                 <code>{curlSnippet}</code>
               </pre>
             </div>
           </section>
         )}
 
-        {/* TAB 5: CITATIONS */}
+        {/* TAB 6: CITATIONS */}
         {activeTab === 'citations' && (
           <section className="space-y-8">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Academic & Literature Citations</h3>
-              <p className="text-sm text-neutral-300 leading-relaxed">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#B7F36B] block mb-2">
+                SCIENTIFIC FOUNDATIONS
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.03em] text-[#F1F3EF] mb-3">
+                Academic &amp; Literature Citations
+              </h2>
+              <p className="text-[15px] text-[#A5B2AB] leading-relaxed max-w-4xl">
                 GeoClass builds upon foundational remote sensing algorithms, machine learning literature, and European Space Agency (ESA) Copernicus mission technical specifications.
               </p>
             </div>
@@ -803,14 +852,14 @@ for class_name, metrics in data["statistics"].items():
                   doi: "https://doi.org/10.1016/j.rse.2017.06.031"
                 }
               ].map((citation, idx) => (
-                <div key={idx} className="p-4 rounded-lg bg-[#1A1D17] border border-[#2E3429] text-xs">
-                  <div className="font-semibold text-white">
+                <div key={idx} className="p-4 rounded-[4px] bg-[#101C18] border border-[#26332E] text-xs">
+                  <div className="font-semibold text-[#F1F3EF]">
                     {citation.author} ({citation.year})
                   </div>
-                  <div className="text-neutral-300 mt-1 italic">
-                    "{citation.title}"
+                  <div className="text-[#A5B2AB] mt-1 italic">
+                    &ldquo;{citation.title}&rdquo;
                   </div>
-                  <div className="text-neutral-400 mt-1">
+                  <div className="text-[#69766F] mt-1">
                     {citation.journal}
                   </div>
                   {citation.doi && (
@@ -818,7 +867,7 @@ for class_name, metrics in data["statistics"].items():
                       href={citation.doi}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[#4B6445] hover:text-[#E0DCD3] transition mt-2 font-mono"
+                      className="inline-flex items-center gap-1 text-[#B7F36B] hover:underline transition mt-2 font-mono"
                     >
                       <span>{citation.doi}</span>
                       <ExternalLink className="w-3 h-3" />
@@ -832,13 +881,36 @@ for class_name, metrics in data["statistics"].items():
 
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#2E3429] bg-[#121410] px-4 lg:px-8 py-8 text-center text-xs text-neutral-400">
-        <p>GeoClass &middot; Earth Observation & Remote Sensing Analytics Engine</p>
-        <p className="mt-1 text-[11px] text-neutral-500">
-          Powered by Google Earth Engine, Copernicus Sentinel-1/Sentinel-2, Dynamic World, and FastAPI.
-        </p>
+      {/* ────────────────────────────────── Master Footer ────────────────────────────────── */}
+      <footer className="border-t border-[#26332E] bg-[#07100D] py-12">
+        <div className="max-w-[1240px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <svg width="22" height="18" viewBox="0 0 28 22" fill="none">
+              <path d="M14 2L2 19H26L14 2Z" stroke="#B7F36B" strokeWidth="2.2" strokeLinejoin="round" />
+              <path d="M8 14L14 7L20 14" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7F36B" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <span className="font-sans text-[16px] font-bold text-[#F1F3EF]">GeoClass</span>
+            <span className="text-[12px] text-[#69766F] ml-2">
+              © {new Date().getFullYear()} GeoClass Geospatial Systems.
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-6 text-[13.5px] text-[#A5B2AB]">
+            <Link href="/#platform" className="hover:text-[#F1F3EF] transition-colors">Platform</Link>
+            <Link href="/#workflow" className="hover:text-[#F1F3EF] transition-colors">Workflow</Link>
+            <Link href="/#tools" className="hover:text-[#F1F3EF] transition-colors">Tools</Link>
+            <Link href="/#use-cases" className="hover:text-[#F1F3EF] transition-colors">Use cases</Link>
+            <Link href="/methods" className="text-[#B7F36B] transition-colors">Methods &amp; API</Link>
+            <Link href="/login" className="hover:text-[#F1F3EF] transition-colors">Log in</Link>
+          </div>
+
+          <div className="font-mono text-[11px] text-[#69766F]">
+            Sentinel-2 MSI · Sentinel-1 SAR · Copernicus 30m DEM
+          </div>
+        </div>
       </footer>
+
     </div>
   );
 }
