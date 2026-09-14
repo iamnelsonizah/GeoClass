@@ -43,6 +43,24 @@
   --gc-dark-muted: #A4AAA2;
   --gc-dark-accent: #D47747;
 
+  /* GeoClass Master Design System Tokens */
+  --background: #07100D;
+  --surface: #0B1713;
+  --surface-raised: #101C18;
+
+  --foreground: #F1F3EF;
+  --foreground-muted: #A5B2AB;
+  --foreground-subtle: #69766F;
+
+  --accent: #B7F36B;
+  --accent-hover: #C8FF82;
+
+  --border: #26332E;
+
+  --success: #4CAF6A;
+  --warning: #E7B84B;
+  --danger: #EF4444;
+
   /* Theme tokens */
   --background: var(--gc-paper-50);
   --foreground: var(--gc-ink-900);
