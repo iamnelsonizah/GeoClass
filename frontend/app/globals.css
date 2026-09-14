@@ -3,51 +3,61 @@
 @import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
 
 :root {
-  /* Clean Modern Neutral Carbon & Charcoal (Zero blue cast) */
-  --graphite: #121316;
-  --panel: #18191D;
-  --panel-alt: #202227;
-  --panel-raised: #26282F;
-  --canvas: #0C0D0F;
+  /* Google Agriculture AI Brand Palette (agri.withgoogle.com) */
+  --brand-green: #306840;       /* darkolivegreen (brand primary) */
+  --brand-foliage: #4B6445;     /* darkolivegreen (homepage foliage) */
+  --brand-limestone: #E0DCD3;   /* gainsboro (warm limestone) */
+  --brand-lightgray: #D0D0D0;   /* lightgray (readable text) */
+  --brand-darkgray: #9A97A4;    /* darkgray (slate lavender) */
+  --brand-stone: #8D837B;       /* gray (stone) */
+  --brand-earth: #4C312E;       /* dimgray (soil bark brown) */
+  --brand-sienna: #6A3136;      /* sienna (terracotta alert) */
+
+  /* Deep organic loam and warm peat surfaces */
+  --graphite: #121410;
+  --panel: #1A1D17;
+  --panel-alt: #22261E;
+  --panel-raised: #2A2F25;
+  --canvas: #0E100C;
 
   /* Typography & Readout Contrast */
-  --paper: #F9FAFB;
-  --ink: #E5E7EB;
-  --ink-dim: #9CA3AF;
-  --ink-subtle: #6B7280;
+  --paper: #F3F2EE;
+  --ink: #D0D0D0;
+  --ink-dim: #9A97A4;
+  --ink-subtle: #8D837B;
 
-  /* Earth Observation Olive & Semantic Accents (#99aa38) */
-  --moss: #99aa38;
-  --moss-light: #c0d45a;
-  --moss-hover: #889731;
-  --moss-subtle: rgba(153, 170, 56, 0.15);
-  --blue: #99aa38;
-  --blue-hover: #889731;
-  --blue-subtle: rgba(153, 170, 56, 0.15);
-  --cyan: #0284C7;
-  --emerald: #10B981;
-  --amber: #F59E0B;
-  --rose: #EF4444;
+  /* Earth Observation Agriculture Accents */
+  --moss: #306840;
+  --moss-light: #4B6445;
+  --moss-hover: #265433;
+  --moss-subtle: rgba(48, 104, 64, 0.22);
+  --blue: #306840;
+  --blue-hover: #4B6445;
+  --blue-subtle: rgba(48, 104, 64, 0.22);
+  --cyan: #4B6445;
+  --emerald: #306840;
+  --amber: #8D837B;
+  --rose: #6A3136;
 
   /* Clean Structural Borders */
-  --border: #272930;
-  --border-strong: #383B44;
-  --danger: #EF4444;
+  --border: #2E3429;
+  --border-strong: #3D4537;
+  --danger: #6A3136;
 
   /* Theme tokens */
-  --background: #121316;
-  --foreground: #F9FAFB;
+  --background: #121410;
+  --foreground: #F3F2EE;
   
   /* LULC Color Palette (Standard ESA/Copernicus Land Cover) */
-  --color-lulc-water: #0EA5E9;
-  --color-lulc-forest: #15803D;
-  --color-lulc-grass: #84CC16;
-  --color-lulc-wetland: #6366F1;
-  --color-lulc-agriculture: #EAB308;
-  --color-lulc-shrub: #CA8A04;
-  --color-lulc-urban: #DC2626;
-  --color-lulc-bare: #94A3B8;
-  --color-lulc-snow: #C084FC;
+  --color-lulc-water: #419BDF;
+  --color-lulc-forest: #306840;
+  --color-lulc-grass: #4B6445;
+  --color-lulc-wetland: #9A97A4;
+  --color-lulc-agriculture: #E0DCD3;
+  --color-lulc-shrub: #8D837B;
+  --color-lulc-urban: #6A3136;
+  --color-lulc-bare: #4C312E;
+  --color-lulc-snow: #D0D0D0;
 }
 
 * {
@@ -57,15 +67,23 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: #121316;
+  background: #121410;
   color: var(--ink);
-  font-family: var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Google Sans Text', 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.display-metric {
+  font-family: 'Google Sans Display', 'Google Sans', sans-serif;
+}
+
 .mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 nextjs-portal {
@@ -393,13 +411,13 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 .run-btn {
   margin-top: 14px;
   width: 100%;
-  background: #99aa38;
-  color: #FFFFFF;
-  border: 1px solid #a8ba3e;
+  background: var(--brand-green);
+  color: var(--brand-limestone);
+  border: 1px solid var(--brand-foliage);
   padding: 10px 16px;
   font-size: 13px;
-  font-family: inherit;
-  font-weight: 600;
+  font-family: 'Google Sans', sans-serif;
+  font-weight: 500;
   letter-spacing: 0.01em;
   display: flex;
   align-items: center;
@@ -407,14 +425,15 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   gap: 8px;
   border-radius: 6px;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(153, 170, 56, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(48, 104, 64, 0.2);
   transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .run-btn:hover:not(:disabled) {
-  background: #889731;
-  border-color: #b8ca48;
-  box-shadow: 0 4px 12px rgba(153, 170, 56, 0.35);
+  background: var(--brand-foliage);
+  color: #FFFFFF;
+  border-color: #5A7753;
+  box-shadow: 0 4px 12px rgba(48, 104, 64, 0.35);
   transform: translateY(-0.5px);
 }
 
@@ -423,11 +442,11 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .run-btn:disabled {
-  background: #202227;
-  color: #6B7280;
-  border-color: #272930;
-  box-shadow: none;
+  background: var(--panel-alt);
+  color: var(--ink-subtle);
+  border-color: var(--border);
   cursor: not-allowed;
+  box-shadow: none;
   opacity: 0.7;
 }
 
@@ -478,8 +497,8 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .swatch.on {
-  background: var(--blue);
-  border: 1px solid #c0d45a;
+  background: var(--brand-green);
+  border: 1px solid var(--brand-foliage);
 }
 
 .swatch.off {
@@ -693,9 +712,9 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
 }
 
 .toolstrip .t.active {
-  color: #c0d45a;
-  background: rgba(153, 170, 56, 0.15);
-  border-left: 2px solid #99aa38;
+  color: var(--brand-limestone);
+  background: rgba(48, 104, 64, 0.25);
+  border-left: 2px solid var(--brand-green);
 }
 
 .toolstrip .divider {
@@ -715,13 +734,13 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   left: calc(100% + 12px);
   top: 50%;
   transform: translateY(-50%) translateX(-4px);
-  background: #121316;
-  border: 1px solid #272930;
+  background: var(--graphite);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 8px 12px;
   width: max-content;
   max-width: 260px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(153, 170, 56, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(48, 104, 64, 0.2);
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -738,7 +757,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   transform: translateY(-50%);
   border-width: 5px;
   border-style: solid;
-  border-color: transparent #272930 transparent transparent;
+  border-color: transparent var(--border) transparent transparent;
 }
 
 .toolstrip .tool-tip::after {
@@ -749,7 +768,7 @@ select.ctl:focus, input.ctl:focus, .ctl:focus {
   transform: translateY(-50%);
   border-width: 4px;
   border-style: solid;
-  border-color: transparent #121316 transparent transparent;
+  border-color: transparent var(--graphite) transparent transparent;
 }
 
 .toolstrip .t:hover .tool-tip {
@@ -1231,12 +1250,12 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-custom-popup .leaflet-popup-content-wrapper {
-  background: #121316 !important;
-  border: 1px solid #272930 !important;
+  background: var(--graphite) !important;
+  border: 1px solid var(--border) !important;
   border-radius: 8px !important;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65) !important;
   padding: 0 !important;
-  color: #F9FAFB !important;
+  color: var(--paper) !important;
 }
 
 .geo-custom-popup .leaflet-popup-content {
@@ -1245,8 +1264,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-custom-popup .leaflet-popup-tip {
-  background: #121316 !important;
-  border: 1px solid #272930 !important;
+  background: var(--graphite) !important;
+  border: 1px solid var(--border) !important;
 }
 
 .geo-custom-popup .leaflet-popup-close-button {
@@ -1286,25 +1305,25 @@ input[type="range"]::-webkit-slider-thumb:hover {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #c0d45a;
+  color: var(--brand-limestone);
   font-weight: 600;
 }
 
 .geo-measure-badge {
   font-size: 9px;
-  font-family: 'IBM Plex Mono', monospace;
-  background: rgba(153, 170, 56, 0.15);
-  color: #c0d45a;
+  font-family: var(--font-mono), monospace;
+  background: rgba(48, 104, 64, 0.22);
+  color: var(--brand-limestone);
   padding: 1px 5px;
   border-radius: 3px;
-  border: 1px solid rgba(153, 170, 56, 0.3);
+  border: 1px solid rgba(75, 100, 69, 0.4);
 }
 
 .geo-measure-value {
   display: block;
   font-size: 17px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: #FFFFFF;
+  font-family: var(--font-mono), monospace;
+  color: var(--paper);
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 2px 0 4px;
@@ -1312,7 +1331,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .geo-measure-subtext {
   font-size: 11px;
-  color: #9CA3AF;
+  color: var(--ink-dim);
   margin-bottom: 8px;
   line-height: 1.3;
 }
@@ -1324,46 +1343,46 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .geo-measure-actions button {
   flex: 1;
-  background: #18191D;
-  border: 1px solid #272930;
-  color: #F9FAFB;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--paper);
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
   transition: all 150ms ease;
-  font-family: var(--font-sans), Inter, sans-serif;
+  font-family: 'Google Sans Text', sans-serif;
   font-weight: 500;
 }
 
 .geo-measure-actions button:hover {
-  background: #202227;
-  border-color: #383B44;
+  background: var(--panel-alt);
+  border-color: var(--border-strong);
   color: #FFFFFF;
 }
 
 .geo-measure-actions .btn-finish {
-  background: #99aa38 !important;
-  color: #FFFFFF !important;
-  border-color: #99aa38 !important;
+  background: var(--brand-green) !important;
+  color: var(--brand-limestone) !important;
+  border-color: var(--brand-foliage) !important;
   font-weight: 600 !important;
 }
 
 .geo-measure-actions .btn-finish:hover {
-  background: #889731 !important;
+  background: var(--brand-foliage) !important;
   color: #FFFFFF !important;
 }
 
 .geo-measure-actions .btn-resume {
-  border-color: #c0d45a !important;
-  color: #c0d45a !important;
+  border-color: var(--brand-foliage) !important;
+  color: var(--brand-limestone) !important;
 }
 
 .geo-measure-segment-pill {
-  background: rgba(18, 19, 22, 0.94);
-  border: 1px solid #99aa38;
-  color: #c0d45a;
-  font-family: 'IBM Plex Mono', monospace;
+  background: rgba(18, 20, 16, 0.94);
+  border: 1px solid var(--brand-green);
+  color: var(--brand-limestone);
+  font-family: var(--font-mono), monospace;
   font-size: 10px;
   font-weight: 600;
   padding: 2px 7px;
@@ -1382,10 +1401,10 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-measure-cursor-tooltip {
-  background: rgba(18, 19, 22, 0.96) !important;
-  border: 1px solid #99aa38 !important;
-  color: #F9FAFB !important;
-  font-family: 'IBM Plex Mono', monospace !important;
+  background: rgba(18, 20, 16, 0.96) !important;
+  border: 1px solid var(--brand-foliage) !important;
+  color: var(--paper) !important;
+  font-family: var(--font-mono), monospace !important;
   font-size: 11px !important;
   padding: 4px 9px !important;
   border-radius: 5px !important;
@@ -1395,14 +1414,14 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .geo-measure-cursor-tooltip::before {
-  border-right-color: #99aa38 !important;
+  border-right-color: var(--brand-foliage) !important;
 }
 
 .geo-measure-vertex-tooltip {
-  background: #121316 !important;
-  border: 1px solid #272930 !important;
-  color: #F9FAFB !important;
-  font-family: 'IBM Plex Mono', monospace !important;
+  background: var(--graphite) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--paper) !important;
+  font-family: var(--font-mono), monospace !important;
   font-size: 10px !important;
   padding: 2px 6px !important;
   border-radius: 3px !important;

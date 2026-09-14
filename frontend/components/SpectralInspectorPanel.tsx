@@ -126,18 +126,18 @@ export function SpectralInspectorPanel({
   return (
     <DraggableContainer
       defaultPosition={{ x: 20, y: 80 }}
-      className="w-[490px] max-w-[calc(100vw-32px)] bg-[#121316]/95 backdrop-blur-md border border-[#272930] shadow-2xl rounded-lg overflow-hidden text-[#F9FAFB] z-[1200] select-none"
+      className="w-[490px] max-w-[calc(100vw-32px)] bg-[#121410]/95 backdrop-blur-md border border-[#2E3429] shadow-2xl rounded-lg overflow-hidden text-[#F9FAFB] z-[1200] select-none"
     >
       {/* Header / Drag handle */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#18191D] border-b border-[#272930] cursor-move">
+      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#1A1D17] border-b border-[#2E3429] cursor-move">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-[#202227] flex items-center justify-center border border-[#383B44]">
-            <Activity className="w-3.5 h-3.5 text-[#c0d45a]" />
+          <div className="w-6 h-6 rounded bg-[#22261E] flex items-center justify-center border border-[#3D4537]">
+            <Activity className="w-3.5 h-3.5 text-[#E0DCD3]" />
           </div>
           <div>
             <div className="text-xs font-semibold tracking-wide flex items-center gap-2">
               <span>Spectral Band Inspector</span>
-              <span className="text-[9.5px] px-1.5 py-0.5 rounded bg-[#202227] text-neutral-400 mono">
+              <span className="text-[9.5px] px-1.5 py-0.5 rounded bg-[#22261E] text-neutral-400 mono">
                 Sentinel-2 SR
               </span>
             </div>
@@ -149,14 +149,14 @@ export function SpectralInspectorPanel({
             <button
               onClick={handleExportCSV}
               title="Export Spectral Curve as CSV"
-              className="p-1 hover:bg-[#202227] rounded text-neutral-400 hover:text-white transition-colors"
+              className="p-1 hover:bg-[#22261E] rounded text-neutral-400 hover:text-white transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
             </button>
           )}
           <button
             onClick={onClose}
-            className="p-1 hover:bg-[#202227] rounded text-neutral-400 hover:text-white transition-colors"
+            className="p-1 hover:bg-[#22261E] rounded text-neutral-400 hover:text-white transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -167,7 +167,7 @@ export function SpectralInspectorPanel({
       <div className="p-3.5 space-y-3">
         {loading && (
           <div className="flex flex-col items-center justify-center py-10 space-y-2">
-            <div className="w-6 h-6 border-2 border-[#99aa38] border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-[#306840] border-t-transparent rounded-full animate-spin" />
             <div className="text-xs text-neutral-400">Sampling 10-band spectral profile...</div>
           </div>
         )}
@@ -175,10 +175,10 @@ export function SpectralInspectorPanel({
         {!loading && data && (
           <>
             {/* Coordinate & Signature Classification Bar */}
-            <div className="bg-[#18191D] border border-[#272930] p-2.5 rounded flex items-center justify-between">
+            <div className="bg-[#1A1D17] border border-[#2E3429] p-2.5 rounded flex items-center justify-between">
               <div className="space-y-0.5">
                 <div className="text-[9.5px] text-neutral-400 uppercase tracking-wider font-semibold flex items-center gap-1">
-                  <Crosshair className="w-3 h-3 text-[#c0d45a]" />
+                  <Crosshair className="w-3 h-3 text-[#E0DCD3]" />
                   <span>Inspected Coordinate</span>
                 </div>
                 <div className="text-xs mono font-bold text-[#F9FAFB]">
@@ -208,15 +208,15 @@ export function SpectralInspectorPanel({
             </div>
 
             {/* Signature Description */}
-            <div className="text-[10.5px] text-neutral-300 bg-[#18191D]/60 px-2.5 py-1.5 rounded border border-[#272930] leading-relaxed">
+            <div className="text-[10.5px] text-neutral-300 bg-[#1A1D17]/60 px-2.5 py-1.5 rounded border border-[#2E3429] leading-relaxed">
               {data.profile.description}
             </div>
 
             {/* Spectral Reflectance Curve Chart */}
-            <div className="bg-[#18191D] border border-[#272930] p-2.5 rounded">
+            <div className="bg-[#1A1D17] border border-[#2E3429] p-2.5 rounded">
               <div className="flex items-center justify-between mb-1.5">
                 <div className="text-[10.5px] font-semibold text-[#F9FAFB] flex items-center gap-1.5">
-                  <Layers className="w-3 h-3 text-[#c0d45a]" />
+                  <Layers className="w-3 h-3 text-[#E0DCD3]" />
                   <span>Spectral Reflectance Curve (B2 to B12)</span>
                 </div>
                 <div className="text-[9px] text-neutral-400 mono">λ: 490nm to 2190nm</div>
@@ -228,15 +228,15 @@ export function SpectralInspectorPanel({
                     data={data.curve}
                     margin={{ top: 8, right: 12, left: -22, bottom: 4 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#272930" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2E3429" />
                     <XAxis
                       dataKey="center_nm"
-                      stroke="#383B44"
+                      stroke="#3D4537"
                       tick={{ fontSize: 9, fill: '#9CA3AF' }}
                       tickFormatter={(v) => `${v}nm`}
                     />
                     <YAxis
-                      stroke="#383B44"
+                      stroke="#3D4537"
                       domain={[0, (dataMax: number) => Math.max(0.4, Math.ceil(dataMax * 12) / 10)]}
                       tick={{ fontSize: 9, fill: '#9CA3AF' }}
                       tickFormatter={(v) => v.toFixed(2)}
@@ -246,7 +246,7 @@ export function SpectralInspectorPanel({
                         if (active && payload && payload.length) {
                           const pt: SpectralBandPoint = payload[0].payload;
                           return (
-                            <div className="bg-[#121316] border border-[#272930] p-2 rounded shadow-lg text-xs space-y-1">
+                            <div className="bg-[#121410] border border-[#2E3429] p-2 rounded shadow-lg text-xs space-y-1">
                               <div className="font-bold flex items-center gap-1.5">
                                 <span
                                   className="w-2 h-2 rounded-full"
@@ -266,22 +266,22 @@ export function SpectralInspectorPanel({
                         return null;
                       }}
                     />
-                    <ReferenceLine y={0.0} stroke="#272930" />
+                    <ReferenceLine y={0.0} stroke="#2E3429" />
                     <Line
                       type="monotone"
                       dataKey="reflectance"
-                      stroke="#99aa38"
+                      stroke="#306840"
                       strokeWidth={2.5}
                       dot={{
                         r: 3.5,
-                        fill: '#99aa38',
-                        stroke: '#121316',
+                        fill: '#306840',
+                        stroke: '#121410',
                         strokeWidth: 1.5,
                       }}
                       activeDot={{
                         r: 5.5,
                         fill: '#F9FAFB',
-                        stroke: '#c0d45a',
+                        stroke: '#E0DCD3',
                         strokeWidth: 2,
                       }}
                     />
@@ -299,7 +299,7 @@ export function SpectralInspectorPanel({
                 {indexCards.map((c) => (
                   <div
                     key={c.key}
-                    className="bg-[#18191D] border border-[#272930] p-2 rounded hover:border-[#383B44] transition-colors"
+                    className="bg-[#1A1D17] border border-[#2E3429] p-2 rounded hover:border-[#3D4537] transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-[#F9FAFB]">{c.key}</span>

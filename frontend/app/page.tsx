@@ -2161,8 +2161,8 @@ export default function Home() {
       <header className="topbar">
         <div className="flex items-center gap-2">
           <div className="brand">
-            <div className="brand-mark bg-[#99aa38]/15 border border-[#99aa38]/30 text-[#c0d45a] flex items-center justify-center rounded-lg p-1.5">
-              <Layers className="w-4 h-4 text-[#c0d45a]" />
+            <div className="brand-mark bg-[#306840]/15 border border-[#306840]/30 text-[#E0DCD3] flex items-center justify-center rounded-lg p-1.5">
+              <Layers className="w-4 h-4 text-[#E0DCD3]" />
             </div>
             <div className="brand-text">
               <div className="name font-sans text-sm font-semibold tracking-tight text-white flex items-center gap-2">
@@ -2175,18 +2175,18 @@ export default function Home() {
 
         {/* Desktop Steps Nav */}
         <div className="steps-nav hidden md:flex text-xs font-medium text-slate-400">
-          <div className={`step ${workflowStep >= 1 ? 'active text-[#c0d45a] font-semibold' : ''}`}>1. Area</div>
+          <div className={`step ${workflowStep >= 1 ? 'active text-[#E0DCD3] font-semibold' : ''}`}>1. Area</div>
           <span className="sep text-slate-600">›</span>
-          <div className={`step ${workflowStep >= 2 ? 'active text-[#c0d45a] font-semibold' : ''}`}>2. Imagery</div>
+          <div className={`step ${workflowStep >= 2 ? 'active text-[#E0DCD3] font-semibold' : ''}`}>2. Imagery</div>
           <span className="sep text-slate-600">›</span>
-          <div className={`step ${workflowStep >= 3 ? 'active text-[#c0d45a] font-semibold' : ''}`}>3. Classification</div>
+          <div className={`step ${workflowStep >= 3 ? 'active text-[#E0DCD3] font-semibold' : ''}`}>3. Classification</div>
           <span className="sep text-slate-600">›</span>
-          <div className={`step ${workflowStep >= 4 ? 'active text-[#c0d45a] font-semibold' : ''}`}>4. Analytics</div>
+          <div className={`step ${workflowStep >= 4 ? 'active text-[#E0DCD3] font-semibold' : ''}`}>4. Analytics</div>
         </div>
 
         {/* Mobile Step Badge */}
-        <div className="md:hidden flex items-center gap-1.5 text-xs text-neutral-300 bg-[#18191D] border border-[#272930] px-2.5 py-1 rounded">
-          <span className="text-[#c0d45a] font-medium">Step {workflowStep}/4</span>
+        <div className="md:hidden flex items-center gap-1.5 text-xs text-neutral-300 bg-[#1A1D17] border border-[#2E3429] px-2.5 py-1 rounded">
+          <span className="text-[#E0DCD3] font-medium">Step {workflowStep}/4</span>
           <span className="text-neutral-600">•</span>
           <span className="truncate max-w-[85px]">
             {workflowStep === 1 ? 'AOI' : workflowStep === 2 ? 'Imagery' : workflowStep === 3 ? 'Classify' : 'Analyze'}
@@ -2194,11 +2194,11 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-1 bg-[#18191D] border border-[#272930] rounded p-0.5">
+          <div className="flex items-center gap-1 bg-[#1A1D17] border border-[#2E3429] rounded p-0.5">
             <button
               type="button"
               onClick={() => setLeftRailCollapsed(!leftRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!leftRailCollapsed ? 'bg-[#202227] text-[#c0d45a] border border-[#99aa38]/40' : 'text-neutral-400 hover:text-neutral-200'}`}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!leftRailCollapsed ? 'bg-[#22261E] text-[#E0DCD3] border border-[#306840]/40' : 'text-neutral-400 hover:text-neutral-200'}`}
               title={leftRailCollapsed ? "Expand Workflow Controls" : "Collapse Workflow Controls"}
             >
               {leftRailCollapsed ? <PanelLeftOpen className="w-3.5 h-3.5" /> : <PanelLeftClose className="w-3.5 h-3.5" />}
@@ -2207,7 +2207,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
-              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!rightRailCollapsed ? 'bg-[#202227] text-[#c0d45a] border border-[#99aa38]/40' : 'text-neutral-400 hover:text-neutral-200'}`}
+              className={`px-2.5 py-1 rounded text-xs flex items-center gap-1.5 transition cursor-pointer font-medium ${!rightRailCollapsed ? 'bg-[#22261E] text-[#E0DCD3] border border-[#306840]/40' : 'text-neutral-400 hover:text-neutral-200'}`}
               title={rightRailCollapsed ? "Expand Layers & Tools" : "Collapse Layers & Tools"}
             >
               {rightRailCollapsed ? <PanelRightOpen className="w-3.5 h-3.5" /> : <PanelRightClose className="w-3.5 h-3.5" />}
@@ -2216,8 +2216,8 @@ export default function Home() {
           </div>
 
           {processingTime && (
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#18191D] border border-[#272930] text-neutral-300 text-xs">
-              <Clock className="w-3.5 h-3.5 text-[#c0d45a]" /> {processingTime}s
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#1A1D17] border border-[#2E3429] text-neutral-300 text-xs">
+              <Clock className="w-3.5 h-3.5 text-[#E0DCD3]" /> {processingTime}s
             </div>
           )}
 
@@ -2236,7 +2236,7 @@ export default function Home() {
         <aside className={`rail rail-left ${leftRailCollapsed ? 'collapsed' : ''}`} aria-label="Workflow controls">
           <div className="rail-header">
             <div className="flex items-center gap-2 text-xs font-semibold text-white">
-              <Sliders className="w-3.5 h-3.5 text-[#99aa38]" />
+              <Sliders className="w-3.5 h-3.5 text-[#306840]" />
               <span>Workflow Controls</span>
             </div>
             <button
@@ -2306,7 +2306,7 @@ export default function Home() {
                       aria-label="Search geographic location"
                     />
                     {locationLoading ? (
-                      <Loader2 className="w-3.5 h-3.5 text-[#c0d45a] animate-spin absolute right-2.5 pointer-events-none" />
+                      <Loader2 className="w-3.5 h-3.5 text-[#E0DCD3] animate-spin absolute right-2.5 pointer-events-none" />
                     ) : (
                       <Search 
                         className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 cursor-pointer hover:text-white transition"
@@ -2317,16 +2317,16 @@ export default function Home() {
 
                   {/* Autocomplete dropdown suggestions */}
                   {locationSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#18191D] border border-[#272930] rounded shadow-xl overflow-hidden text-xs">
+                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#1A1D17] border border-[#2E3429] rounded shadow-xl overflow-hidden text-xs">
                       {locationSuggestions.map((sug) => (
                         <button
                           key={sug.id}
                           type="button"
                           onClick={() => selectLocation(sug)}
-                          className="w-full text-left px-3 py-2 hover:bg-[#202227] text-neutral-200 border-b border-[#272930]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
+                          className="w-full text-left px-3 py-2 hover:bg-[#22261E] text-neutral-200 border-b border-[#2E3429]/60 last:border-0 flex items-center justify-between transition cursor-pointer"
                         >
                           <span className="truncate pr-2 font-medium">{sug.label}</span>
-                          <span className="text-[10px] mono text-[#c0d45a] shrink-0">
+                          <span className="text-[10px] mono text-[#E0DCD3] shrink-0">
                             {sug.type || 'region'}
                           </span>
                         </button>
@@ -2338,12 +2338,12 @@ export default function Home() {
 
 
                 {/* Vector File Ingestion (GeoJSON, KML, KMZ, Shapefile .zip, GPX) */}
-                <label className={`flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-[#383B44] hover:border-[#99aa38]/60 rounded bg-[#18191D]/60 hover:bg-[#18191D] text-neutral-300 hover:text-white transition cursor-pointer mt-1 ${isImportingVector ? 'opacity-60 pointer-events-none' : ''}`}>
+                <label className={`flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-[#3D4537] hover:border-[#306840]/60 rounded bg-[#1A1D17]/60 hover:bg-[#1A1D17] text-neutral-300 hover:text-white transition cursor-pointer mt-1 ${isImportingVector ? 'opacity-60 pointer-events-none' : ''}`}>
                   <div className="flex items-center gap-2">
                     {isImportingVector ? (
-                      <Loader2 className="w-3.5 h-3.5 text-[#c0d45a] animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 text-[#E0DCD3] animate-spin" />
                     ) : (
-                      <Upload className="w-3.5 h-3.5 text-[#c0d45a]" />
+                      <Upload className="w-3.5 h-3.5 text-[#E0DCD3]" />
                     )}
                     <span className="text-xs font-medium">
                       {isImportingVector ? 'Parsing Vector File...' : 'Import AOI Vector Boundary'}
@@ -2367,7 +2367,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={saveCurrentArea}
-                      className="text-[#c0d45a] hover:text-[#d3e868] hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-[#E0DCD3] hover:text-[#d3e868] hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <Save className="w-3 h-3" /> Save AOI
                     </button>
@@ -2482,11 +2482,11 @@ export default function Home() {
                         onClick={() => triggerTool('swipe')}
                         className={`w-full py-1.5 px-2 rounded text-xs cursor-pointer flex items-center justify-center gap-1.5 transition ${
                           swipeActive
-                            ? 'bg-[#99aa38] text-neutral-900 font-bold shadow-md'
-                            : 'bg-[#18191D] hover:bg-[#202227] text-[#F9FAFB] border border-[#99aa38]/50'
+                            ? 'bg-[#306840] text-[#E0DCD3] font-medium shadow-md border border-[#4B6445]'
+                            : 'bg-[#1A1D17] hover:bg-[#22261E] text-[#E0DCD3] border border-[#306840]/50'
                         }`}
                       >
-                        <Columns2 className="w-3.5 h-3.5 text-[#99aa38]" />
+                        <Columns2 className={`w-3.5 h-3.5 ${swipeActive ? 'text-[#E0DCD3]' : 'text-[#4B6445]'}`} />
                         <span>{swipeActive ? "Exit Split-Screen Curtain" : "Launch Split-Screen Curtain"}</span>
                       </button>
                     </div>
@@ -2500,14 +2500,14 @@ export default function Home() {
                     onClick={() => setShowAtmosphericConfig(!showAtmosphericConfig)}
                   >
                     <div className="flex items-center gap-1.5">
-                      <Cloud className="w-3.5 h-3.5 text-[#c0d45a]" />
+                      <Cloud className="w-3.5 h-3.5 text-[#E0DCD3]" />
                       <span>Atmospheric & Cloud Controls</span>
                     </div>
-                    <span className="mono text-[#c0d45a] text-xs font-semibold">{showAtmosphericConfig ? '−' : '+'}</span>
+                    <span className="mono text-[#E0DCD3] text-xs font-semibold">{showAtmosphericConfig ? '−' : '+'}</span>
                   </div>
 
                   {showAtmosphericConfig && (
-                    <div className="mt-2 pt-2 pb-1.5 px-2.5 bg-[#121316] border border-[#272930] rounded space-y-2.5">
+                    <div className="mt-2 pt-2 pb-1.5 px-2.5 bg-[#121410] border border-[#2E3429] rounded space-y-2.5">
                       <div>
                         <label className="field-label flex justify-between items-center">
                           <span>Cloud Mask Algorithm</span>
@@ -2538,7 +2538,7 @@ export default function Home() {
                       <div>
                         <label className="field-label flex justify-between items-center">
                           <span>Seasonal Composite Window</span>
-                          <span className="text-[10px] text-[#c0d45a] font-mono lowercase">{seasonalFilter}</span>
+                          <span className="text-[10px] text-[#E0DCD3] font-mono lowercase">{seasonalFilter}</span>
                         </label>
                         <select
                           value={seasonalFilter}
@@ -2637,7 +2637,7 @@ export default function Home() {
                             step="10"
                             value={numTrees}
                             onChange={(e) => setNumTrees(parseInt(e.target.value))}
-                            className="w-full accent-[#99aa38] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                            className="w-full accent-[#306840] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
                           />
                         </div>
 
@@ -2653,7 +2653,7 @@ export default function Home() {
                             step="25"
                             value={samplePoints}
                             onChange={(e) => setSamplePoints(parseInt(e.target.value))}
-                            className="w-full accent-[#99aa38] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                            className="w-full accent-[#306840] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
                           />
                         </div>
                       </div>
@@ -2692,10 +2692,10 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setLeftRailCollapsed(false)}
-              className="absolute left-3 top-3 z-[1001] px-3 py-1.5 bg-[#18191D]/90 hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+              className="absolute left-3 top-3 z-[1001] px-3 py-1.5 bg-[#1A1D17]/90 hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
               title="Expand Workflow Controls"
             >
-              <PanelLeftOpen className="w-3.5 h-3.5 text-[#c0d45a]" />
+              <PanelLeftOpen className="w-3.5 h-3.5 text-[#E0DCD3]" />
               <span>Workflow</span>
             </button>
           )}
@@ -2703,10 +2703,10 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setRightRailCollapsed(false)}
-              className="absolute right-3 top-3 z-[1001] px-3 py-1.5 bg-[#18191D]/90 hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+              className="absolute right-3 top-3 z-[1001] px-3 py-1.5 bg-[#1A1D17]/90 hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded-lg shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
               title="Expand Layers & Tools"
             >
-              <PanelRightOpen className="w-3.5 h-3.5 text-[#c0d45a]" />
+              <PanelRightOpen className="w-3.5 h-3.5 text-[#E0DCD3]" />
               <span>Layers</span>
             </button>
           )}
@@ -2733,7 +2733,7 @@ export default function Home() {
               <div className="k">AOI Area</div>
               <div className="v font-medium text-slate-200">
                 {aoiAreaHa ? (
-                  <span className="text-[#c0d45a] font-semibold">{aoiAreaHa.toFixed(1)} ha</span>
+                  <span className="text-[#E0DCD3] font-semibold">{aoiAreaHa.toFixed(1)} ha</span>
                 ) : (
                   <span className="text-slate-500">None selected</span>
                 )}
@@ -2749,7 +2749,7 @@ export default function Home() {
             </div>
             <div className="status-item">
               <div className="k">Active Layers</div>
-              <div className="v font-medium text-[#c0d45a]">{readyLayersCount} / {layerStack.length} ready</div>
+              <div className="v font-medium text-[#E0DCD3]">{readyLayersCount} / {layerStack.length} ready</div>
             </div>
             {aiQualityMetrics && (
               <div className="status-item">
@@ -3010,7 +3010,7 @@ export default function Home() {
 
             {/* AOI Guidance Empty State */}
             {coords.length === 0 && !dismissedInvite && !selectedLocation && !locationQuery.trim() && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#18191D]/95 backdrop-blur-md border border-[#272930] rounded-lg px-4 py-3 shadow-xl max-w-md w-[90vw] text-neutral-200">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-[#1A1D17]/95 backdrop-blur-md border border-[#2E3429] rounded-lg px-4 py-3 shadow-xl max-w-md w-[90vw] text-neutral-200">
                 <button
                   type="button"
                   onClick={() => setDismissedInvite(true)}
@@ -3019,8 +3019,8 @@ export default function Home() {
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
-                <div className="text-xs font-semibold text-[#c0d45a] flex items-center gap-1.5 mb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#99aa38]"></span>
+                <div className="text-xs font-semibold text-[#E0DCD3] flex items-center gap-1.5 mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#306840]"></span>
                   Define Area of Interest
                 </div>
                 <div className="text-xs text-neutral-300 leading-relaxed">
@@ -3030,7 +3030,7 @@ export default function Home() {
             )}
 
             {/* Unified Neatline Telemetry Footer Bar */}
-            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#18191D]/95 backdrop-blur-md border-t border-[#272930] px-3 py-1.5 flex items-center justify-between text-xs text-neutral-400 select-none">
+            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#1A1D17]/95 backdrop-blur-md border-t border-[#2E3429] px-3 py-1.5 flex items-center justify-between text-xs text-neutral-400 select-none">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-1.5">
                   <span className="text-neutral-500 font-medium">LAT</span>
@@ -3038,12 +3038,12 @@ export default function Home() {
                   <span className="text-neutral-500 font-medium ml-1">LNG</span>
                   <span className="text-neutral-200 font-mono">{mapCenter[1].toFixed(5)}°</span>
                 </div>
-                <span className="text-[#383B44]">|</span>
+                <span className="text-[#3D4537]">|</span>
                 <div className="hidden sm:flex items-center gap-1">
                   <span className="text-neutral-500">GSD:</span>
-                  <span className="text-[#c0d45a] font-mono">10m / px</span>
+                  <span className="text-[#E0DCD3] font-mono">10m / px</span>
                 </div>
-                <span className="text-[#383B44] hidden md:inline">|</span>
+                <span className="text-[#3D4537] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1">
                   <span className="text-neutral-500">Sensor:</span>
                   <span className="text-neutral-200">Sentinel-2 MSI</span>
@@ -3053,8 +3053,8 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 {aoiAreaHa ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#99aa38]"></span>
-                    <span className="text-[#c0d45a] font-medium">{aoiAreaHa.toFixed(1)} ha AOI</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#306840]"></span>
+                    <span className="text-[#E0DCD3] font-medium">{aoiAreaHa.toFixed(1)} ha AOI</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 text-slate-500">
@@ -3147,12 +3147,12 @@ export default function Home() {
             {/* Temporal period swapper (in compare mode) */}
             {compareMode && !swipeActive && (tileUrls.classified || tileUrls.trueColor) && (
               <DraggableContainer centerHorizontally defaultPosition={{ x: 0, y: 16 }} zIndex={1002}>
-                <div className="bg-[#121316]/95 backdrop-blur-md border border-[#272930] p-1 rounded shadow-2xl flex gap-1 cursor-grab active:cursor-grabbing">
+                <div className="bg-[#121410]/95 backdrop-blur-md border border-[#2E3429] p-1 rounded shadow-2xl flex gap-1 cursor-grab active:cursor-grabbing">
                   <button
                     onClick={() => setActiveTimePeriod('target')}
                     className={`px-3 py-1.5 rounded text-[11px] font-medium mono transition cursor-pointer ${
                       activeTimePeriod === 'target'
-                        ? 'bg-[#99aa38]/20 text-[#F9FAFB] border border-[#99aa38]'
+                        ? 'bg-[#306840]/20 text-[#F9FAFB] border border-[#306840]'
                         : 'text-neutral-400 hover:text-[#F9FAFB]'
                     }`}
                   >
@@ -3211,9 +3211,9 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={printReport}
-                    className="px-2.5 py-1 bg-[#18191D] hover:bg-[#202227] border border-[#272930] text-[#F9FAFB] rounded text-xs cursor-pointer flex items-center gap-1.5"
+                    className="px-2.5 py-1 bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-[#F9FAFB] rounded text-xs cursor-pointer flex items-center gap-1.5"
                   >
-                    <Printer className="w-3.5 h-3.5 text-[#c0d45a]" /> Print report
+                    <Printer className="w-3.5 h-3.5 text-[#E0DCD3]" /> Print report
                   </button>
                 </div>
               )}
@@ -3246,14 +3246,14 @@ export default function Home() {
                         {smartResultSummary.map((insight) => (
                           <div
                             key={insight.label}
-                            className="p-3 bg-[#18191D] border border-[#272930] rounded"
+                            className="p-3 bg-[#1A1D17] border border-[#2E3429] rounded"
                           >
                             <div className="flex items-center justify-between text-[10px] uppercase font-semibold text-neutral-400">
                               <span>{insight.label}</span>
                               {insight.tone === 'positive' && <CheckCircle className="w-3.5 h-3.5 text-[#10B981]" />}
                               {insight.tone === 'warning' && <AlertTriangle className="w-3.5 h-3.5 text-[#F59E0B]" />}
                               {insight.tone === 'critical' && <ShieldAlert className="w-3.5 h-3.5 text-[#F43F5E]" />}
-                              {insight.tone === 'neutral' && <Info className="w-3.5 h-3.5 text-[#c0d45a]" />}
+                              {insight.tone === 'neutral' && <Info className="w-3.5 h-3.5 text-[#E0DCD3]" />}
                             </div>
                             <p className="text-base font-bold text-[#F9FAFB] mt-1.5 mono">{insight.value}</p>
                             <p className="text-[11px] text-neutral-400 mt-1 leading-normal">{insight.detail}</p>
@@ -3264,10 +3264,10 @@ export default function Home() {
 
                     {/* Temporal Change Detection Matrix */}
                     {compareMode && referenceStatistics && (
-                      <div className="p-3.5 bg-[#18191D] border border-[#272930] rounded space-y-3">
-                        <div className="flex justify-between items-center border-b border-[#272930] pb-2">
+                      <div className="p-3.5 bg-[#1A1D17] border border-[#2E3429] rounded space-y-3">
+                        <div className="flex justify-between items-center border-b border-[#2E3429] pb-2">
                           <span className="text-xs font-semibold text-[#F9FAFB] flex items-center gap-1.5">
-                            <TrendingUp className="w-3.5 h-3.5 text-[#c0d45a]" /> Temporal Change Matrix
+                            <TrendingUp className="w-3.5 h-3.5 text-[#E0DCD3]" /> Temporal Change Matrix
                           </span>
                           <span className="text-[10px] mono text-neutral-400">
                             {startDate.slice(0, 4)} vs {compareStartDate.slice(0, 4)}
@@ -3287,7 +3287,7 @@ export default function Home() {
                             return (
                               <div
                                 key={className}
-                                className={`p-2.5 rounded border bg-[#18191D] flex items-center justify-between ${changeTone.borderClass}`}
+                                className={`p-2.5 rounded border bg-[#1A1D17] flex items-center justify-between ${changeTone.borderClass}`}
                               >
                                 <div>
                                   <span className="text-[10.5px] uppercase font-semibold text-neutral-400 block">{className}</span>
@@ -3338,7 +3338,7 @@ export default function Home() {
 
                     {/* Ecological Guidelines */}
                     {reportInsights && (
-                      <div className="p-3.5 bg-[#18191D] border border-[#272930] rounded space-y-2">
+                      <div className="p-3.5 bg-[#1A1D17] border border-[#2E3429] rounded space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold text-[#F9FAFB]">Conservation notes</span>
                           <span className="text-[10.5px] text-[#10B981] mono">{reportInsights.healthStatus}</span>
@@ -3362,13 +3362,13 @@ export default function Home() {
         <aside className={`rail rail-right ${rightRailCollapsed ? 'collapsed' : ''}`} aria-label="Layers and analysis controls">
           <div className="rail-header">
             <div className="flex items-center gap-2 text-xs font-semibold text-white">
-              <Layers className="w-3.5 h-3.5 text-[#99aa38]" />
+              <Layers className="w-3.5 h-3.5 text-[#306840]" />
               <span>Layers & Tools</span>
             </div>
             <button
               type="button"
               onClick={() => setRightRailCollapsed(true)}
-              className="p-1 rounded text-neutral-400 hover:text-neutral-200 hover:bg-[#202227] transition cursor-pointer"
+              className="p-1 rounded text-neutral-400 hover:text-neutral-200 hover:bg-[#22261E] transition cursor-pointer"
               title="Collapse layers panel"
             >
               <PanelRightClose className="w-4 h-4" />
@@ -3385,7 +3385,7 @@ export default function Home() {
               >
                 <div className="flex items-center gap-2">
                   <span>Satellite Layers</span>
-                  <span className="tag mono text-[#c0d45a] font-semibold">
+                  <span className="tag mono text-[#E0DCD3] font-semibold">
                     {readyLayersCount}/{layerStack.length}
                   </span>
                 </div>
@@ -3458,19 +3458,19 @@ export default function Home() {
                       max="100"
                       value={opacity * 100}
                       onChange={(e) => setOpacity(Number(e.target.value) / 100)}
-                      className="w-full accent-[#99aa38] h-1 bg-[#272930] rounded-lg appearance-none cursor-pointer"
+                      className="w-full accent-[#306840] h-1 bg-[#2E3429] rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
                   {/* Confidence toggle */}
                   {confidenceReady && (
-                    <div className="pt-3 border-t border-[#272930] mt-3">
+                    <div className="pt-3 border-t border-[#2E3429] mt-3">
                       <div className="flex items-center justify-between text-xs text-neutral-400">
                         <span>Confidence mask</span>
                         <button
                           type="button"
                           onClick={() => setConfidenceVisible(!confidenceVisible)}
-                          className={`text-[10px] px-2 py-0.5 rounded font-medium ${confidenceVisible ? 'bg-[#99aa38] text-white' : 'bg-[#18191D] border border-[#272930] text-neutral-400'}`}
+                          className={`text-[10px] px-2 py-0.5 rounded font-medium ${confidenceVisible ? 'bg-[#306840] text-white' : 'bg-[#1A1D17] border border-[#2E3429] text-neutral-400'}`}
                         >
                           {confidenceVisible ? 'ON' : 'OFF'}
                         </button>
@@ -3528,14 +3528,14 @@ export default function Home() {
                       onClick={() => triggerTool('spectral')}
                       className={`tool-btn ${spectralInspectorMode ? 'active' : ''}`}
                     >
-                      <Activity className="w-3.5 h-3.5 text-[#c0d45a]" /> Spectral
+                      <Activity className="w-3.5 h-3.5 text-[#E0DCD3]" /> Spectral
                     </button>
                     <button
                       type="button"
                       onClick={() => triggerTool('timeline')}
                       className={`tool-btn ${timelineMode ? 'active' : ''}`}
                     >
-                      <History className="w-3.5 h-3.5 text-[#c0d45a]" /> Timeline
+                      <History className="w-3.5 h-3.5 text-[#E0DCD3]" /> Timeline
                     </button>
                     <button
                       type="button"
@@ -3559,16 +3559,16 @@ export default function Home() {
                       type="button"
                       onClick={triggerAnalyzeTerrain}
                       disabled={loadingTerrain}
-                      className="w-full py-1.5 px-2 bg-[#18191D] hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
+                      className="w-full py-1.5 px-2 bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
                     >
                       {loadingTerrain ? (
                         <>
-                          <Loader2 className="w-3 h-3 text-[#c0d45a] animate-spin" />
+                          <Loader2 className="w-3 h-3 text-[#E0DCD3] animate-spin" />
                           <span>Analyzing DEM...</span>
                         </>
                       ) : (
                         <>
-                          <Mountain className="w-3.5 h-3.5 text-[#c0d45a]" />
+                          <Mountain className="w-3.5 h-3.5 text-[#E0DCD3]" />
                           <span>{terrainData ? "Refresh Terrain & Slope" : "Analyze Terrain & Slope"}</span>
                         </>
                       )}
@@ -3581,16 +3581,16 @@ export default function Home() {
                       type="button"
                       onClick={triggerAnalyzeSpectral}
                       disabled={loadingSpectral}
-                      className="w-full py-1.5 px-2 bg-[#18191D] hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
+                      className="w-full py-1.5 px-2 bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded-lg text-xs cursor-pointer flex items-center justify-center gap-1.5 transition"
                     >
                       {loadingSpectral ? (
                         <>
-                          <Loader2 className="w-3 h-3 text-[#c0d45a] animate-spin" />
+                          <Loader2 className="w-3 h-3 text-[#E0DCD3] animate-spin" />
                           <span>Computing Band Math...</span>
                         </>
                       ) : (
                         <>
-                          <Activity className="w-3.5 h-3.5 text-[#c0d45a]" />
+                          <Activity className="w-3.5 h-3.5 text-[#E0DCD3]" />
                           <span>{spectralData ? "Refresh Spectral Indices" : "Analyze Spectral Indices"}</span>
                         </>
                       )}
@@ -3598,11 +3598,11 @@ export default function Home() {
                   </div>
 
                   {/* Export Deliverables Section: ALWAYS VISIBLE */}
-                  <div className="pt-3.5 mt-3.5 border-t border-[#272930] space-y-2.5">
+                  <div className="pt-3.5 mt-3.5 border-t border-[#2E3429] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-semibold tracking-wide text-neutral-300 uppercase">Export & Deliverables</span>
                       {tileUrls.classified ? (
-                        <span className="text-[10px] text-[#c0d45a] font-medium px-1.5 py-0.5 rounded bg-[#99aa38]/15 border border-[#99aa38]/30">Ready</span>
+                        <span className="text-[10px] text-[#E0DCD3] font-medium px-1.5 py-0.5 rounded bg-[#306840]/15 border border-[#306840]/30">Ready</span>
                       ) : coords.length > 0 ? (
                         <span className="text-[10px] text-neutral-400 px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700">AOI Set</span>
                       ) : (
@@ -3628,10 +3628,10 @@ export default function Home() {
                           type="button"
                           onClick={triggerDownload}
                           disabled={downloading}
-                          className="px-3 py-1.5 bg-[#18191D] hover:bg-[#202227] border border-[#272930] text-neutral-200 rounded text-xs cursor-pointer flex items-center gap-1.5 transition hover:text-white"
+                          className="px-3 py-1.5 bg-[#1A1D17] hover:bg-[#22261E] border border-[#2E3429] text-neutral-200 rounded text-xs cursor-pointer flex items-center gap-1.5 transition hover:text-white"
                           title="Export selected format"
                         >
-                          <Download className="w-3.5 h-3.5 text-[#c0d45a]" />
+                          <Download className="w-3.5 h-3.5 text-[#E0DCD3]" />
                           {downloading ? '...' : 'Save'}
                         </button>
                       </div>
@@ -3669,7 +3669,7 @@ export default function Home() {
                             URL.revokeObjectURL(url);
                             setSuccessMessage("AOI Boundary GeoJSON exported!");
                           }}
-                          className="text-[11px] text-[#c0d45a] hover:underline flex items-center gap-1 cursor-pointer"
+                          className="text-[11px] text-[#E0DCD3] hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <Square className="w-3 h-3" /> Quick export AOI (GeoJSON)
                         </button>
@@ -3685,8 +3685,8 @@ export default function Home() {
                         disabled={generatingPdf || !statistics}
                         className={`w-full py-2 px-3 rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-sm ${
                           statistics
-                            ? 'bg-[#99aa38] hover:bg-[#889731] text-white'
-                            : 'bg-[#18191D] border border-[#272930] text-neutral-400 cursor-not-allowed opacity-75'
+                            ? 'bg-[#306840] hover:bg-[#4B6445] text-[#E0DCD3] border border-[#4B6445]'
+                            : 'bg-[#1A1D17] border border-[#2E3429] text-neutral-400 cursor-not-allowed opacity-75'
                         }`}
                         title={statistics ? "Download executive PDF briefing report" : "Run classification first to generate full statistics for the PDF report"}
                       >
