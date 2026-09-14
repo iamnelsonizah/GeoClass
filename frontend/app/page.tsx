@@ -4233,7 +4233,11 @@ export default function Home() {
             <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-2xl shadow-xs overflow-hidden">
               <div 
                 className="p-3.5 flex items-center justify-between cursor-pointer select-none border-b border-[#EFECE3] bg-[#FAF9F5] hover:bg-[#F4F1E8]/50 transition"
-                onClick={() => setPhase5Open(!phase5Open)}
+                onClick={() => {
+                  const next = !phase5Open;
+                  setPhase5Open(next);
+                  if (next) setExportsOpen(false);
+                }}
               >
                 <div className="flex items-center gap-2">
                   <PlusSquare className="w-4 h-4 text-[#69706A]" />
@@ -4372,7 +4376,11 @@ export default function Home() {
             <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-2xl shadow-xs overflow-hidden">
               <div 
                 className="p-3.5 flex items-center justify-between cursor-pointer select-none border-b border-[#EFECE3] bg-[#FAF9F5] hover:bg-[#F4F1E8]/50 transition"
-                onClick={() => setExportsOpen(!exportsOpen)}
+                onClick={() => {
+                  const next = !exportsOpen;
+                  setExportsOpen(next);
+                  if (next) setPhase5Open(false);
+                }}
               >
                 <div className="flex items-center gap-2">
                   <Download className="w-4 h-4 text-[#69706A]" />
@@ -4406,14 +4414,14 @@ export default function Home() {
                         </div>
 
                         <div className="space-y-1.5">
-                          <div className="flex gap-2">
+                          <div className="flex items-center gap-2">
                             <select
                               value={downloadFormat}
                               onChange={(e) => setDownloadFormat(e.target.value as any)}
-                              className="bg-[#F4F1E8] border border-[#D8D5CA] text-[#202522] rounded p-1.5 text-xs flex-1 outline-none font-medium"
+                              className="bg-[#F4F1E8] border border-[#D8D5CA] text-[#202522] rounded-lg px-2.5 py-1.5 text-xs flex-1 min-w-0 outline-none font-medium truncate focus:border-[#C96B3C]"
                             >
-                              <option value="kmz">KMZ (Google Earth 3D - Bundled)</option>
-                              <option value="kml">KML (Google Earth Placemark XML)</option>
+                              <option value="kmz">KMZ (Google Earth 3D)</option>
+                              <option value="kml">KML (Placemark XML)</option>
                               <option value="geotiff">GeoTIFF (Raster)</option>
                               <option value="png">PNG (Map Image)</option>
                               <option value="geojson">GeoJSON (Vectors)</option>
@@ -4422,11 +4430,11 @@ export default function Home() {
                               type="button"
                               onClick={triggerDownload}
                               disabled={downloading}
-                              className="px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#202522] rounded text-xs cursor-pointer flex items-center gap-1.5 transition font-medium"
+                              className="shrink-0 px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#E9E6DC] border border-[#D8D5CA] text-[#202522] rounded-lg text-xs cursor-pointer flex items-center gap-1.5 transition font-medium whitespace-nowrap shadow-2xs"
                               title="Export selected format"
                             >
                               <Download className="w-3.5 h-3.5 text-[#C96B3C]" />
-                              {downloading ? '...' : 'Save'}
+                              <span>{downloading ? 'Saving...' : 'Save'}</span>
                             </button>
                           </div>
                         </div>
