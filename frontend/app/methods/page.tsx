@@ -20,11 +20,13 @@ import {
   Flame,
   Droplets,
   Building,
-  Trees
+  Trees,
+  History,
+  TrendingDown
 } from 'lucide-react';
 
 export default function MethodsPage() {
-  const [activeTab, setActiveTab] = useState<'methods' | 'sar' | 'indices' | 'api' | 'citations'>('methods');
+  const [activeTab, setActiveTab] = useState<'methods' | 'sar' | 'indices' | 'change' | 'api' | 'citations'>('methods');
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, id: string) => {
@@ -175,8 +177,9 @@ for class_name, metrics in data["statistics"].items():
             { id: 'methods', label: '1. Pipeline Overview', icon: Cpu },
             { id: 'sar', label: '2. Sentinel-1 SAR Physics', icon: Satellite },
             { id: 'indices', label: '3. Spectral Band Math', icon: Zap },
-            { id: 'api', label: '4. Developer REST API', icon: Code2 },
-            { id: 'citations', label: '5. Academic Citations', icon: BookOpen },
+            { id: 'change', label: '4. Temporal Trend Breaks', icon: History },
+            { id: 'api', label: '5. Developer REST API', icon: Code2 },
+            { id: 'citations', label: '6. Academic Citations', icon: BookOpen },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -497,7 +500,59 @@ for class_name, metrics in data["statistics"].items():
           </section>
         )}
 
-        {/* TAB 4: DEVELOPER REST API */}
+        {/* TAB 4: TEMPORAL TREND BREAKS & LANDTRENDR */}
+        {activeTab === 'change' && (
+          <section className="space-y-8">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-2">Multi-Temporal Trajectory Segmentation & Trend Breaks</h3>
+              <p className="text-sm text-neutral-300 leading-relaxed">
+                Single-date or bitemporal satellite comparisons often confuse seasonal phenological shifts or brief agricultural harvests with permanent land degradation. GeoClass implements continuous annual trajectory segmentation based on the LandTrendr framework (Kennedy et al., 2010), tracking vegetation and built-up trends across annual Sentinel-2 median composites from 2018 to 2025.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
+                <div className="flex items-center gap-2 text-xs font-semibold text-white mb-2">
+                  <Trees className="w-4 h-4 text-emerald-400" />
+                  <span>Canopy Disturbance & Deforestation (NBR)</span>
+                </div>
+                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                  Normalized Burn Ratio (NBR) is highly sensitive to canopy moisture and structural density. A sharp drop in annual median NBR represents acute disturbance: timber clear-cutting, wildfire mortality, or infrastructure clearing.
+                </p>
+                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                  Onset: Year of Maximum Negative Deviation (Delta &gt; 0.15)
+                </div>
+              </div>
+
+              <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429]">
+                <div className="flex items-center gap-2 text-xs font-semibold text-white mb-2">
+                  <Building className="w-4 h-4 text-[#ef4444]" />
+                  <span>Urban Sprawl & Impervious Expansion (NDBI)</span>
+                </div>
+                <p className="text-xs text-neutral-300 leading-relaxed mb-3">
+                  Normalized Difference Built-Up Index (NDBI) tracks replacement of natural vegetation with asphalt, concrete, and industrial roofscapes. A sustained positive jump indicates permanent urban expansion.
+                </p>
+                <div className="p-3 rounded bg-[#121410] border border-[#2E3429] font-mono text-xs text-[#E0DCD3]">
+                  Onset: Year of Persistent Positive Built-Up Jump (Delta &gt; 0.12)
+                </div>
+              </div>
+            </div>
+
+            {/* LandTrendr Algorithm Steps */}
+            <div className="p-5 rounded-lg bg-[#1A1D17] border border-[#2E3429] space-y-3">
+              <h4 className="text-sm font-semibold text-white">LandTrendr Server-Side Earth Engine Process</h4>
+              <ol className="list-decimal list-inside text-xs text-neutral-300 space-y-2 leading-relaxed">
+                <li><strong className="text-white">Annual Cloud-Free Compositing:</strong> For every year $t$, Sentinel-2 granules are filtered during the optimal vegetative season and masked for clouds/shadows via SCL and QA60.</li>
+                <li><strong className="text-white">Baseline Anchoring:</strong> The initial year defines the undisturbed pre-event spectral baseline.</li>
+                <li><strong className="text-white">Trajectory Delta & Break Detection:</strong> Pixel-wise differences are computed across consecutive years. Pixels exceeding the user sensitivity threshold are tagged as disturbed.</li>
+                <li><strong className="text-white">Onset Year Assignment:</strong> The exact calendar year exhibiting the steepest trajectory break is recorded into the Onset Year raster band.</li>
+                <li><strong className="text-white">Post-Disturbance Regrowth Modeling:</strong> Consecutive years following the onset year are analyzed to identify vegetative recovery slopes vs permanent non-forest conversion.</li>
+              </ol>
+            </div>
+          </section>
+        )}
+
+        {/* TAB 5: DEVELOPER REST API */}
         {activeTab === 'api' && (
           <section className="space-y-8">
             <div>
@@ -548,6 +603,12 @@ for class_name, metrics in data["statistics"].items():
                     <td className="p-3 font-mono text-white">/api/v1/timeseries</td>
                     <td className="p-3">Extracts multi-year pixel trajectory history with anomaly detection.</td>
                     <td className="p-3 font-mono text-[11px]">lat, lng, start_year, end_year</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-mono font-semibold text-sky-400">POST</td>
+                    <td className="p-3 font-mono text-white">/api/v1/change-detection</td>
+                    <td className="p-3">Runs multi-temporal LandTrendr disturbance onset and trajectory segmentation.</td>
+                    <td className="p-3 font-mono text-[11px]">coords, start_year, end_year, index_name, sensitivity</td>
                   </tr>
                 </tbody>
               </table>
@@ -613,6 +674,13 @@ for class_name, metrics in data["statistics"].items():
                   title: "Dynamic World, Near real-time global 10 m land use land cover mapping.",
                   journal: "Scientific Data, 9(1), 251.",
                   doi: "https://doi.org/10.1038/s41597-022-01307-4"
+                },
+                {
+                  author: "Kennedy, R. E., Yang, Z., & Cohen, W. B.",
+                  year: "2010",
+                  title: "Detecting trends in forest disturbance and recovery using metric trajectories.",
+                  journal: "Remote Sensing of Environment, 114(12), 2897-2910.",
+                  doi: "https://doi.org/10.1016/j.rse.2010.07.008"
                 },
                 {
                   author: "Breiman, L.",

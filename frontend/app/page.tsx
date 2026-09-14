@@ -57,6 +57,7 @@ import DashboardCharts, { SpectralData } from '../components/DashboardCharts';
 import { DraggableContainer } from '../components/DraggableContainer';
 import { SpectralInspectorPanel, SpectralPixelData } from '../components/SpectralInspectorPanel';
 import { PixelTimelinePanel, PixelTimelineData } from '../components/PixelTimelinePanel';
+import { ChangeDetectionPanel, ChangeDetectionData } from '../components/ChangeDetectionPanel';
 import { parseVectorFile } from '../lib/vectorParsers';
 
 // Dynamically import the map component to avoid SSR errors with Leaflet
@@ -467,7 +468,7 @@ export default function Home() {
   const [timelineTargetYear, setTimelineTargetYear] = useState(2024);
 
   // Overlay Layer States
-  const [activeLayer, setActiveLayer] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar'>('none');
+  const [activeLayer, setActiveLayer] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude'>('none');
   const [useSarFusion, setUseSarFusion] = useState(false);
   const [opacity, setOpacity] = useState(0.82);
   const [swipeActive, setSwipeActive] = useState(false);
@@ -533,6 +534,11 @@ export default function Home() {
   const [timelineData, setTimelineData] = useState<PixelTimelineData | null>(null);
   const [loadingTimeline, setLoadingTimeline] = useState(false);
 
+  // Feature 4: Multi-Temporal Disturbance & Trend Break Engine (LandTrendr)
+  const [changeDetectionData, setChangeDetectionData] = useState<ChangeDetectionData | null>(null);
+  const [loadingChangeDetection, setLoadingChangeDetection] = useState(false);
+  const [showChangePanel, setShowChangePanel] = useState(false);
+
   // Feature 5 & 6: Atmospheric Screening & PDF Executive Briefing States
   const [cloudMaskType, setCloudMaskType] = useState<'both' | 'scl' | 'qa60' | 'none'>('both');
   const [maskShadows, setMaskShadows] = useState(true);
@@ -566,6 +572,8 @@ export default function Home() {
     mndwi?: string;
     nbr?: string;
     sar?: string;
+    changeYear?: string;
+    changeMagnitude?: string;
     baselineTrueColor?: string;
     baselineFalseColor?: string;
     baselineNdvi?: string;
@@ -1595,6 +1603,56 @@ export default function Home() {
     }
   };
 
+  // Feature 4: Handle Multi-Temporal Disturbance & Trend Break Analysis (LandTrendr)
+  const handleAnalyzeChange = async (
+    indexName: string = 'nbr',
+    sensitivity: string = 'moderate',
+    sYear: number = 2020,
+    eYear: number = 2024
+  ) => {
+    if (coords.length === 0) {
+      setErrorMessage('Please draw or select an Area of Interest first.');
+      return;
+    }
+
+    setLoadingChangeDetection(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/change/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coords,
+          start_year: sYear,
+          end_year: eYear,
+          index_name: indexName,
+          sensitivity: sensitivity
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || 'Change detection analysis failed.');
+      }
+
+      const data: ChangeDetectionData = await response.json();
+      setChangeDetectionData(data);
+      setTileUrls(prev => ({
+        ...prev,
+        changeYear: data.tile_urls?.onset_year,
+        changeMagnitude: data.tile_urls?.magnitude,
+      }));
+      setActiveLayer('change_year');
+      setSuccessMessage(
+        `Disturbance analysis completed: ${data.total_disturbed_ha} ha (${data.disturbed_percentage}%) disturbed over ${sYear}-${eYear}.`
+      );
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Disturbance analysis failed.');
+    } finally {
+      setLoadingChangeDetection(false);
+    }
+  };
+
   // Handle Vector File Upload (GeoJSON, KML, KMZ, Shapefile .zip, GPX)
   const handleVectorUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2213,6 +2271,18 @@ export default function Home() {
       label: 'SAR Radar (C-Band)',
       sub: 'Cloud-penetrating VV/VH',
       hasUrl: !!tileUrls.sar,
+    },
+    {
+      key: 'change_year' as const,
+      label: 'Disturbance Onset',
+      sub: 'LandTrendr break year',
+      hasUrl: !!tileUrls.changeYear,
+    },
+    {
+      key: 'change_magnitude' as const,
+      label: 'Disturbance Severity',
+      sub: 'Trajectory drop intensity',
+      hasUrl: !!tileUrls.changeMagnitude,
     },
   ];
 
@@ -3083,6 +3153,22 @@ export default function Home() {
 
               <button
                 type="button"
+                onClick={() => setShowChangePanel(!showChangePanel)}
+                className={`t ${showChangePanel ? 'active' : ''}`}
+                title="Disturbance & Trend Breaks (LandTrendr)"
+              >
+                <TrendingDown className="w-4 h-4 text-amber-400" />
+                <div className="tool-tip">
+                  <div className="tool-tip-title">
+                    <span>Trend Breaks</span>
+                    <span className="tool-tip-badge">LANDTRENDR</span>
+                  </div>
+                  <div className="tool-tip-desc">Multi-year trajectory segmentation to detect deforestation and urban sprawl.</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => triggerTool('swipe')}
                 className={`t ${swipeActive ? 'active' : ''}`}
                 title="Split Wipe"
@@ -3231,6 +3317,8 @@ export default function Home() {
               mndwiUrl={tileUrls.mndwi}
               nbrUrl={tileUrls.nbr}
               sarUrl={tileUrls.sar}
+              changeYearUrl={tileUrls.changeYear}
+              changeMagnitudeUrl={tileUrls.changeMagnitude}
               spectralInspectorMode={spectralInspectorMode}
               onSpectralInspectorClick={handleSpectralInspect}
               inspectedSpectralCoord={spectralPixelData?.coordinate}
@@ -3264,6 +3352,18 @@ export default function Home() {
                   setTimelineData(null);
                   setTimelineMode(false);
                 }}
+              />
+            )}
+
+            {/* Multi-Temporal Disturbance & Trend Break Panel (LandTrendr) */}
+            {(showChangePanel || changeDetectionData || loadingChangeDetection) && (
+              <ChangeDetectionPanel
+                data={changeDetectionData}
+                loading={loadingChangeDetection}
+                onClose={() => setShowChangePanel(false)}
+                onAnalyze={handleAnalyzeChange}
+                onSelectLayer={(layerKey) => setActiveLayer(layerKey)}
+                activeLayer={activeLayer}
               />
             )}
 

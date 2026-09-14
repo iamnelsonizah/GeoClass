@@ -133,6 +133,26 @@ const LAYER_INFO: Record<string, { title: string; description: string; bands?: {
       { label: 'VV/VH - Cross Ratio (dB)', color: '#3b82f6' },
     ],
   },
+  change_year: {
+    title: 'Disturbance Onset Year (LandTrendr)',
+    description: 'Multi-temporal trajectory break year detecting canopy loss and vegetation decline:',
+    bands: [
+      { label: '2020 Onset', color: '#F59E0B' },
+      { label: '2021 Onset', color: '#E49635' },
+      { label: '2022 Onset', color: '#DFC35A' },
+      { label: '2023 Onset', color: '#EA580C' },
+      { label: '2024 Onset', color: '#C4281B' },
+    ],
+  },
+  change_magnitude: {
+    title: 'Disturbance Severity Magnitude',
+    description: 'Trajectory break intensity measuring relative index drop from baseline:',
+    bands: [
+      { label: 'Moderate Loss (0.15 - 0.25)', color: '#FBBF24' },
+      { label: 'Severe Loss (0.25 - 0.40)', color: '#EF4444' },
+      { label: 'Critical Canopy Removal (> 0.40)', color: '#7F1D1D' },
+    ],
+  },
 };
 
 
@@ -152,6 +172,8 @@ interface MapComponentProps {
   mndwiUrl?: string;
   nbrUrl?: string;
   sarUrl?: string;
+  changeYearUrl?: string;
+  changeMagnitudeUrl?: string;
   baselineTrueColorUrl?: string;
   baselineFalseColorUrl?: string;
   baselineNdviUrl?: string;
@@ -159,7 +181,7 @@ interface MapComponentProps {
   compareMode?: boolean;
   activeTimePeriod?: 'target' | 'baseline';
   opacity: number;
-  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar';
+  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude';
   mapCenter: [number, number];
   mapZoom: number;
   searchLocation?: SearchLocation | null;
@@ -2241,6 +2263,8 @@ export default function MapComponent({
   mndwiUrl,
   nbrUrl,
   sarUrl,
+  changeYearUrl,
+  changeMagnitudeUrl,
   baselineTrueColorUrl,
   baselineFalseColorUrl,
   baselineNdviUrl,
@@ -2350,6 +2374,8 @@ export default function MapComponent({
     mndwiUrl ||
     nbrUrl ||
     sarUrl ||
+    changeYearUrl ||
+    changeMagnitudeUrl ||
     baselineTrueColorUrl ||
     baselineFalseColorUrl ||
     baselineNdviUrl ||
@@ -2369,6 +2395,8 @@ export default function MapComponent({
         target_ndvi: ndviUrl,
         baseline_ndvi: baselineNdviUrl,
         sar: sarUrl,
+        change_year: changeYearUrl,
+        change_magnitude: changeMagnitudeUrl,
         slope: slopeUrl,
         elevation: elevationUrl,
         hillshade: hillshadeUrl,
@@ -2381,6 +2409,8 @@ export default function MapComponent({
         false_color: falseColorUrl,
         ndvi: ndviUrl,
         sar: sarUrl,
+        change_year: changeYearUrl,
+        change_magnitude: changeMagnitudeUrl,
         classified: classifiedUrl,
         slope: slopeUrl,
         elevation: elevationUrl,
@@ -2420,6 +2450,8 @@ export default function MapComponent({
       false_color: 'False Color (NIR)',
       ndvi: 'NDVI (Canopy Vigor)',
       sar: 'Sentinel-1 SAR Radar',
+      change_year: 'Disturbance Onset Year',
+      change_magnitude: 'Disturbance Severity',
       classified: 'Classified LULC',
       target_classified: 'Target Classified LULC',
       baseline_classified: 'Baseline Classified LULC',
@@ -2448,6 +2480,14 @@ export default function MapComponent({
       right: 'target_classified',
       available: !!(layerUrls.baseline_classified && layerUrls.target_classified),
       badge: '⏳ Temporal',
+    },
+    {
+      id: 'change_vs_optical',
+      name: 'Disturbance vs Optical',
+      left: 'change_year',
+      right: compareMode ? (layerUrls.target_true_color ? 'target_true_color' : 'true_color') : 'true_color',
+      available: !!(layerUrls.change_year && (layerUrls.target_true_color || layerUrls.true_color)),
+      badge: '🔥 Disturbance Map',
     },
     {
       id: 'sat_vs_lulc',
@@ -2596,6 +2636,12 @@ export default function MapComponent({
         )}
         {!swipeActive && activeLayer === 'sar' && sarUrl && (
           <TileLayer key={sarUrl} url={sarUrl} opacity={opacity} zIndex={400} attribution="Copernicus Sentinel-1 C-Band SAR" />
+        )}
+        {!swipeActive && activeLayer === 'change_year' && changeYearUrl && (
+          <TileLayer key={changeYearUrl} url={changeYearUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine LandTrendr" />
+        )}
+        {!swipeActive && activeLayer === 'change_magnitude' && changeMagnitudeUrl && (
+          <TileLayer key={changeMagnitudeUrl} url={changeMagnitudeUrl} opacity={opacity} zIndex={400} attribution="Google Earth Engine Disturbance Magnitude" />
         )}
 
         {/* Building Footprints Vector Layer */}

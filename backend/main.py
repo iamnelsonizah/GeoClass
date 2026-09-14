@@ -40,6 +40,9 @@ from spectral_service import (
 from timeseries_service import (
     extract_pixel_timeseries
 )
+from change_service import (
+    compute_temporal_change_engine
+)
 from pdf_service import (
     generate_executive_pdf
 )
@@ -204,6 +207,13 @@ class PixelTimelineRequest(BaseModel):
     start_year: Optional[int] = Field(2021, description="Start year of analysis window")
     end_year: Optional[int] = Field(2025, description="End year of analysis window")
     interval: Optional[str] = Field("quarterly", description="Temporal cadence: 'quarterly' or 'monthly'")
+
+class ChangeDetectionRequest(BaseModel):
+    coords: List[List[float]] = Field(..., description="AOI polygon coordinates")
+    start_year: Optional[int] = Field(2020, description="Start year for baseline reference")
+    end_year: Optional[int] = Field(2024, description="End year for disturbance monitoring window")
+    index_name: Optional[str] = Field("nbr", description="Spectral index: 'nbr' (canopy disturbance), 'ndvi' (vegetation decline), 'ndbi' (urban sprawl)")
+    sensitivity: Optional[str] = Field("moderate", description="Disturbance sensitivity: 'low', 'moderate', 'high'")
 
 class PDFBriefingRequest(BaseModel):
     coords: List[List[float]] = Field(..., description="AOI polygon coordinates")
@@ -1119,6 +1129,39 @@ def api_v1_timeseries(payload: PixelTimelineRequest):
     Developer API v1 endpoint extracting multi-year pixel trajectory history with anomaly and trend detection.
     """
     return pixel_timeseries_history(payload)
+
+
+@app.post("/api/change/analyze")
+def analyze_temporal_change(payload: ChangeDetectionRequest):
+    """
+    Multi-temporal LandTrendr-style disturbance detection and trend break analysis
+    across annual Sentinel-2 composites.
+    """
+    try:
+        result = compute_temporal_change_engine(
+            aoi_coords=payload.coords,
+            start_year=payload.start_year or 2020,
+            end_year=payload.end_year or 2024,
+            index_name=payload.index_name or "nbr",
+            sensitivity=payload.sensitivity or "moderate"
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in change detection endpoint: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Change detection analysis failed: {e}"
+        )
+
+
+@app.post("/api/v1/change-detection", tags=["Developer API v1"])
+def api_v1_change_detection(payload: ChangeDetectionRequest):
+    """
+    Developer API v1 endpoint running multi-temporal LandTrendr disturbance onset and trajectory segmentation.
+    Returns annual disturbance breakdown, net canopy loss/gain, and Earth Engine map tile URLs.
+    """
+    return analyze_temporal_change(payload)
+
 
 
 
