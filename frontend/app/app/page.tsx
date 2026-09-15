@@ -1145,6 +1145,9 @@ export default function Home() {
       setTransectMode(false);
       setSpectralInspectorMode(false);
       setTimelineMode(false);
+      try {
+        localStorage.removeItem('geoclass_active_session_state');
+      } catch {}
     }
   };
 
@@ -1391,6 +1394,80 @@ export default function Home() {
   useEffect(() => {
     fetchWorkspaces();
   }, [fetchWorkspaces]);
+
+  // Global Escape key listener to close any open modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSaveModalOpen(false);
+        setIsWorkspaceLibraryOpen(false);
+        setIsStudyAreaModalOpen(false);
+        setIsSTACModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Auto-save active analysis session so page refresh never loses analysis progress
+  useEffect(() => {
+    if (coords.length > 0 || tileUrls.trueColor || tileUrls.classified) {
+      try {
+        const activeSession = {
+          coords,
+          startDate,
+          endDate,
+          cloudCover,
+          selectedSensor,
+          activeLayer,
+          tileUrls,
+          statistics,
+          totalAreaHa,
+          aoiAreaHa,
+          mapCenter,
+          mapZoom,
+          selectedLocation,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('geoclass_active_session_state', JSON.stringify(activeSession));
+      } catch (err) {
+        console.warn('Auto-save error', err);
+      }
+    }
+  }, [coords, startDate, endDate, cloudCover, selectedSensor, activeLayer, tileUrls, statistics, totalAreaHa, aoiAreaHa, mapCenter, mapZoom, selectedLocation]);
+
+  // Auto-restore active analysis session on page reload/refresh
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('geoclass_active_session_state');
+      if (saved) {
+        const session = JSON.parse(saved);
+        if (session && session.coords && session.coords.length > 0) {
+          setCoords(session.coords);
+          if (session.startDate) setStartDate(session.startDate);
+          if (session.endDate) setEndDate(session.endDate);
+          if (session.cloudCover !== undefined) setCloudCover(session.cloudCover);
+          if (session.selectedSensor) setSelectedSensor(session.selectedSensor);
+          if (session.activeLayer) setActiveLayer(session.activeLayer);
+          if (session.tileUrls) setTileUrls(session.tileUrls);
+          if (session.statistics) {
+            setStatistics(session.statistics);
+            setAnalyticsExpanded(true);
+          }
+          if (session.totalAreaHa !== undefined) setTotalAreaHa(session.totalAreaHa);
+          if (session.aoiAreaHa !== undefined) setAoiAreaHa(session.aoiAreaHa);
+          if (session.selectedLocation) setSelectedLocation(session.selectedLocation);
+          if (session.mapCenter && Array.isArray(session.mapCenter)) {
+            setMapCenter(session.mapCenter);
+            setMapZoom(session.mapZoom || 12);
+          }
+          setDismissedInvite(true);
+        }
+      }
+    } catch (err) {
+      console.warn('Auto-restore error', err);
+    }
+  }, []);
 
   // Save current workspace state to Supabase / LocalStorage
   const handleSaveWorkspace = async (customName?: string) => {
@@ -4037,200 +4114,7 @@ export default function Home() {
               onClearElevationProfile={() => setElevationProfileData(null)}
             />
 
-            {/* STAC Catalog Granules Browser Modal */}
-            <STACBrowserModal
-              isOpen={isSTACModalOpen}
-              onClose={() => setIsSTACModalOpen(false)}
-              aoiCoords={coords}
-              startDate={startDate}
-              endDate={endDate}
-              apiBase={API_BASE}
-              onApplySceneSettings={(newStart, newEnd, newSensor) => {
-                setStartDate(newStart);
-                setEndDate(newEnd);
-                setSelectedSensor(newSensor as any);
-                setSuccessMessage(`Applied STAC scene window (${newStart} to ${newEnd}) on ${newSensor === 'landsat' ? 'Landsat 8/9' : 'Sentinel-2'}.`);
-              }}
-            />
 
-            {/* Study Area Cartographic Map Generator Modal */}
-            <StudyAreaMapModal
-              isOpen={isStudyAreaModalOpen}
-              onClose={() => setIsStudyAreaModalOpen(false)}
-              aoiCoords={coords}
-              aoiAreaHa={aoiAreaHa}
-              mapCenter={mapCenter}
-              mapZoom={mapZoom}
-              startDate={startDate}
-              endDate={endDate}
-              selectedSensor={selectedSensor}
-              statistics={statistics || undefined}
-              trueColorUrl={tileUrls.trueColor}
-              classifiedUrl={tileUrls.classified}
-            />
-
-            {/* Save Workspace State Dialog */}
-            {saveModalOpen && (
-              <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-                <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="flex items-center justify-between border-b border-[#EFECE3] pb-3">
-                    <div className="flex items-center gap-2">
-                      <Save className="w-4 h-4 text-[#D9622B]" />
-                      <h3 className="text-sm font-bold text-[#1A1D23]">Save Analysis State</h3>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setSaveModalOpen(false)}
-                      className="p-1 hover:bg-[#EFECE3] rounded text-[#8A908A] hover:text-[#1A1D23] transition cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <p className="text-xs text-[#69706A] leading-relaxed">
-                    Persist your current study area polygon, classified land-use layers, date filters, sensor configurations, and statistical summary to Supabase for instant retrieval.
-                  </p>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-[#1A1D23] uppercase tracking-wider">
-                      Analysis Project Name
-                    </label>
-                    <input
-                      type="text"
-                      value={newWorkspaceName}
-                      onChange={(e) => setNewWorkspaceName(e.target.value)}
-                      placeholder={selectedLocation?.label ? selectedLocation.label.split(',')[0] : "e.g. Lagos Coastal Wetland Analysis"}
-                      className="w-full px-3 py-2 text-xs bg-white border border-[#D8D5CA] focus:border-[#D9622B] rounded-lg outline-none text-[#1A1D23] transition"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleSaveWorkspace();
-                      }}
-                      autoFocus
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EFECE3]">
-                    <button
-                      type="button"
-                      onClick={() => setSaveModalOpen(false)}
-                      className="px-3 py-1.5 text-xs text-[#69706A] hover:text-[#1A1D23] hover:bg-[#EFECE3] rounded-lg transition cursor-pointer font-medium"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSaveWorkspace()}
-                      disabled={isSavingWorkspace}
-                      className="px-4 py-1.5 text-xs bg-[#D9622B] hover:bg-[#A84A32] text-white font-medium rounded-lg transition flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
-                    >
-                      {isSavingWorkspace ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Saving...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-3.5 h-3.5" />
-                          <span>Save Analysis</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Saved Analyses & Projects Library Modal */}
-            {isWorkspaceLibraryOpen && (
-              <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-                <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                  <div className="flex items-center justify-between border-b border-[#EFECE3] px-6 py-4 bg-white/70">
-                    <div className="flex items-center gap-2.5">
-                      <Folder className="w-4 h-4 text-[#D9622B]" />
-                      <h3 className="text-sm font-bold text-[#1A1D23]">Saved Projects & Analyses</h3>
-                      <span className="text-[10px] font-mono px-2 py-0.5 bg-[#EAE8E1] text-[#454B46] rounded-full">
-                        {savedWorkspaces.length}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsWorkspaceLibraryOpen(false)}
-                      className="p-1 hover:bg-[#EFECE3] rounded text-[#8A908A] hover:text-[#1A1D23] transition cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <div className="p-6 overflow-y-auto flex-1 space-y-3">
-                    {savedWorkspaces.length === 0 ? (
-                      <div className="py-12 text-center text-[#8A908A] space-y-3">
-                        <div className="w-12 h-12 mx-auto rounded-full bg-[#EAE8E1] flex items-center justify-center text-[#69706A]">
-                          <Folder className="w-6 h-6 opacity-60" />
-                        </div>
-                        <p className="text-xs font-medium text-[#454B46]">No saved analyses found</p>
-                        <p className="text-[11px] text-[#8A908A] max-w-sm mx-auto">
-                          Draw or import an Area of Interest, configure your layers, and click <strong className="text-[#1A1D23]">Save Analysis</strong> in the top bar to store your project here.
-                        </p>
-                      </div>
-                    ) : (
-                      savedWorkspaces.map((ws) => (
-                        <div
-                          key={ws.id}
-                          className="p-3.5 bg-white border border-[#D8D5CA] hover:border-[#D9622B] rounded-lg transition group flex items-center justify-between gap-4 shadow-2xs"
-                        >
-                          <div className="space-y-1 min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-xs font-bold text-[#1A1D23] truncate">
-                                {ws.name}
-                              </h4>
-                              {ws.layer_state?.statistics && (
-                                <span className="text-[9px] font-mono px-1.5 py-0.2 bg-[#EAF3EB] text-[#3B7A46] rounded border border-[#3B7A46]/20">
-                                  Classified
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-3 text-[10px] text-[#8A908A]">
-                              <span>{ws.description || 'Geospatial Workspace'}</span>
-                              <span>•</span>
-                              <span>{ws.updated_at ? new Date(ws.updated_at).toLocaleDateString() : 'Recent'}</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => handleRestoreWorkspace(ws)}
-                              className="px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#D9622B] hover:text-white border border-[#D8D5CA] hover:border-[#D9622B] text-[#1A1D23] text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                            >
-                              <Layers className="w-3.5 h-3.5" />
-                              <span>Restore on Map</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => handleDeleteWorkspace(ws.id, e)}
-                              className="p-1.5 text-[#8A908A] hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
-                              title="Delete workspace"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="border-t border-[#EFECE3] px-6 py-3 bg-[#FAF9F5] flex items-center justify-between text-[11px] text-[#8A908A]">
-                    <span>Saved states are stored in Supabase with local redundancy.</span>
-                    <button
-                      type="button"
-                      onClick={() => setIsWorkspaceLibraryOpen(false)}
-                      className="px-3 py-1 text-xs text-[#1A1D23] font-medium hover:bg-[#EAE8E1] rounded transition cursor-pointer"
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Spectral Band Inspector Floating Drawer */}
             {(spectralPixelData || loadingPixelInspect) && (
@@ -5503,6 +5387,213 @@ export default function Home() {
         </aside>
 
       </div>
+
+      {/* STAC Catalog Granules Browser Modal */}
+      <STACBrowserModal
+        isOpen={isSTACModalOpen}
+        onClose={() => setIsSTACModalOpen(false)}
+        aoiCoords={coords}
+        startDate={startDate}
+        endDate={endDate}
+        apiBase={API_BASE}
+        onApplySceneSettings={(newStart, newEnd, newSensor) => {
+          setStartDate(newStart);
+          setEndDate(newEnd);
+          setSelectedSensor(newSensor as any);
+          setSuccessMessage(`Applied STAC scene window (${newStart} to ${newEnd}) on ${newSensor === 'landsat' ? 'Landsat 8/9' : 'Sentinel-2'}.`);
+        }}
+      />
+
+      {/* Study Area Cartographic Map Generator Modal */}
+      <StudyAreaMapModal
+        isOpen={isStudyAreaModalOpen}
+        onClose={() => setIsStudyAreaModalOpen(false)}
+        aoiCoords={coords}
+        aoiAreaHa={aoiAreaHa}
+        mapCenter={mapCenter}
+        mapZoom={mapZoom}
+        startDate={startDate}
+        endDate={endDate}
+        selectedSensor={selectedSensor}
+        statistics={statistics || undefined}
+        trueColorUrl={tileUrls.trueColor}
+        classifiedUrl={tileUrls.classified}
+      />
+
+      {/* Save Workspace State Dialog */}
+      {saveModalOpen && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSaveModalOpen(false);
+          }}
+        >
+          <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150 relative z-10">
+            <div className="flex items-center justify-between border-b border-[#EFECE3] pb-3">
+              <div className="flex items-center gap-2">
+                <Save className="w-4 h-4 text-[#D9622B]" />
+                <h3 className="text-sm font-bold text-[#1A1D23]">Save Analysis State</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSaveModalOpen(false)}
+                className="p-1 hover:bg-[#EFECE3] rounded text-[#8A908A] hover:text-[#1A1D23] transition cursor-pointer"
+                title="Close (Esc)"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#69706A] leading-relaxed">
+              Persist your current study area polygon, classified land-use layers, date filters, sensor configurations, and statistical summary to Supabase for instant retrieval.
+            </p>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-[#1A1D23] uppercase tracking-wider">
+                Analysis Project Name
+              </label>
+              <input
+                type="text"
+                value={newWorkspaceName}
+                onChange={(e) => setNewWorkspaceName(e.target.value)}
+                placeholder={selectedLocation?.label ? selectedLocation.label.split(',')[0] : "e.g. Lagos Coastal Wetland Analysis"}
+                className="w-full px-3 py-2 text-xs bg-white border border-[#D8D5CA] focus:border-[#D9622B] rounded-lg outline-none text-[#1A1D23] transition"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveWorkspace();
+                }}
+                autoFocus
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EFECE3]">
+              <button
+                type="button"
+                onClick={() => setSaveModalOpen(false)}
+                className="px-3 py-1.5 text-xs text-[#69706A] hover:text-[#1A1D23] hover:bg-[#EFECE3] rounded-lg transition cursor-pointer font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveWorkspace()}
+                disabled={isSavingWorkspace}
+                className="px-4 py-1.5 text-xs bg-[#D9622B] hover:bg-[#A84A32] text-white font-medium rounded-lg transition flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {isSavingWorkspace ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Save Analysis</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Saved Analyses & Projects Library Modal */}
+      {isWorkspaceLibraryOpen && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsWorkspaceLibraryOpen(false);
+          }}
+        >
+          <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 relative z-10">
+            <div className="flex items-center justify-between border-b border-[#EFECE3] px-6 py-4 bg-white/70">
+              <div className="flex items-center gap-2.5">
+                <Folder className="w-4 h-4 text-[#D9622B]" />
+                <h3 className="text-sm font-bold text-[#1A1D23]">Saved Projects & Analyses</h3>
+                <span className="text-[10px] font-mono px-2 py-0.5 bg-[#EAE8E1] text-[#454B46] rounded-full">
+                  {savedWorkspaces.length}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsWorkspaceLibraryOpen(false)}
+                className="p-1 hover:bg-[#EFECE3] rounded text-[#8A908A] hover:text-[#1A1D23] transition cursor-pointer"
+                title="Close (Esc)"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 space-y-3">
+              {savedWorkspaces.length === 0 ? (
+                <div className="py-12 text-center text-[#8A908A] space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-[#EAE8E1] flex items-center justify-center text-[#69706A]">
+                    <Folder className="w-6 h-6 opacity-60" />
+                  </div>
+                  <p className="text-xs font-medium text-[#454B46]">No saved analyses found</p>
+                  <p className="text-[11px] text-[#8A908A] max-w-sm mx-auto">
+                    Draw or import an Area of Interest, configure your layers, and click <strong className="text-[#1A1D23]">Save Analysis</strong> in the top bar to store your project here.
+                  </p>
+                </div>
+              ) : (
+                savedWorkspaces.map((ws) => (
+                  <div
+                    key={ws.id}
+                    className="p-3.5 bg-white border border-[#D8D5CA] hover:border-[#D9622B] rounded-lg transition group flex items-center justify-between gap-4 shadow-2xs"
+                  >
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-xs font-bold text-[#1A1D23] truncate">
+                          {ws.name}
+                        </h4>
+                        {ws.layer_state?.statistics && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.2 bg-[#EAF3EB] text-[#3B7A46] rounded border border-[#3B7A46]/20">
+                            Classified
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] text-[#8A908A]">
+                        <span>{ws.description || 'Geospatial Workspace'}</span>
+                        <span>•</span>
+                        <span>{ws.updated_at ? new Date(ws.updated_at).toLocaleDateString() : 'Recent'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleRestoreWorkspace(ws)}
+                        className="px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#D9622B] hover:text-white border border-[#D8D5CA] hover:border-[#D9622B] text-[#1A1D23] text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                      >
+                        <Layers className="w-3.5 h-3.5" />
+                        <span>Restore on Map</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteWorkspace(ws.id, e)}
+                        className="p-1.5 text-[#8A908A] hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
+                        title="Delete workspace"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="border-t border-[#EFECE3] px-6 py-3 bg-[#FAF9F5] flex items-center justify-between text-[11px] text-[#8A908A]">
+              <span>Saved states are stored in Supabase with local redundancy.</span>
+              <button
+                type="button"
+                onClick={() => setIsWorkspaceLibraryOpen(false)}
+                className="px-3 py-1 text-xs text-[#1A1D23] font-medium hover:bg-[#EAE8E1] rounded transition cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
