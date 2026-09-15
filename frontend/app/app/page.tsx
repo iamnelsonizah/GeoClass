@@ -88,6 +88,8 @@ import { SpectralInspectorPanel, SpectralPixelData } from '@/components/Spectral
 import { PixelTimelinePanel, PixelTimelineData } from '@/components/PixelTimelinePanel';
 import { ChangeDetectionPanel, ChangeDetectionData } from '@/components/ChangeDetectionPanel';
 import { STACBrowserModal } from '@/components/STACBrowserModal';
+import { StudyAreaMapModal } from '@/components/StudyAreaMapModal';
+import { generateJupyterNotebook } from '@/lib/notebookGenerator';
 import { parseVectorFile } from '@/lib/vectorParsers';
 
 // Dynamically import the map component to avoid SSR errors with Leaflet
@@ -654,8 +656,14 @@ export default function Home() {
   const [geeConnected, setGeeConnected] = useState<boolean | null>(null);
   const [loadingMapId, setLoadingMapId] = useState(false);
   const [loadingClassify, setLoadingClassify] = useState(false);
-  const [downloadFormat, setDownloadFormat] = useState<'geotiff' | 'png' | 'geojson' | 'kml' | 'kmz'>('kmz');
+  const [downloadFormat, setDownloadFormat] = useState<'geotiff' | 'png' | 'geojson' | 'kml' | 'kmz' | 'ipynb'>('kmz');
   const [downloading, setDownloading] = useState(false);
+  const [isStudyAreaModalOpen, setIsStudyAreaModalOpen] = useState(false);
+  const [savedWorkspaces, setSavedWorkspaces] = useState<any[]>([]);
+  const [isSavingWorkspace, setIsSavingWorkspace] = useState(false);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
+  const [isWorkspaceLibraryOpen, setIsWorkspaceLibraryOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
@@ -1360,6 +1368,139 @@ export default function Home() {
     setSavedAreas(prev => [customArea, ...prev]);
     setSelectedAreaId(id);
     setSuccessMessage(`${customArea.name} saved to the boundary library.`);
+  };
+
+  // Fetch Saved Workspaces from Supabase + LocalStorage
+  const fetchWorkspaces = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/workspaces?userId=${user?.id || 'guest'}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.workspaces)) {
+        setSavedWorkspaces(data.workspaces);
+        localStorage.setItem('geoclass_saved_workspaces_v1', JSON.stringify(data.workspaces));
+      } else {
+        const local = localStorage.getItem('geoclass_saved_workspaces_v1');
+        if (local) setSavedWorkspaces(JSON.parse(local));
+      }
+    } catch {
+      const local = localStorage.getItem('geoclass_saved_workspaces_v1');
+      if (local) setSavedWorkspaces(JSON.parse(local));
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchWorkspaces();
+  }, [fetchWorkspaces]);
+
+  // Save current workspace state to Supabase / LocalStorage
+  const handleSaveWorkspace = async (customName?: string) => {
+    if (coords.length === 0 && !selectedLocation) {
+      setErrorMessage("Please select or draw an Area of Interest before saving.");
+      return;
+    }
+
+    setIsSavingWorkspace(true);
+    setErrorMessage(null);
+
+    const name = (customName || newWorkspaceName).trim() || 
+      (selectedLocation?.label ? selectedLocation.label.split(',')[0] : `AOI Project (${new Date().toLocaleDateString()})`);
+
+    const payload = {
+      userId: user?.id || null,
+      name,
+      description: `${aoiAreaHa ? aoiAreaHa.toFixed(1) + ' ha' : 'AOI'} · ${startDate} to ${endDate} · ${selectedSensor}`,
+      aoi_geojson: {
+        type: 'Polygon',
+        coordinates: coords
+      },
+      layer_state: {
+        startDate,
+        endDate,
+        cloudCover,
+        selectedSensor,
+        activeLayer,
+        tileUrls,
+        statistics,
+        totalAreaHa,
+        mapCenter,
+        mapZoom,
+        aoiAreaHa,
+        selectedLocation
+      }
+    };
+
+    try {
+      const res = await fetch('/api/workspaces', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success && data.workspace) {
+        setSavedWorkspaces(prev => [data.workspace, ...prev.filter(w => w.id !== data.workspace.id)]);
+        setSuccessMessage(`Analysis state "${name}" saved to Supabase!`);
+      } else {
+        const localWs = { ...payload, id: `local-${Date.now()}`, updated_at: new Date().toISOString() };
+        setSavedWorkspaces(prev => [localWs, ...prev]);
+        setSuccessMessage(`Analysis state "${name}" saved to local cache.`);
+      }
+      setSaveModalOpen(false);
+      setNewWorkspaceName('');
+    } catch (err: any) {
+      const localWs = { ...payload, id: `local-${Date.now()}`, updated_at: new Date().toISOString() };
+      setSavedWorkspaces(prev => [localWs, ...prev]);
+      setSuccessMessage(`Analysis state "${name}" saved to local cache.`);
+      setSaveModalOpen(false);
+      setNewWorkspaceName('');
+    } finally {
+      setIsSavingWorkspace(false);
+    }
+  };
+
+  // Restore saved workspace
+  const handleRestoreWorkspace = (ws: any) => {
+    try {
+      if (ws.aoi_geojson?.coordinates && ws.aoi_geojson.coordinates.length > 0) {
+        setCoords(ws.aoi_geojson.coordinates);
+      }
+      if (ws.layer_state) {
+        const ls = ws.layer_state;
+        if (ls.startDate) setStartDate(ls.startDate);
+        if (ls.endDate) setEndDate(ls.endDate);
+        if (ls.cloudCover !== undefined) setCloudCover(ls.cloudCover);
+        if (ls.selectedSensor) setSelectedSensor(ls.selectedSensor);
+        if (ls.activeLayer) setActiveLayer(ls.activeLayer);
+        if (ls.tileUrls) setTileUrls(ls.tileUrls);
+        if (ls.statistics) {
+          setStatistics(ls.statistics);
+          setAnalyticsExpanded(true);
+        }
+        if (ls.totalAreaHa !== undefined) setTotalAreaHa(ls.totalAreaHa);
+        if (ls.aoiAreaHa !== undefined) setAoiAreaHa(ls.aoiAreaHa);
+        if (ls.selectedLocation) setSelectedLocation(ls.selectedLocation);
+        if (ls.mapCenter && Array.isArray(ls.mapCenter)) {
+          setMapCenter(ls.mapCenter);
+          setMapZoom(ls.mapZoom || 12);
+        }
+      }
+      setDismissedInvite(true);
+      setIsWorkspaceLibraryOpen(false);
+      setSuccessMessage(`Restored analysis "${ws.name}" on the map.`);
+    } catch (err: any) {
+      setErrorMessage(`Failed to restore workspace: ${err.message}`);
+    }
+  };
+
+  // Delete saved workspace
+  const handleDeleteWorkspace = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await fetch(`/api/workspaces?id=${id}`, { method: 'DELETE' });
+      setSavedWorkspaces(prev => prev.filter(w => w.id !== id));
+      setSuccessMessage("Analysis workspace removed.");
+    } catch {
+      setSavedWorkspaces(prev => prev.filter(w => w.id !== id));
+    }
   };
 
   // Handle Smart Select (SAM) Click
@@ -2116,6 +2257,37 @@ export default function Home() {
       return;
     }
 
+    if (downloadFormat === 'ipynb') {
+      try {
+        const notebookJson = generateJupyterNotebook({
+          title: selectedLocation?.label ? `Study Area: ${selectedLocation.label.split(',')[0]}` : `GeoClass Analysis ${startDate}`,
+          coords,
+          aoiAreaHa,
+          startDate,
+          endDate,
+          cloudCover,
+          selectedSensor,
+          statistics,
+          mapCenter,
+          mapZoom
+        });
+        const blob = new Blob([notebookJson], { type: 'application/x-ipynb+json' });
+        const filename = `geoclass-study-area-${startDate}-to-${endDate}.ipynb`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setSuccessMessage("Jupyter Notebook (.ipynb) exported! Open in JupyterLab, Google Colab, or VS Code.");
+      } catch (err: any) {
+        setErrorMessage(err.message || "Failed to generate Jupyter Notebook.");
+      }
+      return;
+    }
+
     setDownloading(true);
     setErrorMessage(null);
 
@@ -2700,6 +2872,44 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Study Area Map Generator */}
+          <button 
+            type="button"
+            onClick={() => setIsStudyAreaModalOpen(true)}
+            className="px-2.5 py-1 rounded border border-[#D8D5CA] bg-[#FAF9F5] hover:bg-[#F4F1E8] text-[#1A1D23] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium shadow-2xs"
+            title="Generate Publication-Ready Study Area Map"
+          >
+            <Compass className="w-3.5 h-3.5 text-[#D9622B]" />
+            <span className="hidden md:inline">Study Area Map</span>
+          </button>
+
+          {/* Save Analysis State */}
+          <button 
+            type="button"
+            onClick={() => setSaveModalOpen(true)}
+            disabled={coords.length === 0}
+            className={`px-2.5 py-1 rounded border transition cursor-pointer flex items-center gap-1.5 text-xs font-medium ${
+              coords.length > 0 
+                ? 'bg-[#FAF9F5] text-[#1A1D23] border-[#D8D5CA] hover:bg-[#F4F1E8] shadow-2xs' 
+                : 'text-[#8A908A] border-[#E5E5E0] cursor-not-allowed opacity-60'
+            }`}
+            title={coords.length > 0 ? "Save Current Analysis State to Supabase" : "Select an AOI to save analysis"}
+          >
+            <Save className="w-3.5 h-3.5 text-[#D9622B]" />
+            <span className="hidden lg:inline">Save Analysis</span>
+          </button>
+
+          {/* Saved Analyses Library */}
+          <button 
+            type="button"
+            onClick={() => setIsWorkspaceLibraryOpen(true)}
+            className="px-2.5 py-1 rounded border border-[#D8D5CA] bg-transparent text-[#69706A] hover:text-[#1A1D23] hover:bg-[#F4F1E8] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium"
+            title="Open Saved Analyses Library"
+          >
+            <Folder className="w-3.5 h-3.5 text-[#69706A]" />
+            <span className="hidden xl:inline">Saved ({savedWorkspaces.length})</span>
+          </button>
+
           <button 
             type="button"
             onClick={() => setAnalyticsExpanded(!analyticsExpanded)}
@@ -2866,6 +3076,22 @@ export default function Home() {
                   className="sr-only"
                 />
               </label>
+
+              {/* Saved Analyses & Projects Quick Launcher */}
+              <button
+                type="button"
+                onClick={() => setIsWorkspaceLibraryOpen(true)}
+                className="w-full py-1.5 px-3 border border-[#D8D5CA] hover:border-[#D9622B] rounded-lg bg-[#FAF9F5] hover:bg-[#F4F1E8] text-[#454B46] hover:text-[#1A1D23] transition flex items-center justify-between text-xs font-medium cursor-pointer"
+                title="Open Saved Workspace Library"
+              >
+                <div className="flex items-center gap-2">
+                  <Folder className="w-3.5 h-3.5 text-[#D9622B]" />
+                  <span>Saved Projects & Analyses</span>
+                </div>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 bg-[#EAE8E1] text-[#454B46] rounded-full">
+                  {savedWorkspaces.length}
+                </span>
+              </button>
             </div>
 
             {/* Section 2: Satellite Imagery */}
@@ -2926,25 +3152,23 @@ export default function Home() {
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[10.5px] font-medium text-[#69706A] mb-1">Start date</label>
-                          <div className="flex items-center gap-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2.5 py-1.5 text-xs text-[#1A1D23] shadow-2xs">
-                            <Calendar className="w-3.5 h-3.5 text-[#8A908A] flex-shrink-0" />
+                          <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2 py-1.5 text-xs text-[#1A1D23] shadow-2xs focus-within:border-[#D9622B] transition-colors">
                             <input
                               type="date"
                               value={startDate}
                               onChange={(e) => updateTargetStartDate(e.target.value)}
-                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#1A1D23]"
+                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#1A1D23] cursor-pointer"
                             />
                           </div>
                         </div>
                         <div>
                           <label className="block text-[10.5px] font-medium text-[#69706A] mb-1">End date</label>
-                          <div className="flex items-center gap-1.5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2.5 py-1.5 text-xs text-[#1A1D23] shadow-2xs">
-                            <Calendar className="w-3.5 h-3.5 text-[#8A908A] flex-shrink-0" />
+                          <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-lg px-2 py-1.5 text-xs text-[#1A1D23] shadow-2xs focus-within:border-[#D9622B] transition-colors">
                             <input
                               type="date"
                               value={endDate}
                               onChange={(e) => setEndDate(e.target.value)}
-                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#1A1D23]"
+                              className="bg-transparent text-xs w-full focus:outline-none font-mono text-[#1A1D23] cursor-pointer"
                             />
                           </div>
                         </div>
@@ -3828,6 +4052,185 @@ export default function Home() {
                 setSuccessMessage(`Applied STAC scene window (${newStart} to ${newEnd}) on ${newSensor === 'landsat' ? 'Landsat 8/9' : 'Sentinel-2'}.`);
               }}
             />
+
+            {/* Study Area Cartographic Map Generator Modal */}
+            <StudyAreaMapModal
+              isOpen={isStudyAreaModalOpen}
+              onClose={() => setIsStudyAreaModalOpen(false)}
+              aoiCoords={coords}
+              aoiAreaHa={aoiAreaHa}
+              mapCenter={mapCenter}
+              mapZoom={mapZoom}
+              startDate={startDate}
+              endDate={endDate}
+              selectedSensor={selectedSensor}
+              statistics={statistics || undefined}
+              trueColorUrl={tileUrls.trueColor}
+              classifiedUrl={tileUrls.classified}
+            />
+
+            {/* Save Workspace State Dialog */}
+            {saveModalOpen && (
+              <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+                <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="flex items-center justify-between border-b border-[#EFECE3] pb-3">
+                    <div className="flex items-center gap-2">
+                      <Save className="w-4 h-4 text-[#D9622B]" />
+                      <h3 className="text-sm font-bold text-[#1A1D23]">Save Analysis State</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSaveModalOpen(false)}
+                      className="p-1 hover:bg-[#EFECE3] rounded text-[#8A908A] hover:text-[#1A1D23] transition cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-[#69706A] leading-relaxed">
+                    Persist your current study area polygon, classified land-use layers, date filters, sensor configurations, and statistical summary to Supabase for instant retrieval.
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-[#1A1D23] uppercase tracking-wider">
+                      Analysis Project Name
+                    </label>
+                    <input
+                      type="text"
+                      value={newWorkspaceName}
+                      onChange={(e) => setNewWorkspaceName(e.target.value)}
+                      placeholder={selectedLocation?.label ? selectedLocation.label.split(',')[0] : "e.g. Lagos Coastal Wetland Analysis"}
+                      className="w-full px-3 py-2 text-xs bg-white border border-[#D8D5CA] focus:border-[#D9622B] rounded-lg outline-none text-[#1A1D23] transition"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveWorkspace();
+                      }}
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EFECE3]">
+                    <button
+                      type="button"
+                      onClick={() => setSaveModalOpen(false)}
+                      className="px-3 py-1.5 text-xs text-[#69706A] hover:text-[#1A1D23] hover:bg-[#EFECE3] rounded-lg transition cursor-pointer font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveWorkspace()}
+                      disabled={isSavingWorkspace}
+                      className="px-4 py-1.5 text-xs bg-[#D9622B] hover:bg-[#A84A32] text-white font-medium rounded-lg transition flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                    >
+                      {isSavingWorkspace ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3.5 h-3.5" />
+                          <span>Save Analysis</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Saved Analyses & Projects Library Modal */}
+            {isWorkspaceLibraryOpen && (
+              <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+                <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                  <div className="flex items-center justify-between border-b border-[#EFECE3] px-6 py-4 bg-white/70">
+                    <div className="flex items-center gap-2.5">
+                      <Folder className="w-4 h-4 text-[#D9622B]" />
+                      <h3 className="text-sm font-bold text-[#1A1D23]">Saved Projects & Analyses</h3>
+                      <span className="text-[10px] font-mono px-2 py-0.5 bg-[#EAE8E1] text-[#454B46] rounded-full">
+                        {savedWorkspaces.length}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsWorkspaceLibraryOpen(false)}
+                      className="p-1 hover:bg-[#EFECE3] rounded text-[#8A908A] hover:text-[#1A1D23] transition cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="p-6 overflow-y-auto flex-1 space-y-3">
+                    {savedWorkspaces.length === 0 ? (
+                      <div className="py-12 text-center text-[#8A908A] space-y-3">
+                        <div className="w-12 h-12 mx-auto rounded-full bg-[#EAE8E1] flex items-center justify-center text-[#69706A]">
+                          <Folder className="w-6 h-6 opacity-60" />
+                        </div>
+                        <p className="text-xs font-medium text-[#454B46]">No saved analyses found</p>
+                        <p className="text-[11px] text-[#8A908A] max-w-sm mx-auto">
+                          Draw or import an Area of Interest, configure your layers, and click <strong className="text-[#1A1D23]">Save Analysis</strong> in the top bar to store your project here.
+                        </p>
+                      </div>
+                    ) : (
+                      savedWorkspaces.map((ws) => (
+                        <div
+                          key={ws.id}
+                          className="p-3.5 bg-white border border-[#D8D5CA] hover:border-[#D9622B] rounded-lg transition group flex items-center justify-between gap-4 shadow-2xs"
+                        >
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-xs font-bold text-[#1A1D23] truncate">
+                                {ws.name}
+                              </h4>
+                              {ws.layer_state?.statistics && (
+                                <span className="text-[9px] font-mono px-1.5 py-0.2 bg-[#EAF3EB] text-[#3B7A46] rounded border border-[#3B7A46]/20">
+                                  Classified
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-[10px] text-[#8A908A]">
+                              <span>{ws.description || 'Geospatial Workspace'}</span>
+                              <span>•</span>
+                              <span>{ws.updated_at ? new Date(ws.updated_at).toLocaleDateString() : 'Recent'}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleRestoreWorkspace(ws)}
+                              className="px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#D9622B] hover:text-white border border-[#D8D5CA] hover:border-[#D9622B] text-[#1A1D23] text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                            >
+                              <Layers className="w-3.5 h-3.5" />
+                              <span>Restore on Map</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteWorkspace(ws.id, e)}
+                              className="p-1.5 text-[#8A908A] hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
+                              title="Delete workspace"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="border-t border-[#EFECE3] px-6 py-3 bg-[#FAF9F5] flex items-center justify-between text-[11px] text-[#8A908A]">
+                    <span>Saved states are stored in Supabase with local redundancy.</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsWorkspaceLibraryOpen(false)}
+                      className="px-3 py-1 text-xs text-[#1A1D23] font-medium hover:bg-[#EAE8E1] rounded transition cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Spectral Band Inspector Floating Drawer */}
             {(spectralPixelData || loadingPixelInspect) && (
@@ -5028,6 +5431,7 @@ export default function Home() {
                             >
                               <option value="kmz">KMZ (Google Earth 3D)</option>
                               <option value="kml">KML (Placemark XML)</option>
+                              <option value="ipynb">Jupyter Notebook (.ipynb - Folium)</option>
                               <option value="geotiff">GeoTIFF (Raster)</option>
                               <option value="png">PNG (Map Image)</option>
                               <option value="geojson">GeoJSON (Vectors)</option>
@@ -5069,6 +5473,24 @@ export default function Home() {
                                 <span>{statistics ? "Generate Executive Briefing PDF" : "Executive Briefing PDF (Requires Analysis)"}</span>
                               </>
                             )}
+                          </button>
+                        </div>
+
+                        {/* Cartographic Study Area Map Modal Trigger */}
+                        <div className="pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setIsStudyAreaModalOpen(true)}
+                            disabled={coords.length === 0}
+                            className={`w-full py-2 px-3 rounded-lg text-xs font-medium cursor-pointer flex items-center justify-center gap-2 transition shadow-xs ${
+                              coords.length > 0
+                                ? 'bg-[#FAF9F5] hover:bg-[#F4F1E8] text-[#1A1D23] border border-[#D8D5CA]'
+                                : 'bg-[#F4F1E8] border border-[#D8D5CA] text-[#8A908A] cursor-not-allowed opacity-75'
+                            }`}
+                            title={coords.length > 0 ? "Generate publication-grade study area map layout" : "Define an AOI first to compose a study area map"}
+                          >
+                            <Compass className="w-3.5 h-3.5 text-[#D9622B]" />
+                            <span>Generate Cartographic Study Area Map</span>
                           </button>
                         </div>
                       </div>

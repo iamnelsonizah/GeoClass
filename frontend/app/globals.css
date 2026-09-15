@@ -1615,5 +1615,24 @@ input[type="range"]::-webkit-slider-thumb:hover {
   z-index: 1000 !important;
 }
 
+/* Clean styling for date inputs to avoid webkit icon overflow */
+input[type="date"] {
+  min-width: 0;
+  -webkit-appearance: none;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.65;
+  padding: 0;
+  margin: 0;
+  margin-left: 2px;
+  filter: invert(0.25);
+  transition: opacity 0.15s ease;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+
 
 
