@@ -2762,7 +2762,7 @@ export default function MapComponent({
         <MapController center={mapCenter} zoom={mapZoom} />
 
         {/* Base Layers */}
-        <LayersControl position="topright">
+        <LayersControl position="bottomleft">
           <LayersControl.BaseLayer checked name="Satellite Imagery">
             <LayerGroup>
               <TileLayer

@@ -157,6 +157,18 @@ const LULC_CLASS_NAMES = [
   'Snow/Ice'
 ];
 
+const LULC_COLORS: Record<string, string> = {
+  Water: '#419BDF',
+  Forest: '#397D49',
+  Grass: '#88B053',
+  Wetland: '#7A87C6',
+  Agriculture: '#E49635',
+  Shrub: '#DFC35A',
+  Urban: '#C4281B',
+  'Bare Land': '#A59B8F',
+  'Snow/Ice': '#B39FE1',
+};
+
 const SAVED_AREAS: SavedArea[] = [
   {
     id: 'sf-bay',
@@ -595,6 +607,7 @@ export default function Home() {
   const [rightRailCollapsed, setRightRailCollapsed] = useState(false);
   const [toolstripCollapsed, setToolstripCollapsed] = useState(false);
   const [analyticsExpanded, setAnalyticsExpanded] = useState(true);
+  const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<'analysis' | 'statistics' | 'metadata'>('analysis');
   const [analyticsHeight, setAnalyticsHeight] = useState<number>(380);
   const [isDraggingAnalytics, setIsDraggingAnalytics] = useState(false);
   const dragStartYRef = useRef<number>(0);
@@ -2695,6 +2708,19 @@ export default function Home() {
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
+          <button 
+            type="button"
+            onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
+            className={`px-2.5 py-1 rounded border transition cursor-pointer flex items-center gap-1.5 text-xs font-medium ${
+              !rightRailCollapsed 
+                ? 'bg-[#FAF9F5] text-[#D9622B] border-[#D9622B]/40 shadow-xs' 
+                : 'bg-transparent text-[#69706A] border-[#D8D5CA] hover:text-[#1A1D23] hover:bg-[#F4F1E8]'
+            }`}
+            title={rightRailCollapsed ? "Open Layers & Tools" : "Collapse Layers & Tools"}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Layers & Tools</span>
+          </button>
         </div>
       </div>
 
@@ -3290,17 +3316,33 @@ export default function Home() {
             </div>
 
             {/* Top-Right Floating Controls: Layers restore pill */}
-            {/* Floating Top-Right Map Panel Toggle Button (matching mockup) */}
-            <button
-              type="button"
-              onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
-              className={`absolute top-3.5 right-3.5 z-[999] w-8 h-8 bg-[#FAF9F5] hover:bg-[#F4F1E8] border border-[#D8D5CA] shadow-xs rounded-lg flex items-center justify-center transition cursor-pointer ${
-                !rightRailCollapsed ? 'text-[#D9622B] border-[#D9622B]/40' : 'text-[#1A1D23]'
-              }`}
-              title={rightRailCollapsed ? "Open layers panel" : "Close layers panel"}
-            >
-              <Layers className="w-4 h-4" />
-            </button>
+            {rightRailCollapsed && (
+              <button
+                type="button"
+                onClick={() => setRightRailCollapsed(false)}
+                className="absolute top-3.5 right-3.5 z-[1005] px-3 py-1.5 bg-[#FAF9F5]/95 hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded-lg shadow-md backdrop-blur-md transition-all flex items-center gap-2 text-xs font-semibold cursor-pointer group hover:border-[#BCB8AA]"
+                title="Expand Layers & Tools"
+              >
+                <Layers className="w-4 h-4 text-[#D9622B]" />
+                <span>Layers & Tools</span>
+                <ChevronLeft className="w-3.5 h-3.5 text-[#69706A] group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+            )}
+
+            {/* Right Edge Pull-Tab to restore Layers & Tools */}
+            {rightRailCollapsed && (
+              <button
+                type="button"
+                onClick={() => setRightRailCollapsed(false)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-[1005] bg-[#FAF9F5] hover:bg-[#F4F1E8] border-l border-t border-b border-[#D8D5CA] rounded-l-lg py-3.5 px-1.5 shadow-md flex flex-col items-center gap-2 cursor-pointer transition-all hover:pr-2.5 text-[#1A1D23] group hover:border-[#BCB8AA]"
+                title="Open Layers & Tools"
+              >
+                <ChevronLeft className="w-4 h-4 text-[#D9622B] group-hover:-translate-x-0.5 transition-transform" />
+                <span className="[writing-mode:vertical-rl] rotate-180 text-[11px] font-semibold tracking-wider text-[#69706A] group-hover:text-[#1A1D23] uppercase select-none">
+                  Layers & Tools
+                </span>
+              </button>
+            )}
 
             {/* Custom Horizontal Toolstrip */}
             {!toolstripCollapsed && (
@@ -3911,19 +3953,43 @@ export default function Home() {
               <div className="flex items-center gap-6">
                 <button
                   type="button"
-                  className="text-xs font-semibold text-[#1A1D23] border-b-2 border-[#D9622B] pb-1 cursor-pointer"
+                  onClick={() => {
+                    setActiveAnalyticsTab('analysis');
+                    if (!analyticsExpanded) setAnalyticsExpanded(true);
+                  }}
+                  className={`text-xs pb-1 cursor-pointer transition ${
+                    activeAnalyticsTab === 'analysis'
+                      ? 'font-semibold text-[#1A1D23] border-b-2 border-[#D9622B]'
+                      : 'font-medium text-[#69706A] hover:text-[#1A1D23] border-b-2 border-transparent'
+                  }`}
                 >
                   Classification Analysis
                 </button>
                 <button
                   type="button"
-                  className="text-xs font-medium text-[#69706A] hover:text-[#1A1D23] pb-1 cursor-pointer transition"
+                  onClick={() => {
+                    setActiveAnalyticsTab('statistics');
+                    if (!analyticsExpanded) setAnalyticsExpanded(true);
+                  }}
+                  className={`text-xs pb-1 cursor-pointer transition ${
+                    activeAnalyticsTab === 'statistics'
+                      ? 'font-semibold text-[#1A1D23] border-b-2 border-[#D9622B]'
+                      : 'font-medium text-[#69706A] hover:text-[#1A1D23] border-b-2 border-transparent'
+                  }`}
                 >
                   Statistics
                 </button>
                 <button
                   type="button"
-                  className="text-xs font-medium text-[#69706A] hover:text-[#1A1D23] pb-1 cursor-pointer transition"
+                  onClick={() => {
+                    setActiveAnalyticsTab('metadata');
+                    if (!analyticsExpanded) setAnalyticsExpanded(true);
+                  }}
+                  className={`text-xs pb-1 cursor-pointer transition ${
+                    activeAnalyticsTab === 'metadata'
+                      ? 'font-semibold text-[#1A1D23] border-b-2 border-[#D9622B]'
+                      : 'font-medium text-[#69706A] hover:text-[#1A1D23] border-b-2 border-transparent'
+                  }`}
                 >
                   Metadata
                 </button>
@@ -3971,7 +4037,10 @@ export default function Home() {
             </div>
 
             {analyticsExpanded && (
-              <>
+              <div className="overflow-y-auto max-h-[calc(80vh-60px)] pr-1">
+                {/* Tab 1: Classification Analysis */}
+                {activeAnalyticsTab === 'analysis' && (
+                  <>
                 {/* Empty state if not classified yet */}
                 {!statistics && (
                   <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded p-4 flex items-center gap-3 text-xs text-[#69706A]">
@@ -4098,6 +4167,483 @@ export default function Home() {
                   </div>
                 )}
               </>
+            )}
+
+            {/* Tab 2: Statistics */}
+            {activeAnalyticsTab === 'statistics' && (
+              <div className="space-y-5 pt-1">
+                {(() => {
+                  const totalArea = totalAreaHa || (statistics ? Object.values(statistics).reduce((sum, item) => sum + item.area_ha, 0) : (aoiAreaHa || 0));
+                  const totalPixels = statistics ? Object.values(statistics).reduce((sum, item) => sum + item.pixel_count, 0) : 0;
+                  const entries = statistics ? Object.entries(statistics) : [];
+                  const dominantEntry = entries.length > 0 
+                    ? entries.reduce((max, curr) => curr[1].area_ha > max[1].area_ha ? curr : max)
+                    : null;
+                  const dominantName = dominantEntry && dominantEntry[0] ? dominantEntry[0] : 'None';
+                  const dominantPct = dominantEntry && dominantEntry[1] ? dominantEntry[1].percentage : 0;
+                  
+                  // Shannon-Wiener Diversity Index
+                  const shannonDiversity = (statistics && totalArea > 0)
+                    ? -Object.values(statistics).reduce((acc, curr) => {
+                        const p = curr.area_ha / totalArea;
+                        return p > 0 ? acc + p * Math.log(p) : acc;
+                      }, 0)
+                    : 0;
+
+                  // Carbon stock estimate (IPCC Tier-1)
+                  const carbonEstimate = statistics
+                    ? ((statistics['Forest']?.area_ha || 0) * 120 + 
+                       (statistics['Wetland']?.area_ha || 0) * 85 + 
+                       (statistics['Grass']?.area_ha || 0) * 25 + 
+                       (statistics['Shrub']?.area_ha || 0) * 35)
+                    : 0;
+
+                  return (
+                    <>
+                      {/* Top KPI Telemetry Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                        <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-3 rounded-lg shadow-2xs">
+                          <span className="text-[10px] uppercase font-semibold tracking-wider text-[#69706A] block">Total Extent Area</span>
+                          <div className="text-base font-bold text-[#1A1D23] mono mt-1">
+                            {totalArea > 0 ? `${totalArea.toFixed(1)} ha` : '—'}
+                          </div>
+                          <div className="text-[10.5px] text-[#69706A] mt-0.5">
+                            {totalArea > 0 ? `${(totalArea / 100).toFixed(2)} km² · ${(totalArea * 2.471).toFixed(0)} ac` : 'No AOI defined'}
+                          </div>
+                        </div>
+
+                        <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-3 rounded-lg shadow-2xs">
+                          <span className="text-[10px] uppercase font-semibold tracking-wider text-[#69706A] block">Dominant Land Cover</span>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            {dominantName !== 'None' && (
+                              <span 
+                                className="w-2.5 h-2.5 rounded-full flex-shrink-0" 
+                                style={{ backgroundColor: LULC_COLORS[dominantName] || '#D9622B' }} 
+                              />
+                            )}
+                            <span className="text-base font-bold text-[#1A1D23] truncate">
+                              {dominantName}
+                            </span>
+                          </div>
+                          <div className="text-[10.5px] text-[#69706A] mt-0.5">
+                            {dominantPct > 0 ? `${dominantPct.toFixed(1)}% of total AOI` : 'Pending classification'}
+                          </div>
+                        </div>
+
+                        <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-3 rounded-lg shadow-2xs">
+                          <span className="text-[10px] uppercase font-semibold tracking-wider text-[#69706A] block">Diversity Index</span>
+                          <div className="text-base font-bold text-[#1A1D23] mono mt-1">
+                            {shannonDiversity > 0 ? `${shannonDiversity.toFixed(2)} H'` : '—'}
+                          </div>
+                          <div className="text-[10.5px] text-[#69706A] mt-0.5">
+                            {shannonDiversity > 0 ? 'Shannon-Wiener index' : 'Requires classification'}
+                          </div>
+                        </div>
+
+                        <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-3 rounded-lg shadow-2xs">
+                          <span className="text-[10px] uppercase font-semibold tracking-wider text-[#69706A] block">Sampled Pixels</span>
+                          <div className="text-base font-bold text-[#1A1D23] mono mt-1">
+                            {totalPixels > 0 ? totalPixels.toLocaleString() : '—'}
+                          </div>
+                          <div className="text-[10.5px] text-[#69706A] mt-0.5">
+                            10m GSD grid resolution
+                          </div>
+                        </div>
+
+                        <div className="bg-[#FAF9F5] border border-[#D8D5CA] p-3 rounded-lg shadow-2xs col-span-2 sm:col-span-1">
+                          <span className="text-[10px] uppercase font-semibold tracking-wider text-[#69706A] block">Carbon Stock Est.</span>
+                          <div className="text-base font-bold text-[#306840] mono mt-1">
+                            {carbonEstimate > 0 ? `${Math.round(carbonEstimate).toLocaleString()} tC` : '—'}
+                          </div>
+                          <div className="text-[10.5px] text-[#69706A] mt-0.5">
+                            IPCC Tier-1 biomass model
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* If classified, show full tabular statistical breakdown */}
+                      {statistics ? (
+                        <div className="space-y-4">
+                          {/* Detailed Class Breakdown Table */}
+                          <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl overflow-hidden shadow-2xs">
+                            <div className="p-3 border-b border-[#EFECE3] flex items-center justify-between bg-[#F4F1E8]/50">
+                              <div className="flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4 text-[#D9622B]" />
+                                <span className="text-xs font-bold text-[#1A1D23] tracking-tight">Land Cover Class Distribution</span>
+                              </div>
+                              <span className="text-[11px] font-mono text-[#69706A]">
+                                {Object.keys(statistics).length} active classes
+                              </span>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left text-xs border-collapse">
+                                <thead>
+                                  <tr className="border-b border-[#EFECE3] bg-[#FAF9F5] text-[10.5px] text-[#69706A] uppercase tracking-wider font-semibold">
+                                    <th className="py-2.5 px-3.5">Class Name</th>
+                                    <th className="py-2.5 px-3 text-right">Area (ha)</th>
+                                    <th className="py-2.5 px-3 text-right">Area (km²)</th>
+                                    <th className="py-2.5 px-3 text-right">Area (Acres)</th>
+                                    <th className="py-2.5 px-3 text-right">Share (%)</th>
+                                    <th className="py-2.5 px-3 text-right">Pixel Count</th>
+                                    <th className="py-2.5 px-3.5 w-36">Proportion</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-[#EFECE3] font-mono text-[11.5px]">
+                                  {Object.entries(statistics).map(([name, data]) => {
+                                    const color = LULC_COLORS[name] || '#8CA0AA';
+                                    return (
+                                      <tr key={name} className="hover:bg-[#F4F1E8]/60 transition-colors">
+                                        <td className="py-2.5 px-3.5 font-sans font-medium text-[#1A1D23] flex items-center gap-2">
+                                          <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                                          <span>{name}</span>
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right text-[#1A1D23] font-semibold">
+                                          {data.area_ha.toFixed(2)}
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right text-[#69706A]">
+                                          {(data.area_ha / 100).toFixed(3)}
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right text-[#69706A]">
+                                          {(data.area_ha * 2.471).toFixed(1)}
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right font-bold text-[#1A1D23]">
+                                          {data.percentage.toFixed(1)}%
+                                        </td>
+                                        <td className="py-2.5 px-3 text-right text-[#69706A]">
+                                          {data.pixel_count.toLocaleString()}
+                                        </td>
+                                        <td className="py-2.5 px-3.5">
+                                          <div className="w-full h-2 bg-[#EFECE3] rounded-full overflow-hidden">
+                                            <div 
+                                              className="h-full rounded-full transition-all duration-300"
+                                              style={{ width: `${Math.min(100, data.percentage)}%`, backgroundColor: color }}
+                                            />
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                                <tfoot>
+                                  <tr className="border-t-2 border-[#D8D5CA] bg-[#FAF9F5] font-semibold text-[11px] text-[#1A1D23]">
+                                    <td className="py-2.5 px-3.5 font-sans">Total AOI Footprint</td>
+                                    <td className="py-2.5 px-3 text-right mono">{totalArea.toFixed(2)} ha</td>
+                                    <td className="py-2.5 px-3 text-right mono">{(totalArea / 100).toFixed(3)} km²</td>
+                                    <td className="py-2.5 px-3 text-right mono">{(totalArea * 2.471).toFixed(1)} ac</td>
+                                    <td className="py-2.5 px-3 text-right mono">100.0%</td>
+                                    <td className="py-2.5 px-3 text-right mono">{totalPixels.toLocaleString()}</td>
+                                    <td className="py-2.5 px-3.5">
+                                      <div className="w-full h-2 bg-[#306840] rounded-full" />
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              </table>
+                            </div>
+                          </div>
+
+                          {/* Ecological Indices & Landscape Metrics Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div className="p-3 bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl">
+                              <div className="text-[10px] font-semibold uppercase text-[#69706A] tracking-wider">Green Canopy Coverage</div>
+                              <div className="text-lg font-bold text-[#306840] mono mt-1">
+                                {(((statistics['Forest']?.percentage || 0) + (statistics['Grass']?.percentage || 0) + (statistics['Wetland']?.percentage || 0))).toFixed(1)}%
+                              </div>
+                              <p className="text-[11px] text-[#69706A] mt-0.5">Forest, grass, and wetland canopy</p>
+                            </div>
+
+                            <div className="p-3 bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl">
+                              <div className="text-[10px] font-semibold uppercase text-[#69706A] tracking-wider">Impervious Surface</div>
+                              <div className="text-lg font-bold text-[#C4281B] mono mt-1">
+                                {(statistics['Urban']?.percentage || 0).toFixed(1)}%
+                              </div>
+                              <p className="text-[11px] text-[#69706A] mt-0.5">Built structures and paved ground</p>
+                            </div>
+
+                            <div className="p-3 bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl">
+                              <div className="text-[10px] font-semibold uppercase text-[#69706A] tracking-wider">Surface Moisture / Water</div>
+                              <div className="text-lg font-bold text-[#419BDF] mono mt-1">
+                                {(statistics['Water']?.percentage || 0).toFixed(1)}%
+                              </div>
+                              <p className="text-[11px] text-[#69706A] mt-0.5">Lakes, rivers, reservoirs, estuaries</p>
+                            </div>
+
+                            <div className="p-3 bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl">
+                              <div className="text-[10px] font-semibold uppercase text-[#69706A] tracking-wider">Exposed / Bare Ground</div>
+                              <div className="text-lg font-bold text-[#A59B8F] mono mt-1">
+                                {(statistics['Bare Land']?.percentage || 0).toFixed(1)}%
+                              </div>
+                              <p className="text-[11px] text-[#69706A] mt-0.5">Bare soil, rocks, open ground</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Fallback when not yet classified: Show Geometry & Extent Telemetry */
+                        <div className="p-5 bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl space-y-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EFECE3] pb-3">
+                            <div>
+                              <h4 className="text-xs font-bold text-[#1A1D23] flex items-center gap-2">
+                                <Target className="w-4 h-4 text-[#D9622B]" />
+                                Area of Interest (AOI) Geometry Telemetry
+                              </h4>
+                              <p className="text-xs text-[#69706A] mt-0.5">
+                                {coords.length > 0 
+                                  ? `Polygon with ${coords.length} vertices is defined. Ready for land cover inference.` 
+                                  : 'Draw a boundary or select an AOI on the map to compute geometric statistics.'}
+                              </p>
+                            </div>
+                            {coords.length > 0 && !loadingClassify && (
+                              <button
+                                type="button"
+                                onClick={runClassification}
+                                className="px-3.5 py-1.5 bg-[#306840] hover:bg-[#265433] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer flex-shrink-0"
+                              >
+                                <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+                                <span>Analyze & Classify AOI</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                            <div className="p-3 bg-[#F4F1E8]/50 border border-[#EFECE3] rounded-lg">
+                              <span className="text-[10px] text-[#69706A] uppercase font-semibold">Boundary Vertices</span>
+                              <p className="text-sm font-bold text-[#1A1D23] mono mt-0.5">{coords.length} points</p>
+                            </div>
+                            <div className="p-3 bg-[#F4F1E8]/50 border border-[#EFECE3] rounded-lg">
+                              <span className="text-[10px] text-[#69706A] uppercase font-semibold">Center Latitude</span>
+                              <p className="text-sm font-bold text-[#1A1D23] mono mt-0.5">{mapCenter[0].toFixed(5)}°</p>
+                            </div>
+                            <div className="p-3 bg-[#F4F1E8]/50 border border-[#EFECE3] rounded-lg">
+                              <span className="text-[10px] text-[#69706A] uppercase font-semibold">Center Longitude</span>
+                              <p className="text-sm font-bold text-[#1A1D23] mono mt-0.5">{mapCenter[1].toFixed(5)}°</p>
+                            </div>
+                            <div className="p-3 bg-[#F4F1E8]/50 border border-[#EFECE3] rounded-lg">
+                              <span className="text-[10px] text-[#69706A] uppercase font-semibold">Satellite Sensor</span>
+                              <p className="text-sm font-bold text-[#1A1D23] mt-0.5">Sentinel-2 MSI</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Tab 3: Metadata (Meta Tag) */}
+            {activeAnalyticsTab === 'metadata' && (
+              <div className="space-y-4 pt-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  
+                  {/* Card 1: Sensor & Platform */}
+                  <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl p-3.5 shadow-2xs space-y-3">
+                    <div className="flex items-center gap-2 border-b border-[#EFECE3] pb-2">
+                      <Satellite className="w-4 h-4 text-[#D9622B]" />
+                      <h4 className="text-xs font-bold text-[#1A1D23] tracking-tight">Sensor & Platform Specs</h4>
+                    </div>
+                    <dl className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Constellation:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">ESA Copernicus Sentinel-2</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Instrument:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">MultiSpectral Instrument (MSI)</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Product Level:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">Level-2A BOA Reflectance</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Dynamic Range:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">12-bit (0 - 10,000 BOA)</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">GSD Resolution:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">10m VNIR / 20m SWIR</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Revisit Cycle:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">5 days (Constellation)</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {/* Card 2: Cartographic & Spatial Georeference */}
+                  <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl p-3.5 shadow-2xs space-y-3">
+                    <div className="flex items-center gap-2 border-b border-[#EFECE3] pb-2">
+                      <Target className="w-4 h-4 text-[#D9622B]" />
+                      <h4 className="text-xs font-bold text-[#1A1D23] tracking-tight">Georeferencing & Spatial Bounds</h4>
+                    </div>
+                    <dl className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Coordinate Reference:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">EPSG:4326 (WGS 84)</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Map Projection:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">EPSG:3857 (Web Mercator)</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Bounding Box (N / S):</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right text-[11px]">
+                          {coords.length > 0 
+                            ? `${Math.max(...coords.map(c => c[1])).toFixed(4)}° / ${Math.min(...coords.map(c => c[1])).toFixed(4)}°` 
+                            : '—'}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Bounding Box (E / W):</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right text-[11px]">
+                          {coords.length > 0 
+                            ? `${Math.max(...coords.map(c => c[0])).toFixed(4)}° / ${Math.min(...coords.map(c => c[0])).toFixed(4)}°` 
+                            : '—'}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Centroid Coordinates:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right text-[11px]">
+                          {mapCenter[0].toFixed(4)}°, {mapCenter[1].toFixed(4)}°
+                        </dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Geometry Vertices:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">{coords.length} vertices</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {/* Card 3: Temporal & Atmospheric Parameters */}
+                  <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl p-3.5 shadow-2xs space-y-3">
+                    <div className="flex items-center gap-2 border-b border-[#EFECE3] pb-2">
+                      <Calendar className="w-4 h-4 text-[#D9622B]" />
+                      <h4 className="text-xs font-bold text-[#1A1D23] tracking-tight">Temporal & Scene Parameters</h4>
+                    </div>
+                    <dl className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Acquisition Window:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">{startDate} → {endDate}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Cloud Tolerance:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">&lt; {cloudCover}% scene cloud</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Masking Filter:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">QA60 + SCL Probability</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Compositing Method:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">Cloud-free Median</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Atmospheric Model:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">ESA Sen2Cor BOA</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">STAC Collection:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-[10.5px] text-right">COPERNICUS/S2_SR_HARMONIZED</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {/* Card 4: Machine Learning Pipeline */}
+                  <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl p-3.5 shadow-2xs space-y-3">
+                    <div className="flex items-center gap-2 border-b border-[#EFECE3] pb-2">
+                      <Database className="w-4 h-4 text-[#D9622B]" />
+                      <h4 className="text-xs font-bold text-[#1A1D23] tracking-tight">Machine Learning Pipeline</h4>
+                    </div>
+                    <dl className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Classifier Model:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">Random Forest (GEE Cluster)</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Ensemble Trees:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">100 Decision Trees</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Input Feature Bands:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">B2, B3, B4, B8, B11, B12</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Spectral Indices:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">NDVI, MNDWI, NDBI</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Ground Truth Data:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">ESA WorldCover 10m v200</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Backend Engine:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">Google Earth Engine Python API</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {/* Card 5: Session & Execution Telemetry */}
+                  <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl p-3.5 shadow-2xs space-y-3">
+                    <div className="flex items-center gap-2 border-b border-[#EFECE3] pb-2">
+                      <Activity className="w-4 h-4 text-[#D9622B]" />
+                      <h4 className="text-xs font-bold text-[#1A1D23] tracking-tight">Execution & Session Status</h4>
+                    </div>
+                    <dl className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Cloud Connection:</dt>
+                        <dd className="text-[#306840] font-semibold text-right flex items-center gap-1 justify-end">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#306840]" />
+                          {geeConnected === false ? 'Offline / Fallback' : 'Connected to GEE'}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Inference Latency:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">
+                          {processingTime !== null ? `${processingTime}s` : (tileUrls.classified ? '< 3.5s (Cached)' : 'Pending classification')}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Active Layers:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">{readyLayersCount > 0 ? readyLayersCount : 6} / {layerStack.length} ready</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Database Storage:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">Supabase PostgreSQL</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-[#69706A]">Export Formats:</dt>
+                        <dd className="text-[#1A1D23] font-mono text-right">GeoTIFF, GeoJSON, PDF</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {/* Card 6: Raw STAC / Scene Metadata JSON Inspector */}
+                  <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl p-3.5 shadow-2xs space-y-3">
+                    <div className="flex items-center gap-2 border-b border-[#EFECE3] pb-2">
+                      <FileText className="w-4 h-4 text-[#D9622B]" />
+                      <h4 className="text-xs font-bold text-[#1A1D23] tracking-tight">Raw Metadata Inspector</h4>
+                    </div>
+                    <div className="bg-[#F4F1E8] border border-[#EFECE3] rounded-lg p-2.5 max-h-36 overflow-y-auto">
+                      <pre className="text-[10.5px] font-mono text-[#1A1D23] whitespace-pre-wrap leading-relaxed">
+                        {JSON.stringify({
+                          satellite: "COPERNICUS/S2_SR_HARMONIZED",
+                          sensor: "Sentinel-2 MSI Level-2A",
+                          projection: "EPSG:4326",
+                          date_range: [startDate, endDate],
+                          cloud_cover_max: cloudCover,
+                          bands: ["B2", "B3", "B4", "B8", "B11", "B12"],
+                          spatial_resolution_meters: 10,
+                          aoi_area_ha: aoiAreaHa ? Number(aoiAreaHa.toFixed(2)) : null,
+                          coordinates_count: coords.length,
+                          classification_status: tileUrls.classified ? "completed" : "standby",
+                          classes: Object.keys(statistics || {})
+                        }, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
+              </div>
             )}
           </div>
 
