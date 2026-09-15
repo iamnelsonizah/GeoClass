@@ -1,55 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
-import { query } from '@/lib/db';
-import { recordServerOTP } from '@/lib/serverOtpStore';
-
-// Resend Configuration with built-in production fallback
+// Resend Email Dispatch Helper for GeoClass
 const FALLBACK_KEY = Buffer.from('cmVfNkt4QmgycExfOGlONkI5RmF5OThoY0dGNTd1VEJMZ0wz', 'base64').toString('ascii');
 const RESEND_API_KEY = process.env.RESEND_API_KEY || FALLBACK_KEY;
 const MAIL_FROM_ADDRESS = process.env.MAIL_FROM_ADDRESS || 'noreply@tryagrochain.com';
 const MAIL_FROM_NAME = process.env.MAIL_FROM_NAME || 'GeoClass';
-const HMAC_SECRET = RESEND_API_KEY || FALLBACK_KEY;
 
-export async function POST(req: NextRequest) {
+export async function sendEmailOTP(params: {
+  email: string;
+  code: string;
+  type: 'verification' | 'password_reset';
+  fullName?: string;
+}): Promise<{ success: boolean; error?: string; id?: string }> {
   try {
-    const { email, code, type, fullName } = await req.json();
-
-    if (!email || !code) {
-      return NextResponse.json(
-        { error: 'Email and code are required' },
-        { status: 400 }
-      );
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const cleanCode = code.trim();
-    const otpType = type || 'verification';
-
-    // 1. Record OTP in Supabase database
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    try {
-      await query(
-        `INSERT INTO otp_codes (email, code, type, expires_at)
-         VALUES ($1, $2, $3, $4)`,
-        [normalizedEmail, cleanCode, otpType, expiresAt]
-      );
-    } catch (dbErr) {
-      console.warn('Could not insert OTP into Supabase:', dbErr);
-    }
-
-    // 2. Record OTP in server in-memory store
-    recordServerOTP(normalizedEmail, cleanCode);
-
-    // 3. Create signature hash for stateless verification: sha256(email + code + HMAC_SECRET)
-    const signature = crypto
-      .createHmac('sha256', HMAC_SECRET)
-      .update(`${normalizedEmail}:${cleanCode}:${otpType}`)
-      .digest('hex');
-
-    const isReset = otpType === 'password_reset';
+    const { email, code, type, fullName } = params;
+    const isReset = type === 'password_reset';
     const subject = isReset
-      ? `${cleanCode} is your GeoClass password reset code`
-      : `${cleanCode} is your GeoClass verification code`;
+      ? `${code} is your GeoClass password reset code`
+      : `${code} is your GeoClass verification code`;
 
     const titleText = isReset
       ? 'Password Reset Request'
@@ -117,7 +83,7 @@ export async function POST(req: NextRequest) {
                       Verification Security Code
                     </div>
                     <div style="font-size: 36px; font-family: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-weight: 700; letter-spacing: 0.28em; color: #B7E89F; padding: 4px 0;">
-                      ${cleanCode}
+                      ${code}
                     </div>
                     <div style="font-size: 12px; color: #94A3B8; margin-top: 8px;">
                       ⏱ This code expires in <strong>10 minutes</strong>
@@ -152,7 +118,6 @@ export async function POST(req: NextRequest) {
 </html>
 `;
 
-    // Send email using Resend
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -161,43 +126,21 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         from: `${MAIL_FROM_NAME} <${MAIL_FROM_ADDRESS}>`,
-        to: [normalizedEmail],
+        to: [email],
         subject,
         html: htmlContent,
       }),
     });
 
     const data = await resendResponse.json();
-
     if (!resendResponse.ok) {
       console.error('Resend API error:', data);
-      return NextResponse.json(
-        { error: data.message || 'Failed to dispatch email via Resend' },
-        { status: resendResponse.status }
-      );
+      return { success: false, error: data.message || 'Failed to dispatch email' };
     }
 
-    const response = NextResponse.json({
-      success: true,
-      message: 'Email dispatched successfully',
-      id: data.id,
-      signature,
-    });
-
-    // Attach HTTP-only cookie containing signature
-    response.cookies.set('geoclass_otp_sig', signature, {
-      httpOnly: true,
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 600, // 10 minutes
-    });
-
-    return response;
-  } catch (error: any) {
-    console.error('Error in send-otp route:', error);
-    return NextResponse.json(
-      { error: error?.message || 'Internal server error' },
-      { status: 500 }
-    );
+    return { success: true, id: data.id };
+  } catch (err: any) {
+    console.error('Error in sendEmailOTP:', err);
+    return { success: false, error: err?.message || 'Network error dispatching email' };
   }
 }

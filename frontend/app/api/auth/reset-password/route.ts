@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { query } from '@/lib/db';
 import { verifyServerOTP } from '@/lib/serverOtpStore';
@@ -9,18 +10,25 @@ const HMAC_SECRET = RESEND_API_KEY || FALLBACK_KEY;
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, code, type, signature } = await req.json();
+    const { email, code, newPassword, signature } = await req.json();
 
-    if (!email || !code) {
+    if (!email || !code || !newPassword) {
       return NextResponse.json(
-        { success: false, message: 'Email and code are required.' },
+        { success: false, message: 'Email, reset code, and new password are required.' },
+        { status: 400 }
+      );
+    }
+
+    if (newPassword.length < 6) {
+      return NextResponse.json(
+        { success: false, message: 'Password must be at least 6 characters.' },
         { status: 400 }
       );
     }
 
     const normalizedEmail = email.trim().toLowerCase();
     const cleanCode = code.trim();
-    const rateLimitKey = `otp_${normalizedEmail}`;
+    const rateLimitKey = `reset_attempt_${normalizedEmail}`;
 
     // 1. Check rate limits in Supabase
     const rateRes = await query(
@@ -35,22 +43,22 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           success: false,
           lockoutSeconds: remaining,
-          message: `Too many attempts. Verification locked for ${remaining}s.`,
+          message: `Too many reset attempts. Locked for ${remaining}s.`,
         });
       }
     }
 
     // 2. Check Supabase otp_codes table
     const otpRes = await query(
-      `SELECT id, code, type, expires_at FROM otp_codes
-       WHERE email = $1 AND code = $2 AND expires_at > now()
+      `SELECT id, code, type FROM otp_codes
+       WHERE email = $1 AND code = $2 AND expires_at > now() AND type = 'password_reset'
        ORDER BY created_at DESC LIMIT 1`,
       [normalizedEmail, cleanCode]
     );
 
     let isValid = otpRes.rows.length > 0;
 
-    // 3. Fallback checks: Server memory and HMAC signature
+    // Fallback checks
     if (!isValid) {
       const memResult = verifyServerOTP(normalizedEmail, cleanCode);
       if (memResult.valid) {
@@ -61,7 +69,7 @@ export async function POST(req: NextRequest) {
     if (!isValid) {
       const candidateSig = crypto
         .createHmac('sha256', HMAC_SECRET)
-        .update(`${normalizedEmail}:${cleanCode}:${type || 'verification'}`)
+        .update(`${normalizedEmail}:${cleanCode}:password_reset`)
         .digest('hex');
 
       const cookieSig = req.cookies.get('geoclass_otp_sig')?.value;
@@ -71,7 +79,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 4. If code is invalid, increment rate limit
     if (!isValid) {
       const currentAttempts = rateRes.rows[0]?.failed_attempts || 0;
       const newAttempts = currentAttempts + 1;
@@ -89,7 +96,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           success: false,
           lockoutSeconds: 60,
-          message: 'Too many incorrect attempts. Verification locked for 60s.',
+          message: 'Too many reset attempts. Locked for 60s.',
         });
       } else {
         await query(
@@ -102,52 +109,34 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({
           success: false,
-          message: `Incorrect code. ${5 - newAttempts} attempts remaining.`,
+          message: `Incorrect reset code. ${5 - newAttempts} attempts remaining.`,
         });
       }
     }
 
-    // 5. Code is valid! Delete used OTP and verify user in Supabase
-    await query('DELETE FROM otp_codes WHERE email = $1', [normalizedEmail]);
-    await query('DELETE FROM rate_limits WHERE key = $1', [rateLimitKey]);
+    // 3. Valid code: Hash new password and update user in Supabase
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(newPassword, salt);
 
-    const updateRes = await query(
+    await query(
       `UPDATE users
-       SET is_verified = true, updated_at = now()
-       WHERE email = $1
-       RETURNING id, email, full_name, role, organization, is_verified, created_at`,
-      [normalizedEmail]
+       SET password_hash = $1, updated_at = now()
+       WHERE email = $2`,
+      [passwordHash, normalizedEmail]
     );
 
-    let safeUser = updateRes.rows[0];
-    if (!safeUser) {
-      // If user wasn't in DB yet, create verified record
-      const insertRes = await query(
-        `INSERT INTO users (email, full_name, password_hash, role, organization, is_verified)
-         VALUES ($1, $2, '', 'remote_sensing_analyst', 'Independent / Research', true)
-         RETURNING id, email, full_name, role, organization, is_verified, created_at`,
-        [normalizedEmail, normalizedEmail.split('@')[0]]
-      );
-      safeUser = insertRes.rows[0];
-    }
+    // Delete used OTP and rate limits
+    await query('DELETE FROM otp_codes WHERE email = $1 AND type = \'password_reset\'', [normalizedEmail]);
+    await query('DELETE FROM rate_limits WHERE key = $1', [rateLimitKey]);
 
     return NextResponse.json({
       success: true,
-      message: 'Account verified successfully.',
-      user: {
-        id: safeUser.id,
-        email: safeUser.email,
-        fullName: safeUser.full_name,
-        role: safeUser.role,
-        organization: safeUser.organization,
-        isVerified: true,
-        createdAt: safeUser.created_at,
-      },
+      message: 'Password reset successfully. You can now sign in.',
     });
   } catch (error: any) {
-    console.error('Error in verify-otp route:', error);
+    console.error('Error in reset-password route:', error);
     return NextResponse.json(
-      { success: false, message: error?.message || 'Server error verifying code' },
+      { success: false, message: error?.message || 'Server error resetting password' },
       { status: 500 }
     );
   }

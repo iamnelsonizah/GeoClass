@@ -7,14 +7,14 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (params: { email: string; password: string }) => {
+  login: (params: { email: string; password: string }) => Promise<{
     success: boolean;
     message: string;
     user?: User;
     requiresVerification?: boolean;
     otpCode?: string;
     lockoutSeconds?: number;
-  };
+  }>;
   register: (params: {
     fullName: string;
     email: string;
@@ -48,8 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshSession();
   }, []);
 
-  const login = (params: { email: string; password: string }) => {
-    const res = authService.login(params);
+  const login = async (params: { email: string; password: string }) => {
+    const res = await authService.login(params);
     if (res.success && res.user) {
       setUser(res.user);
     }

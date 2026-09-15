@@ -65,7 +65,7 @@ function LoginForm() {
     return () => clearInterval(timer);
   }, [lockoutSeconds, email, clearRateLimit]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (lockoutSeconds > 0) return;
 
@@ -73,7 +73,7 @@ function LoginForm() {
     setSuccessMsg(null);
     setLoading(true);
 
-    const res = login({ email, password });
+    const res = await login({ email, password });
     setLoading(false);
 
     if (!res.success) {
