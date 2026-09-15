@@ -17,7 +17,7 @@ import { useAuth } from '@/lib/AuthContext';
 
 export default function SignupPage() {
   const router = useRouter();
-  const { register, verifyOTP, resendOTP, isAuthenticated } = useAuth();
+  const { register, verifyOTP, resendOTP, checkRateLimit, clearRateLimit, isAuthenticated } = useAuth();
 
   // Step 1: Form state
   const [fullName, setFullName] = useState('');
@@ -33,6 +33,7 @@ export default function SignupPage() {
   // 6-digit OTP state
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [cooldown, setCooldown] = useState(0);
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,34 @@ export default function SignupPage() {
     }, 1000);
     return () => clearInterval(interval);
   }, [cooldown]);
+
+  // Lockout live countdown timer with auto-reset on 0
+  useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutSeconds((prev) => {
+        if (prev <= 1) {
+          if (email) {
+            clearRateLimit(`otp_${email.trim().toLowerCase()}`);
+          }
+          setErrorMsg(null);
+          setSuccessMsg('Security lockout expired. You can now enter your verification code.');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutSeconds, email, clearRateLimit]);
+
+  // Check rate limit on email change or step switch
+  useEffect(() => {
+    if (!email || step !== 2) return;
+    const rate = checkRateLimit(`otp_${email.trim().toLowerCase()}`);
+    if (rate.isLocked && rate.remainingSeconds > 0) {
+      setLockoutSeconds(rate.remainingSeconds);
+    }
+  }, [email, step, checkRateLimit]);
 
   // Auto-focus first OTP box when entering Step 2
   useEffect(() => {
@@ -139,6 +168,8 @@ export default function SignupPage() {
   // Step 2 Submit: Verify OTP code
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutSeconds > 0) return;
+
     const fullCode = otpDigits.join('');
     if (fullCode.length < 6) {
       setErrorMsg('Please enter all 6 digits of the verification code.');
@@ -152,6 +183,11 @@ export default function SignupPage() {
     setLoading(false);
 
     if (!res.success) {
+      if (res.lockoutSeconds && res.lockoutSeconds > 0) {
+        setLockoutSeconds(res.lockoutSeconds);
+        setErrorMsg(null);
+        return;
+      }
       setErrorMsg(res.message);
       return;
     }
@@ -165,7 +201,7 @@ export default function SignupPage() {
   // Resend code with 30s cooldown rate limit
   const [resending, setResending] = useState(false);
   const handleResend = async () => {
-    if (cooldown > 0 || resending) return;
+    if (cooldown > 0 || resending || lockoutSeconds > 0) return;
     setErrorMsg(null);
     setResending(true);
     const res = await resendOTP(email);
@@ -237,8 +273,28 @@ export default function SignupPage() {
             </p>
           </div>
 
-          {/* Feedback Messages */}
-          {errorMsg && (
+          {/* Live Lockout Alert */}
+          {lockoutSeconds > 0 && (
+            <div className="p-3.5 rounded-[4px] bg-[#2A1517] border border-[#EF4444]/40 text-[#FCA5A5] text-xs flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
+              <div className="space-y-1 leading-relaxed flex-1">
+                <div className="font-semibold text-[#FFFFFF] flex items-center justify-between">
+                  <span>Verification Locked</span>
+                  <span className="inline-flex items-center gap-1 font-mono text-[#EF4444]">
+                    <Clock className="w-3.5 h-3.5 animate-pulse" />
+                    <span className="text-sm font-bold">{lockoutSeconds}s</span>
+                  </span>
+                </div>
+                <div className="text-[#FCA5A5]">
+                  Too many incorrect attempts. Lockout automatically resets in{' '}
+                  <strong className="font-mono text-[#FFFFFF]">{lockoutSeconds}s</strong>.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Standard Feedback Messages */}
+          {errorMsg && lockoutSeconds <= 0 && (
             <div className="p-3.5 rounded-[4px] bg-[#2A1517] border border-[#EF4444]/40 text-[#FCA5A5] text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
               <div className="leading-relaxed">{errorMsg}</div>
@@ -376,9 +432,14 @@ export default function SignupPage() {
                     inputMode="numeric"
                     maxLength={1}
                     value={digit}
+                    disabled={lockoutSeconds > 0}
                     onChange={(e) => handleDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className="w-11 h-13 sm:w-13 sm:h-15 bg-[#0D1316] border border-[#1F2A30] focus:border-[#B7E89F] rounded-[6px] text-center text-xl sm:text-2xl font-mono font-bold text-[#FFFFFF] outline-none transition-colors shadow-inner"
+                    className={`w-11 h-13 sm:w-13 sm:h-15 bg-[#0D1316] border rounded-[6px] text-center text-xl sm:text-2xl font-mono font-bold outline-none transition-colors shadow-inner ${
+                      lockoutSeconds > 0 
+                        ? 'border-[#EF4444]/40 text-[#69766F] cursor-not-allowed' 
+                        : 'border-[#1F2A30] focus:border-[#B7E89F] text-[#FFFFFF]'
+                    }`}
                   />
                 ))}
               </div>
@@ -396,10 +457,20 @@ export default function SignupPage() {
               <div className="space-y-3">
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-3 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  disabled={loading || lockoutSeconds > 0}
+                  className={`w-full font-semibold text-sm py-3 rounded-[4px] transition-colors flex items-center justify-center gap-2 ${
+                    lockoutSeconds > 0
+                      ? 'bg-[#182328] text-[#94A3B8] border border-[#222E33] cursor-not-allowed'
+                      : 'bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] cursor-pointer'
+                  }`}
                 >
-                  <span>{loading ? 'Verifying Code...' : 'Verify Code & Launch Workspace'}</span>
+                  <span>
+                    {loading 
+                      ? 'Verifying Code...' 
+                      : lockoutSeconds > 0 
+                        ? `Locked · Resets in ${lockoutSeconds}s` 
+                        : 'Verify Code & Launch Workspace'}
+                  </span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
@@ -416,14 +487,14 @@ export default function SignupPage() {
                   <button
                     type="button"
                     onClick={handleResend}
-                    disabled={cooldown > 0 || loading || resending}
+                    disabled={cooldown > 0 || loading || resending || lockoutSeconds > 0}
                     className={`inline-flex items-center gap-1 font-mono transition-colors cursor-pointer ${
-                      cooldown > 0 || loading || resending
+                      cooldown > 0 || loading || resending || lockoutSeconds > 0
                         ? 'text-[#94A3B8] cursor-not-allowed' 
                         : 'text-[#B7E89F] hover:underline'
                     }`}
                   >
-                    <RotateCcw className={`w-3 h-3 ${cooldown > 0 || loading || resending ? '' : 'text-[#B7E89F]'} ${resending ? 'animate-spin' : ''}`} />
+                    <RotateCcw className={`w-3 h-3 ${cooldown > 0 || loading || resending || lockoutSeconds > 0 ? '' : 'text-[#B7E89F]'} ${resending ? 'animate-spin' : ''}`} />
                     <span>{resending ? 'Dispatching New Code...' : cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend Code via Email'}</span>
                   </button>
                 </div>

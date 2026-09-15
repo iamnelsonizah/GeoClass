@@ -13,6 +13,7 @@ interface AuthContextType {
     user?: User;
     requiresVerification?: boolean;
     otpCode?: string;
+    lockoutSeconds?: number;
   };
   register: (params: {
     fullName: string;
@@ -21,10 +22,12 @@ interface AuthContextType {
     role?: string;
     organization?: string;
   }) => Promise<{ success: boolean; message: string; otpCode?: string }>;
-  verifyOTP: (email: string, code: string) => Promise<{ success: boolean; message: string; user?: User }>;
+  verifyOTP: (email: string, code: string) => Promise<{ success: boolean; message: string; user?: User; lockoutSeconds?: number }>;
   resendOTP: (email: string) => Promise<{ success: boolean; message: string; otpCode?: string; cooldownSeconds?: number }>;
   requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string; otpCode?: string }>;
-  resetPassword: (email: string, code: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<{ success: boolean; message: string; lockoutSeconds?: number }>;
+  checkRateLimit: (key: string) => { isLocked: boolean; remainingSeconds: number };
+  clearRateLimit: (key: string) => void;
   logout: () => void;
   refreshSession: () => void;
 }
@@ -83,6 +86,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return await authService.resetPassword(email, code, newPassword);
   };
 
+  const checkRateLimit = (key: string) => {
+    return authService.checkRateLimit(key);
+  };
+
+  const clearRateLimit = (key: string) => {
+    authService.clearRateLimit(key);
+  };
+
   const logout = () => {
     authService.logout();
     setUser(null);
@@ -100,6 +111,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         resendOTP,
         requestPasswordReset,
         resetPassword,
+        checkRateLimit,
+        clearRateLimit,
         logout,
         refreshSession,
       }}

@@ -9,6 +9,7 @@ import {
   ArrowLeft, 
   AlertCircle, 
   CheckCircle2,
+  Clock,
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -17,12 +18,13 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirectTarget = searchParams?.get('redirect') || '/app';
 
-  const { login, isAuthenticated } = useAuth();
+  const { login, checkRateLimit, clearRateLimit, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
 
   // If already authenticated, redirect immediately
   useEffect(() => {
@@ -31,8 +33,42 @@ function LoginForm() {
     }
   }, [isAuthenticated, redirectTarget, router]);
 
+  // Check rate limit on email change or initial load
+  useEffect(() => {
+    if (!email) return;
+    const normalized = email.trim().toLowerCase();
+    const rate = checkRateLimit(`login_${normalized}`);
+    if (rate.isLocked && rate.remainingSeconds > 0) {
+      setLockoutSeconds(rate.remainingSeconds);
+    }
+  }, [email, checkRateLimit]);
+
+  // Live countdown timer for lockout that automatically resets when reaching 0
+  useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setLockoutSeconds((prev) => {
+        if (prev <= 1) {
+          // Timer reached 0: Automatically reset lockout and clear errors
+          if (email) {
+            clearRateLimit(`login_${email.trim().toLowerCase()}`);
+          }
+          setErrorMsg(null);
+          setSuccessMsg('Security lockout expired. You can now enter your password and sign in.');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [lockoutSeconds, email, clearRateLimit]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutSeconds > 0) return;
+
     setErrorMsg(null);
     setSuccessMsg(null);
     setLoading(true);
@@ -48,6 +84,13 @@ function LoginForm() {
         }, 1500);
         return;
       }
+
+      if (res.lockoutSeconds && res.lockoutSeconds > 0) {
+        setLockoutSeconds(res.lockoutSeconds);
+        setErrorMsg(null);
+        return;
+      }
+
       setErrorMsg(res.message);
       return;
     }
@@ -109,13 +152,35 @@ function LoginForm() {
             </p>
           </div>
 
-          {errorMsg && (
+          {/* Live Lockout Countdown Alert */}
+          {lockoutSeconds > 0 && (
+            <div className="p-3.5 rounded-[4px] bg-[#2A1517] border border-[#EF4444]/40 text-[#FCA5A5] text-xs flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
+              <div className="space-y-1 leading-relaxed flex-1">
+                <div className="font-semibold text-[#FFFFFF] flex items-center justify-between">
+                  <span>Account Temporarily Locked</span>
+                  <span className="inline-flex items-center gap-1 font-mono text-[#EF4444]">
+                    <Clock className="w-3.5 h-3.5 animate-pulse" />
+                    <span className="text-sm font-bold">{lockoutSeconds}s</span>
+                  </span>
+                </div>
+                <div className="text-[#FCA5A5]">
+                  Repeated failed logins detected. Lockout automatically resets in{' '}
+                  <strong className="font-mono text-[#FFFFFF]">{lockoutSeconds}s</strong>.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Standard Error Alert (when not locked out) */}
+          {errorMsg && lockoutSeconds <= 0 && (
             <div className="p-3.5 rounded-[4px] bg-[#2A1517] border border-[#EF4444]/40 text-[#FCA5A5] text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
               <div className="leading-relaxed">{errorMsg}</div>
             </div>
           )}
 
+          {/* Success / Recovery Alert */}
           {successMsg && (
             <div className="p-3.5 rounded-[4px] bg-[#112419] border border-[#4CAF6A]/40 text-[#A7F3D0] text-xs flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-[#4CAF6A] flex-shrink-0 mt-0.5" />
@@ -132,7 +197,10 @@ function LoginForm() {
                 type="email" 
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrorMsg(null);
+                }}
                 placeholder="analyst@organization.org"
                 className="w-full bg-[#0D1316] border border-[#1F2A30] focus:border-[#B7E89F] rounded-[4px] px-3.5 py-2.5 text-sm text-[#FFFFFF] placeholder-[#94A3B8] outline-none transition-colors"
               />
@@ -154,7 +222,10 @@ function LoginForm() {
                 type="password" 
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrorMsg(null);
+                }}
                 placeholder="••••••••••••"
                 className="w-full bg-[#0D1316] border border-[#1F2A30] focus:border-[#B7E89F] rounded-[4px] px-3.5 py-2.5 text-sm text-[#FFFFFF] placeholder-[#94A3B8] outline-none transition-colors"
               />
@@ -162,10 +233,20 @@ function LoginForm() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full mt-2 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              disabled={loading || lockoutSeconds > 0}
+              className={`w-full mt-2 font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 ${
+                lockoutSeconds > 0
+                  ? 'bg-[#182328] text-[#94A3B8] border border-[#222E33] cursor-not-allowed'
+                  : 'bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] cursor-pointer'
+              }`}
             >
-              <span>{loading ? 'Authenticating...' : 'Sign in to Workspace'}</span>
+              <span>
+                {loading 
+                  ? 'Authenticating...' 
+                  : lockoutSeconds > 0 
+                    ? `Locked · Resets in ${lockoutSeconds}s` 
+                    : 'Sign in to Workspace'}
+              </span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>

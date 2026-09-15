@@ -190,6 +190,11 @@ export const authService = {
         remainingSeconds: Math.ceil((record.lockedUntil - now) / 1000),
       };
     }
+    // Lockout has ended - auto-reset limits for this key
+    if (record.lockedUntil > 0) {
+      delete limits[key.toLowerCase()];
+      saveRateLimits(limits);
+    }
     return { isLocked: false, remainingSeconds: 0 };
   },
 
@@ -320,7 +325,7 @@ export const authService = {
    * Verify 6-digit code for account activation or login
    * Combines client storage and server verification for maximum reliability
    */
-  async verifyOTP(email: string, code: string): Promise<{ success: boolean; message: string; user?: User }> {
+  async verifyOTP(email: string, code: string): Promise<{ success: boolean; message: string; user?: User; lockoutSeconds?: number }> {
     const normalizedEmail = email.trim().toLowerCase();
     const cleanCode = code.trim();
 
@@ -328,7 +333,8 @@ export const authService = {
     if (rate.isLocked) {
       return {
         success: false,
-        message: `Rate limit exceeded. Try again in ${rate.remainingSeconds}s.`,
+        lockoutSeconds: rate.remainingSeconds,
+        message: `Too many attempts. Verification locked for ${rate.remainingSeconds}s.`,
       };
     }
 
@@ -370,7 +376,8 @@ export const authService = {
       if (fail.locked) {
         return {
           success: false,
-          message: 'Too many incorrect attempts. Verification locked for 60 seconds.',
+          lockoutSeconds: 60,
+          message: 'Too many incorrect attempts. Verification locked for 60s.',
         };
       }
       return {
@@ -496,13 +503,14 @@ export const authService = {
   login(params: {
     email: string;
     password: string;
-  }): { success: boolean; message: string; user?: User; requiresVerification?: boolean; otpCode?: string } {
+  }): { success: boolean; message: string; user?: User; requiresVerification?: boolean; otpCode?: string; lockoutSeconds?: number } {
     const email = params.email.trim().toLowerCase();
     const rate = this.checkRateLimit(`login_${email}`);
     if (rate.isLocked) {
       return {
         success: false,
-        message: `Too many failed login attempts. Locked for ${rate.remainingSeconds}s.`,
+        lockoutSeconds: rate.remainingSeconds,
+        message: `Account temporarily locked due to repeated failed logins. Please wait ${rate.remainingSeconds}s.`,
       };
     }
 
@@ -514,6 +522,7 @@ export const authService = {
       if (fail.locked) {
         return {
           success: false,
+          lockoutSeconds: 60,
           message: 'Account temporarily locked due to repeated failed logins. Please wait 60s.',
         };
       }
@@ -622,7 +631,7 @@ export const authService = {
   /**
    * Complete password reset with 6-digit code
    */
-  async resetPassword(email: string, code: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+  async resetPassword(email: string, code: string, newPassword: string): Promise<{ success: boolean; message: string; lockoutSeconds?: number }> {
     const normalizedEmail = email.trim().toLowerCase();
     const cleanCode = code.trim();
 
@@ -630,6 +639,7 @@ export const authService = {
     if (rate.isLocked) {
       return {
         success: false,
+        lockoutSeconds: rate.remainingSeconds,
         message: `Too many reset attempts. Locked for ${rate.remainingSeconds}s.`,
       };
     }
@@ -661,6 +671,13 @@ export const authService = {
 
     if (!isValid) {
       const fail = this.recordFailedAttempt(`reset_attempt_${normalizedEmail}`, 5, 60);
+      if (fail.locked) {
+        return {
+          success: false,
+          lockoutSeconds: 60,
+          message: 'Too many reset attempts. Locked for 60s.',
+        };
+      }
       return {
         success: false,
         message: `Incorrect reset code. ${fail.remainingAttempts} attempts remaining.`,
