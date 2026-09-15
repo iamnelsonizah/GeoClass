@@ -1,4 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
+import { recordServerOTP } from '@/lib/serverOtpStore';
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const MAIL_FROM_ADDRESS = process.env.MAIL_FROM_ADDRESS || 'noreply@tryagrochain.com';
+const MAIL_FROM_NAME = process.env.MAIL_FROM_NAME || 'GeoClass';
+const HMAC_SECRET = RESEND_API_KEY || 'geoclass_secure_otp_token_secret';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,29 +18,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiKey = process.env.RESEND_API_KEY;
-    const fromAddress = process.env.MAIL_FROM_ADDRESS || 'noreply@tryagrochain.com';
-    const fromName = process.env.MAIL_FROM_NAME || 'GeoClass';
-
-    if (!apiKey) {
-      console.error('RESEND_API_KEY is not configured in environment');
+    if (!RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not set in environment variables');
       return NextResponse.json(
-        { error: 'Email service is not configured' },
+        { 
+          success: false, 
+          error: 'RESEND_API_KEY is not configured in environment variables. Please add it to your hosting (Vercel) dashboard.' 
+        },
         { status: 500 }
       );
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+    const cleanCode = code.trim();
+
+    // Record OTP in server store
+    recordServerOTP(normalizedEmail, cleanCode);
+
+    // Create signature hash for stateless verification: sha256(email + code + HMAC_SECRET)
+    const signature = crypto
+      .createHmac('sha256', HMAC_SECRET)
+      .update(`${normalizedEmail}:${cleanCode}:${type || 'verification'}`)
+      .digest('hex');
+
     const isReset = type === 'password_reset';
     const subject = isReset
-      ? `${code} is your GeoClass password reset code`
-      : `${code} is your GeoClass verification code`;
+      ? `${cleanCode} is your GeoClass password reset code`
+      : `${cleanCode} is your GeoClass verification code`;
 
     const titleText = isReset
       ? 'Password Reset Request'
       : 'Verify Your Email Address';
 
     const introText = isReset
-      ? 'You recently requested to reset your password for GeoClass Earth Observation platform. Use the verification code below to set a new password:'
+      ? 'You recently requested to reset your password for the GeoClass Earth Observation platform. Use the verification code below to set a new password:'
       : 'Welcome to GeoClass! Please use the following 6-digit verification code to confirm your email and activate your scientific workspace:';
 
     const greeting = fullName ? `Hello ${fullName},` : 'Hello,';
@@ -94,7 +112,7 @@ export async function POST(req: NextRequest) {
                       Verification Security Code
                     </div>
                     <div style="font-size: 36px; font-family: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-weight: 700; letter-spacing: 0.28em; color: #B7E89F; padding: 4px 0;">
-                      ${code}
+                      ${cleanCode}
                     </div>
                     <div style="font-size: 12px; color: #94A3B8; margin-top: 8px;">
                       ⏱ This code expires in <strong>10 minutes</strong>
@@ -129,15 +147,16 @@ export async function POST(req: NextRequest) {
 </html>
 `;
 
+    // Send email using Resend
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: `${fromName} <${fromAddress}>`,
-        to: [email],
+        from: `${MAIL_FROM_NAME} <${MAIL_FROM_ADDRESS}>`,
+        to: [normalizedEmail],
         subject,
         html: htmlContent,
       }),
@@ -153,11 +172,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Email dispatched successfully',
       id: data.id,
+      signature,
     });
+
+    // Also attach HTTP-only cookie containing signature
+    response.cookies.set('geoclass_otp_sig', signature, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 600, // 10 minutes
+    });
+
+    return response;
   } catch (error: any) {
     console.error('Error in send-otp route:', error);
     return NextResponse.json(

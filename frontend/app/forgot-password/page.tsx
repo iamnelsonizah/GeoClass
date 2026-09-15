@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const handleReset = (e: React.FormEvent) => {
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     const fullCode = otpDigits.join('');
     if (fullCode.length < 6) {
@@ -118,7 +118,7 @@ export default function ForgotPasswordPage() {
     setErrorMsg(null);
     setLoading(true);
 
-    const res = resetPassword(email, fullCode, newPassword);
+    const res = await resetPassword(email, fullCode, newPassword);
     setLoading(false);
 
     if (!res.success) {

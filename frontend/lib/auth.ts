@@ -1,7 +1,7 @@
 /**
  * GeoClass Authentication & Security Service
  * Handles user registration, 6-digit OTP verification, session management,
- * rate limiting, and password reset flows with client-side persistence and
+ * rate limiting, and password reset flows with dual client/server persistence and
  * real transactional email delivery powered by Resend.
  */
 
@@ -21,6 +21,8 @@ interface StoredUser extends User {
 
 interface OTPRecord {
   code: string;
+  validCodes: string[];
+  signature?: string;
   email: string;
   type: 'verification' | 'password_reset';
   expiresAt: number;
@@ -105,14 +107,14 @@ function generateOTP(): string {
 }
 
 /**
- * Sends OTP email via Next.js backend route invoking Resend API
+ * Sends OTP email via Next.js route invoking Resend API
  */
 async function dispatchEmail(params: {
   email: string;
   code: string;
   type: 'verification' | 'password_reset';
   fullName?: string;
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<{ success: boolean; signature?: string; error?: string }> {
   try {
     const res = await fetch('/api/auth/send-otp', {
       method: 'POST',
@@ -123,14 +125,38 @@ async function dispatchEmail(params: {
     });
 
     const data = await res.json();
-    if (!res.ok) {
-      console.error('Resend dispatch failed:', data);
-      return { success: false, error: data.error || 'Failed to dispatch email' };
+    if (!res.ok || !data.success) {
+      console.error('Resend dispatch error:', data);
+      return { success: false, error: data.error || data.message || 'Failed to dispatch email' };
     }
-    return { success: true };
+    return { success: true, signature: data.signature };
   } catch (err: any) {
     console.error('Error contacting email dispatch service:', err);
     return { success: false, error: err?.message || 'Network connection error' };
+  }
+}
+
+/**
+ * Verifies code against server endpoint
+ */
+async function verifyWithServer(params: {
+  email: string;
+  code: string;
+  type?: string;
+  signature?: string;
+}): Promise<{ success: boolean; message?: string }> {
+  try {
+    const res = await fetch('/api/auth/verify-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
+    const data = await res.json();
+    return { success: res.ok && data.success, message: data.message };
+  } catch {
+    return { success: false };
   }
 }
 
@@ -234,34 +260,6 @@ export const authService = {
     const otpCode = generateOTP();
     const now = Date.now();
 
-    // Store OTP with 10-minute expiry
-    const otps = getOTPRecords();
-    otps[email] = {
-      code: otpCode,
-      email,
-      type: 'verification',
-      expiresAt: now + 10 * 60 * 1000,
-      attempts: 0,
-      lastSentAt: now,
-    };
-    saveOTPRecords(otps);
-
-    // Filter existing unverified user if re-registering
-    const filteredUsers = users.filter((u) => u.email !== email);
-    const newUser: StoredUser = {
-      id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      email,
-      fullName: params.fullName.trim(),
-      role: params.role || 'remote_sensing_analyst',
-      organization: params.organization?.trim() || 'Independent / Research',
-      isVerified: false,
-      createdAt: new Date().toISOString(),
-      passwordHash: btoa(params.password), // client-side storage encoding
-    };
-
-    filteredUsers.push(newUser);
-    saveStoredUsers(filteredUsers);
-
     // Send real email via Resend
     const sendResult = await dispatchEmail({
       email,
@@ -271,8 +269,45 @@ export const authService = {
     });
 
     if (!sendResult.success) {
-      console.warn('Email dispatch warning:', sendResult.error);
+      return {
+        success: false,
+        message: `Failed to dispatch email: ${sendResult.error || 'Email service error'}. Please check your email address.`,
+      };
     }
+
+    // Store OTP with 10-minute expiry and multi-code history
+    const otps = getOTPRecords();
+    const existing = otps[email];
+    const prevValidCodes = existing && existing.expiresAt > now ? existing.validCodes || [existing.code] : [];
+    const validCodes = Array.from(new Set([...prevValidCodes, otpCode]));
+
+    otps[email] = {
+      code: otpCode,
+      validCodes,
+      signature: sendResult.signature,
+      email,
+      type: 'verification',
+      expiresAt: now + 10 * 60 * 1000,
+      attempts: existing ? existing.attempts : 0,
+      lastSentAt: now,
+    };
+    saveOTPRecords(otps);
+
+    // Save pending user record
+    const filteredUsers = users.filter((u) => u.email !== email);
+    const newUser: StoredUser = {
+      id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      email,
+      fullName: params.fullName.trim(),
+      role: params.role || 'remote_sensing_analyst',
+      organization: params.organization?.trim() || 'Independent / Research',
+      isVerified: false,
+      createdAt: new Date().toISOString(),
+      passwordHash: btoa(params.password),
+    };
+
+    filteredUsers.push(newUser);
+    saveStoredUsers(filteredUsers);
 
     return {
       success: true,
@@ -283,9 +318,12 @@ export const authService = {
 
   /**
    * Verify 6-digit code for account activation or login
+   * Combines client storage and server verification for maximum reliability
    */
-  verifyOTP(email: string, code: string): { success: boolean; message: string; user?: User } {
+  async verifyOTP(email: string, code: string): Promise<{ success: boolean; message: string; user?: User }> {
     const normalizedEmail = email.trim().toLowerCase();
+    const cleanCode = code.trim();
+
     const rate = this.checkRateLimit(`otp_${normalizedEmail}`);
     if (rate.isLocked) {
       return {
@@ -297,24 +335,36 @@ export const authService = {
     const otps = getOTPRecords();
     const record = otps[normalizedEmail];
 
-    if (!record) {
-      return {
-        success: false,
-        message: 'No verification code found. Please request a new code.',
-      };
+    // Check 1: Client record matches
+    let isValid = false;
+    if (record) {
+      const isExpired = Date.now() > record.expiresAt;
+      if (!isExpired) {
+        if (record.code === cleanCode || (record.validCodes && record.validCodes.includes(cleanCode))) {
+          isValid = true;
+        }
+      }
     }
 
-    if (Date.now() > record.expiresAt) {
-      return {
-        success: false,
-        message: 'Verification code has expired. Please request a new code.',
-      };
+    // Check 2: Server-side validation check (cross-device, multi-tab, or production)
+    if (!isValid) {
+      const serverCheck = await verifyWithServer({
+        email: normalizedEmail,
+        code: cleanCode,
+        type: 'verification',
+        signature: record?.signature,
+      });
+      if (serverCheck.success) {
+        isValid = true;
+      }
     }
 
-    if (record.code !== code.trim()) {
-      record.attempts += 1;
-      otps[normalizedEmail] = record;
-      saveOTPRecords(otps);
+    if (!isValid) {
+      if (record) {
+        record.attempts += 1;
+        otps[normalizedEmail] = record;
+        saveOTPRecords(otps);
+      }
 
       const fail = this.recordFailedAttempt(`otp_${normalizedEmail}`, 5, 60);
       if (fail.locked) {
@@ -331,9 +381,21 @@ export const authService = {
 
     // Success: activate user
     const users = getStoredUsers();
-    const userIndex = users.findIndex((u) => u.email === normalizedEmail);
+    let userIndex = users.findIndex((u) => u.email === normalizedEmail);
     if (userIndex === -1) {
-      return { success: false, message: 'User record not found.' };
+      // In case user registered on another device or tab, create user entry
+      const newUser: StoredUser = {
+        id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        email: normalizedEmail,
+        fullName: normalizedEmail.split('@')[0],
+        role: 'remote_sensing_analyst',
+        organization: 'Independent / Research',
+        isVerified: true,
+        createdAt: new Date().toISOString(),
+        passwordHash: '',
+      };
+      users.push(newUser);
+      userIndex = users.length - 1;
     }
 
     users[userIndex].isVerified = true;
@@ -386,26 +448,38 @@ export const authService = {
 
     const otpCode = generateOTP();
     const otpType = record?.type || 'verification';
-    otps[normalizedEmail] = {
-      code: otpCode,
-      email: normalizedEmail,
-      type: otpType,
-      expiresAt: now + 10 * 60 * 1000,
-      attempts: 0,
-      lastSentAt: now,
-    };
-    saveOTPRecords(otps);
-
     const users = getStoredUsers();
     const user = users.find((u) => u.email === normalizedEmail);
 
     // Send real email via Resend
-    await dispatchEmail({
+    const sendResult = await dispatchEmail({
       email: normalizedEmail,
       code: otpCode,
       type: otpType,
       fullName: user?.fullName,
     });
+
+    if (!sendResult.success) {
+      return {
+        success: false,
+        message: `Failed to dispatch email: ${sendResult.error || 'Email service error'}`,
+      };
+    }
+
+    const prevValidCodes = record && record.expiresAt > now ? record.validCodes || [record.code] : [];
+    const validCodes = Array.from(new Set([...prevValidCodes, otpCode]));
+
+    otps[normalizedEmail] = {
+      code: otpCode,
+      validCodes,
+      signature: sendResult.signature,
+      email: normalizedEmail,
+      type: otpType,
+      expiresAt: now + 10 * 60 * 1000,
+      attempts: record ? record.attempts : 0,
+      lastSentAt: now,
+    };
+    saveOTPRecords(otps);
 
     return {
       success: true,
@@ -449,7 +523,6 @@ export const authService = {
     }
 
     if (!user.isVerified) {
-      // Trigger new OTP dispatch in background
       this.resendOTP(email);
       return {
         success: false,
@@ -505,16 +578,6 @@ export const authService = {
 
     const otpCode = generateOTP();
     const now = Date.now();
-    const otps = getOTPRecords();
-    otps[normalizedEmail] = {
-      code: otpCode,
-      email: normalizedEmail,
-      type: 'password_reset',
-      expiresAt: now + 10 * 60 * 1000,
-      attempts: 0,
-      lastSentAt: now,
-    };
-    saveOTPRecords(otps);
 
     // Send real email via Resend
     const sendResult = await dispatchEmail({
@@ -525,8 +588,28 @@ export const authService = {
     });
 
     if (!sendResult.success) {
-      console.warn('Email dispatch warning:', sendResult.error);
+      return {
+        success: false,
+        message: `Failed to dispatch email: ${sendResult.error || 'Email service error'}`,
+      };
     }
+
+    const otps = getOTPRecords();
+    const existing = otps[normalizedEmail];
+    const prevValidCodes = existing && existing.expiresAt > now ? existing.validCodes || [existing.code] : [];
+    const validCodes = Array.from(new Set([...prevValidCodes, otpCode]));
+
+    otps[normalizedEmail] = {
+      code: otpCode,
+      validCodes,
+      signature: sendResult.signature,
+      email: normalizedEmail,
+      type: 'password_reset',
+      expiresAt: now + 10 * 60 * 1000,
+      attempts: existing ? existing.attempts : 0,
+      lastSentAt: now,
+    };
+    saveOTPRecords(otps);
 
     return {
       success: true,
@@ -538,8 +621,10 @@ export const authService = {
   /**
    * Complete password reset with 6-digit code
    */
-  resetPassword(email: string, code: string, newPassword: string): { success: boolean; message: string } {
+  async resetPassword(email: string, code: string, newPassword: string): Promise<{ success: boolean; message: string }> {
     const normalizedEmail = email.trim().toLowerCase();
+    const cleanCode = code.trim();
+
     const rate = this.checkRateLimit(`reset_attempt_${normalizedEmail}`);
     if (rate.isLocked) {
       return {
@@ -551,15 +636,29 @@ export const authService = {
     const otps = getOTPRecords();
     const record = otps[normalizedEmail];
 
-    if (!record || record.type !== 'password_reset') {
-      return { success: false, message: 'Invalid or expired password reset request.' };
+    let isValid = false;
+    if (record && record.type === 'password_reset') {
+      if (Date.now() <= record.expiresAt) {
+        if (record.code === cleanCode || (record.validCodes && record.validCodes.includes(cleanCode))) {
+          isValid = true;
+        }
+      }
     }
 
-    if (Date.now() > record.expiresAt) {
-      return { success: false, message: 'Reset code has expired. Please request a new one.' };
+    // Check 2: Server-side check
+    if (!isValid) {
+      const serverCheck = await verifyWithServer({
+        email: normalizedEmail,
+        code: cleanCode,
+        type: 'password_reset',
+        signature: record?.signature,
+      });
+      if (serverCheck.success) {
+        isValid = true;
+      }
     }
 
-    if (record.code !== code.trim()) {
+    if (!isValid) {
       const fail = this.recordFailedAttempt(`reset_attempt_${normalizedEmail}`, 5, 60);
       return {
         success: false,
@@ -570,12 +669,10 @@ export const authService = {
     // Update password
     const users = getStoredUsers();
     const userIndex = users.findIndex((u) => u.email === normalizedEmail);
-    if (userIndex === -1) {
-      return { success: false, message: 'User not found.' };
+    if (userIndex !== -1) {
+      users[userIndex].passwordHash = btoa(newPassword);
+      saveStoredUsers(users);
     }
-
-    users[userIndex].passwordHash = btoa(newPassword);
-    saveStoredUsers(users);
 
     delete otps[normalizedEmail];
     saveOTPRecords(otps);

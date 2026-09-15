@@ -137,7 +137,7 @@ export default function SignupPage() {
   };
 
   // Step 2 Submit: Verify OTP code
-  const handleVerify = (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     const fullCode = otpDigits.join('');
     if (fullCode.length < 6) {
@@ -148,7 +148,7 @@ export default function SignupPage() {
     setErrorMsg(null);
     setLoading(true);
 
-    const res = verifyOTP(email, fullCode);
+    const res = await verifyOTP(email, fullCode);
     setLoading(false);
 
     if (!res.success) {

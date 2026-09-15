@@ -21,10 +21,10 @@ interface AuthContextType {
     role?: string;
     organization?: string;
   }) => Promise<{ success: boolean; message: string; otpCode?: string }>;
-  verifyOTP: (email: string, code: string) => { success: boolean; message: string; user?: User };
+  verifyOTP: (email: string, code: string) => Promise<{ success: boolean; message: string; user?: User }>;
   resendOTP: (email: string) => Promise<{ success: boolean; message: string; otpCode?: string; cooldownSeconds?: number }>;
   requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string; otpCode?: string }>;
-  resetPassword: (email: string, code: string, newPassword: string) => { success: boolean; message: string };
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   refreshSession: () => void;
 }
@@ -63,8 +63,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return await authService.register(params);
   };
 
-  const verifyOTP = (email: string, code: string) => {
-    const res = authService.verifyOTP(email, code);
+  const verifyOTP = async (email: string, code: string) => {
+    const res = await authService.verifyOTP(email, code);
     if (res.success && res.user) {
       setUser(res.user);
     }
@@ -79,8 +79,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return await authService.requestPasswordReset(email);
   };
 
-  const resetPassword = (email: string, code: string, newPassword: string) => {
-    return authService.resetPassword(email, code, newPassword);
+  const resetPassword = async (email: string, code: string, newPassword: string) => {
+    return await authService.resetPassword(email, code, newPassword);
   };
 
   const logout = () => {
