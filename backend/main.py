@@ -765,7 +765,7 @@ def get_download_link(payload: DownloadRequest):
             export_scale = 10
 
         if payload.export_format == "png":
-            download_url = classified_image.getThumbURL({
+            thumb_url = classified_image.getThumbURL({
                 'name': f'geoclass_map_{payload.start_date}',
                 'dimensions': 2048,
                 'region': aoi,
@@ -774,9 +774,20 @@ def get_download_link(payload: DownloadRequest):
                 'max': 8,
                 'palette': LULC_PALETTE
             })
-            if api_key and "?key=" not in download_url and "&key=" not in download_url:
-                sep = "&" if "?" in download_url else "?"
-                download_url += f"{sep}key={api_key}"
+            if api_key and "?key=" not in thumb_url and "&key=" not in thumb_url:
+                sep = "&" if "?" in thumb_url else "?"
+                thumb_url += f"{sep}key={api_key}"
+            # Fetch the PNG image server-side to avoid HTTP referer blocking
+            try:
+                img_response = requests.get(thumb_url, timeout=60, headers={
+                    'Referer': 'https://geoclass.vercel.app'
+                })
+                img_response.raise_for_status()
+                png_base64 = base64.b64encode(img_response.content).decode('utf-8')
+                download_url = f"data:image/png;base64,{png_base64}"
+            except Exception as img_err:
+                logger.warning(f"Server-side PNG fetch failed, falling back to direct URL: {img_err}")
+                download_url = thumb_url
         else:
             # Default to GeoTIFF (WGS84 EPSG:4326 for QGIS, ArcGIS, Leapfrog)
             download_url = classified_image.getDownloadURL({
