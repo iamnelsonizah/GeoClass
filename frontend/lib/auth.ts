@@ -429,7 +429,7 @@ export const authService = {
   },
 
   /**
-   * Resend 6-digit OTP code with 60s cooldown and real Resend dispatch
+   * Resend 6-digit OTP code with 30s cooldown and real Resend dispatch
    */
   async resendOTP(email: string): Promise<{ success: boolean; message: string; otpCode?: string; cooldownSeconds?: number }> {
     const normalizedEmail = email.trim().toLowerCase();
@@ -437,8 +437,9 @@ export const authService = {
     const record = otps[normalizedEmail];
 
     const now = Date.now();
-    if (record && now - record.lastSentAt < 60 * 1000) {
-      const remaining = Math.ceil((60 * 1000 - (now - record.lastSentAt)) / 1000);
+    // 30-second cooldown with 2s grace period to prevent timer drift edge cases
+    if (record && now - record.lastSentAt < 28 * 1000) {
+      const remaining = Math.ceil((30 * 1000 - (now - record.lastSentAt)) / 1000);
       return {
         success: false,
         message: `Please wait ${remaining}s before requesting another code.`,
@@ -485,7 +486,7 @@ export const authService = {
       success: true,
       message: `A new 6-digit verification code has been dispatched to ${normalizedEmail}.`,
       otpCode,
-      cooldownSeconds: 60,
+      cooldownSeconds: 30,
     };
   },
 

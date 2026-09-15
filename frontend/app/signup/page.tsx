@@ -97,7 +97,7 @@ export default function SignupPage() {
     }
 
     // Move to step 2: 6-digit code verification
-    setCooldown(60);
+    setCooldown(30);
     setStep(2);
     setSuccessMsg(`A 6-digit verification code has been dispatched to ${email}. Please check your inbox.`);
   };
@@ -162,13 +162,14 @@ export default function SignupPage() {
     }, 700);
   };
 
-  // Resend code with 60s cooldown rate limit
+  // Resend code with 30s cooldown rate limit
+  const [resending, setResending] = useState(false);
   const handleResend = async () => {
-    if (cooldown > 0) return;
+    if (cooldown > 0 || resending) return;
     setErrorMsg(null);
-    setLoading(true);
+    setResending(true);
     const res = await resendOTP(email);
-    setLoading(false);
+    setResending(false);
 
     if (!res.success) {
       setErrorMsg(res.message);
@@ -176,7 +177,7 @@ export default function SignupPage() {
       return;
     }
 
-    setCooldown(res.cooldownSeconds || 60);
+    setCooldown(res.cooldownSeconds || 30);
     setSuccessMsg(`A new 6-digit verification code has been dispatched to ${email}.`);
     setOtpDigits(['', '', '', '', '', '']);
     inputRefs.current[0]?.focus();
@@ -415,15 +416,15 @@ export default function SignupPage() {
                   <button
                     type="button"
                     onClick={handleResend}
-                    disabled={cooldown > 0 || loading}
+                    disabled={cooldown > 0 || loading || resending}
                     className={`inline-flex items-center gap-1 font-mono transition-colors cursor-pointer ${
-                      cooldown > 0 || loading
+                      cooldown > 0 || loading || resending
                         ? 'text-[#94A3B8] cursor-not-allowed' 
                         : 'text-[#B7E89F] hover:underline'
                     }`}
                   >
-                    <RotateCcw className={`w-3 h-3 ${cooldown > 0 || loading ? '' : 'text-[#B7E89F]'}`} />
-                    <span>{cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend Code via Email'}</span>
+                    <RotateCcw className={`w-3 h-3 ${cooldown > 0 || loading || resending ? '' : 'text-[#B7E89F]'} ${resending ? 'animate-spin' : ''}`} />
+                    <span>{resending ? 'Dispatching New Code...' : cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend Code via Email'}</span>
                   </button>
                 </div>
               </div>
