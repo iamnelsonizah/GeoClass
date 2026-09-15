@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   Activity,
   Terminal,
-  Zap,
   Flame,
   Droplets,
   Building,
@@ -194,7 +193,7 @@ for class_name, metrics in data["statistics"].items():
           {[
             { id: 'methods', label: '1. Pipeline Overview', icon: Cpu },
             { id: 'sar', label: '2. Sentinel-1 SAR Physics', icon: Satellite },
-            { id: 'indices', label: '3. Spectral Band Math', icon: Zap },
+            { id: 'indices', label: '3. Spectral Band Math' },
             { id: 'change', label: '4. Temporal Trend Breaks', icon: History },
             { id: 'api', label: '5. Developer REST API', icon: Code2 },
             { id: 'citations', label: '6. Academic Citations', icon: BookOpen },
@@ -211,7 +210,9 @@ for class_name, metrics in data["statistics"].items():
                     : 'text-[#E2E8F0] hover:text-[#FFFFFF] border border-transparent hover:border-[#1F2A30]'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${active ? 'text-[#B7E89F]' : 'text-[#94A3B8]'}`} />
+                {Icon && (
+                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-[#B7E89F]' : 'text-[#94A3B8]'}`} />
+                )}
                 <span>{tab.label}</span>
               </button>
             );

@@ -28,7 +28,6 @@ import {
   Upload, 
   TrendingUp, 
   TrendingDown, 
-  Zap, 
   X, 
   Satellite, 
   Activity, 
@@ -3498,7 +3497,6 @@ export default function Home() {
                           </>
                         ) : (
                           <>
-                            <Zap className="w-3.5 h-3.5 text-[#D9622B]" />
                             <span>Analyze & Classify Land Cover</span>
                           </>
                         )}
@@ -3584,7 +3582,6 @@ export default function Home() {
                   className="px-3 py-1 bg-[#306840] hover:bg-[#265433] text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow-md transition cursor-pointer"
                   title="Run land cover classification and analysis on fetched imagery"
                 >
-                  <Zap className="w-3.5 h-3.5 text-emerald-200" />
                   <span>Analyze & Classify AOI</span>
                 </button>
               </div>
@@ -4692,7 +4689,6 @@ export default function Home() {
                                 onClick={runClassification}
                                 className="px-3.5 py-1.5 bg-[#306840] hover:bg-[#265433] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer flex-shrink-0"
                               >
-                                <Zap className="w-3.5 h-3.5 text-emerald-200" />
                                 <span>Analyze & Classify AOI</span>
                               </button>
                             )}
