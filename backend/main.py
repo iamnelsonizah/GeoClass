@@ -487,7 +487,14 @@ def classify_aoi(payload: ClassifyRequest):
     except Exception as e:
         logger.error(f"Error in classify endpoint: {e}")
         err_msg = str(e)
-        if any(keyword in err_msg.lower() for keyword in ["memory", "limit", "exceeded", "timeout", "timed out"]):
+        if "only one class" in err_msg.lower():
+            detail_msg = (
+                "Single Land Cover Class Detected: The selected Area of Interest contains only one uniform land cover class "
+                "(e.g., 100% open water or 100% bare land). Supervised machine learning requires at least two distinct classes "
+                "(such as vegetation, water, urban, or crops) to compute classification boundaries. "
+                "Please expand your Area of Interest to include surrounding terrain or different landscape features."
+            )
+        elif any(keyword in err_msg.lower() for keyword in ["memory", "limit", "exceeded", "timeout", "timed out"]):
             detail_msg = "Google Earth Engine memory limit or timeout exceeded. The selected Area of Interest is too large to classify. Please select a smaller AOI (ideally under 15,000 hectares), reduce the parameters, or use Dynamic World mode."
         else:
             detail_msg = f"Classification error: {e}"

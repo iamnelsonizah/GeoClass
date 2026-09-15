@@ -133,11 +133,20 @@ def train_and_classify_gee(
         raise ValueError("Could not extract any training samples within the Area of Interest. Make sure the AOI is large enough.")
 
     # 3. Train Classifier
-    classifier = ee.Classifier.smileRandomForest(numberOfTrees=num_trees).train(
-        features=training_data,
-        classProperty='label',
-        inputProperties=feature_bands
-    )
+    try:
+        classifier = ee.Classifier.smileRandomForest(numberOfTrees=num_trees).train(
+            features=training_data,
+            classProperty='label',
+            inputProperties=feature_bands
+        )
+    except Exception as e:
+        if "only one class" in str(e).lower():
+            raise ValueError(
+                "Single Land Cover Class Detected: The selected Area of Interest contains only one uniform land cover class. "
+                "Machine learning classifiers require at least two contrasting classes (e.g. vegetation, water, urban, or bare land) "
+                "to calculate decision boundaries. Please expand your Area of Interest to include surrounding terrain or different landscape features."
+            )
+        raise
 
     # 4. Classify Image
     classified_image = feature_image.classify(classifier).rename('label')
@@ -294,15 +303,24 @@ def train_and_classify_deep_learning_gee(
         raise ValueError("Could not extract training samples within the AOI.")
 
     # 4. Train Deep Spatial Ensemble
-    classifier = ee.Classifier.smileRandomForest(
-        numberOfTrees=max(num_trees, 120),
-        minLeafPopulation=2,
-        bagFraction=0.7
-    ).train(
-        features=training_data,
-        classProperty='label',
-        inputProperties=feature_bands
-    )
+    try:
+        classifier = ee.Classifier.smileRandomForest(
+            numberOfTrees=max(num_trees, 120),
+            minLeafPopulation=2,
+            bagFraction=0.7
+        ).train(
+            features=training_data,
+            classProperty='label',
+            inputProperties=feature_bands
+        )
+    except Exception as e:
+        if "only one class" in str(e).lower():
+            raise ValueError(
+                "Single Land Cover Class Detected: The selected Area of Interest contains only one uniform land cover class. "
+                "Machine learning classifiers require at least two contrasting classes (e.g. vegetation, water, urban, or bare land) "
+                "to calculate decision boundaries. Please expand your Area of Interest to include surrounding terrain or different landscape features."
+            )
+        raise
 
     raw_classified = feature_image.classify(classifier).rename('label')
 

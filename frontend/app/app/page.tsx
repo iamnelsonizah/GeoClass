@@ -664,6 +664,7 @@ export default function Home() {
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [isWorkspaceLibraryOpen, setIsWorkspaceLibraryOpen] = useState(false);
+  const [singleClassPromptOpen, setSingleClassPromptOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
@@ -1403,6 +1404,7 @@ export default function Home() {
         setIsWorkspaceLibraryOpen(false);
         setIsStudyAreaModalOpen(false);
         setIsSTACModalOpen(false);
+        setSingleClassPromptOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -2321,7 +2323,14 @@ export default function Home() {
         }
       }
     } catch (e: any) {
-      setErrorMessage(e.message || "An error occurred during classification.");
+      const rawMsg = e.message || "An error occurred during classification.";
+      const lower = rawMsg.toLowerCase();
+      if (lower.includes("only one class") || lower.includes("single land cover class") || lower.includes("homogeneous")) {
+        setSingleClassPromptOpen(true);
+        setErrorMessage("Single land cover class detected: Expand your Area of Interest to include diverse landscape features.");
+      } else {
+        setErrorMessage(rawMsg);
+      }
     } finally {
       setLoadingClassify(false);
     }
@@ -5589,6 +5598,95 @@ export default function Home() {
                 className="px-3 py-1 text-xs text-[#1A1D23] font-medium hover:bg-[#EAE8E1] rounded transition cursor-pointer"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Homogeneous Single Class Guidance Modal */}
+      {singleClassPromptOpen && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSingleClassPromptOpen(false);
+          }}
+        >
+          <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150 relative z-10">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-[#EFECE3] pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#FFF3E8] border border-[#F5C29B] flex items-center justify-center text-[#D9622B] shadow-2xs shrink-0">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono px-2 py-0.5 bg-[#FFF0E6] text-[#D9622B] border border-[#F5C29B] rounded-full font-bold uppercase tracking-wider">
+                      One Class Found
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-bold text-[#1A1D23] mt-0.5">
+                    Diverse Landscape Required for Classification
+                  </h3>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSingleClassPromptOpen(false)}
+                className="p-1 hover:bg-[#EFECE3] rounded-lg text-[#8A908A] hover:text-[#1A1D23] transition cursor-pointer"
+                title="Close (Esc)"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Why this happens */}
+            <div className="p-3.5 bg-[#F4F1E8] border border-[#D8D5CA] rounded-xl space-y-2 text-xs text-[#454B46] leading-relaxed">
+              <div className="font-semibold text-[#1A1D23] flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#D9622B]"></span>
+                <span>Why did this happen?</span>
+              </div>
+              <p>
+                The Area of Interest you selected contains <strong>only one uniform land cover class</strong> across all training pixels (for example, 100% open water, 100% sand desert, or a single crop monoculture).
+              </p>
+              <p>
+                Supervised machine learning classifiers (Random Forest and Deep Neural Nets) learn by finding <strong>decision boundaries between contrasting classes</strong> (such as separating vegetation from water, urban buildings, or bare ground). Without at least 2 distinct classes to compare against, mathematical decision trees cannot be trained.
+              </p>
+            </div>
+
+            {/* How to resolve */}
+            <div className="p-3.5 bg-[#EAF3EB] border border-[#B5D7BB] rounded-xl space-y-2 text-xs text-[#2A5E33]">
+              <div className="font-semibold text-[#1B4323] flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#3B7A46]" />
+                <span>How to resolve this:</span>
+              </div>
+              <ul className="list-disc list-inside space-y-1 text-[11.5px] text-[#2A5E33]/90">
+                <li><strong>Expand your boundary</strong> slightly to encompass surrounding landscape features.</li>
+                <li><strong>Draw across a transition zone</strong>, such as a coastline, riverbank, forest boundary, or rural-urban edge.</li>
+                <li>Ensure the study area contains at least two distinct terrain types (e.g. water + land, or trees + agriculture).</li>
+              </ul>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EFECE3]">
+              <button
+                type="button"
+                onClick={() => setSingleClassPromptOpen(false)}
+                className="px-3.5 py-1.5 text-xs text-[#69706A] hover:text-[#1A1D23] hover:bg-[#EFECE3] rounded-lg transition cursor-pointer font-medium"
+              >
+                Got It, Dismiss
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSingleClassPromptOpen(false);
+                  setLeftRailCollapsed(false);
+                  triggerTool('poly');
+                  setSuccessMessage("Draw tool active: Plot vertices across a transition zone containing multiple terrain types (e.g. land & water).");
+                }}
+                className="px-4 py-1.5 text-xs bg-[#D9622B] hover:bg-[#A84A32] text-white font-medium rounded-lg transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Pentagon className="w-3.5 h-3.5" />
+                <span>Redraw / Expand AOI</span>
               </button>
             </div>
           </div>
