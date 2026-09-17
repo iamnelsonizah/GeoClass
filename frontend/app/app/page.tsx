@@ -681,6 +681,15 @@ export default function Home() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // Responsive: auto-collapse side rails and analytics drawer on mobile devices to give full view to map
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setLeftRailCollapsed(true);
+      setRightRailCollapsed(true);
+      setAnalyticsExpanded(false);
+    }
+  }, []);
+
   const toggleMapFullscreen = () => {
     window.dispatchEvent(new CustomEvent('map-toggle-fullscreen'));
   };
@@ -2912,9 +2921,9 @@ export default function Home() {
       </header>
 
       {/* ---------- Scientific Workstation Telemetry & Summary Bar ---------- */}
-      <div className="flex items-center justify-between px-5 py-2 bg-[#FAF9F5] border-b border-[#D8D5CA] text-xs select-none">
+      <div className="flex items-center justify-between px-3 sm:px-5 py-1.5 sm:py-2 bg-[#FAF9F5] border-b border-[#D8D5CA] text-xs select-none overflow-x-auto scrollbar-none">
         {/* Telemetry Metrics */}
-        <div className="flex items-center gap-6 overflow-x-auto py-0.5">
+        <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto py-0.5 flex-shrink-0">
           <div>
             <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">STATUS</div>
             <div className="flex items-center gap-1.5 font-medium text-[#1A1D23]">
@@ -2955,16 +2964,16 @@ export default function Home() {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
           {/* Study Area Map Generator */}
           <button 
             type="button"
             onClick={() => setIsStudyAreaModalOpen(true)}
-            className="px-2.5 py-1 rounded border border-[#D8D5CA] bg-[#FAF9F5] hover:bg-[#F4F1E8] text-[#1A1D23] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium shadow-2xs"
+            className="px-2 sm:px-2.5 py-1 rounded border border-[#D8D5CA] bg-[#FAF9F5] hover:bg-[#F4F1E8] text-[#1A1D23] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium shadow-2xs"
             title="Generate Publication-Ready Study Area Map"
           >
             <Compass className="w-3.5 h-3.5 text-[#D9622B]" />
-            <span className="hidden md:inline">Study Area Map</span>
+            <span className="hidden sm:inline">Study Map</span>
           </button>
 
           {/* Save Analysis State */}
@@ -2972,7 +2981,7 @@ export default function Home() {
             type="button"
             onClick={() => setSaveModalOpen(true)}
             disabled={coords.length === 0}
-            className={`px-2.5 py-1 rounded border transition cursor-pointer flex items-center gap-1.5 text-xs font-medium ${
+            className={`px-2 sm:px-2.5 py-1 rounded border transition cursor-pointer flex items-center gap-1.5 text-xs font-medium ${
               coords.length > 0 
                 ? 'bg-[#FAF9F5] text-[#1A1D23] border-[#D8D5CA] hover:bg-[#F4F1E8] shadow-2xs' 
                 : 'text-[#8A908A] border-[#E5E5E0] cursor-not-allowed opacity-60'
@@ -2980,18 +2989,18 @@ export default function Home() {
             title={coords.length > 0 ? "Save Current Analysis State to Supabase" : "Select an AOI to save analysis"}
           >
             <Save className="w-3.5 h-3.5 text-[#D9622B]" />
-            <span className="hidden lg:inline">Save Analysis</span>
+            <span className="hidden sm:inline">Save</span>
           </button>
 
           {/* Saved Analyses Library */}
           <button 
             type="button"
             onClick={() => setIsWorkspaceLibraryOpen(true)}
-            className="px-2.5 py-1 rounded border border-[#D8D5CA] bg-transparent text-[#69706A] hover:text-[#1A1D23] hover:bg-[#F4F1E8] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium"
+            className="px-2 sm:px-2.5 py-1 rounded border border-[#D8D5CA] bg-transparent text-[#69706A] hover:text-[#1A1D23] hover:bg-[#F4F1E8] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium"
             title="Open Saved Analyses Library"
           >
             <Folder className="w-3.5 h-3.5 text-[#69706A]" />
-            <span className="hidden xl:inline">Saved ({savedWorkspaces.length})</span>
+            <span className="hidden md:inline">Saved ({savedWorkspaces.length})</span>
           </button>
 
           <button 
@@ -3005,7 +3014,7 @@ export default function Home() {
           <button 
             type="button"
             onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
-            className={`px-2.5 py-1 rounded border transition cursor-pointer flex items-center gap-1.5 text-xs font-medium ${
+            className={`px-2 sm:px-2.5 py-1 rounded border transition cursor-pointer flex items-center gap-1.5 text-xs font-medium ${
               !rightRailCollapsed 
                 ? 'bg-[#FAF9F5] text-[#D9622B] border-[#D9622B]/40 shadow-xs' 
                 : 'bg-transparent text-[#69706A] border-[#D8D5CA] hover:text-[#1A1D23] hover:bg-[#F4F1E8]'
@@ -3013,7 +3022,7 @@ export default function Home() {
             title={rightRailCollapsed ? "Open Layers & Tools" : "Collapse Layers & Tools"}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Layers & Tools</span>
+            <span className="hidden sm:inline">Layers &amp; Tools</span>
           </button>
         </div>
       </div>
@@ -3023,6 +3032,22 @@ export default function Home() {
         
         {/* ---------- Left rail (Workflow & Pipeline) matching Mockup ---------- */}
         <aside className={`rail rail-left ${leftRailCollapsed ? 'collapsed' : ''} bg-[#FAF9F5] border-r border-[#D8D5CA] overflow-y-auto`} aria-label="Workflow controls">
+          {/* Left Rail Header */}
+          <div className="rail-header bg-[#FAF9F5] border-b border-[#D8D5CA]">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#1A1D23]">
+              <Target className="w-4 h-4 text-[#D9622B]" />
+              <span>Workflow &amp; Pipeline</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setLeftRailCollapsed(true)}
+              className="p-1 rounded text-[#69706A] hover:text-[#1A1D23] hover:bg-[#F4F1E8] transition cursor-pointer"
+              title="Collapse workflow panel"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+          </div>
+
           <div className="p-3.5 space-y-4">
 
             {/* Notification messages */}
@@ -5390,6 +5415,17 @@ export default function Home() {
           </div>
         </aside>
 
+        {/* Mobile Backdrop for Drawers */}
+        <div 
+          className={`rail-backdrop ${(!leftRailCollapsed || !rightRailCollapsed || analyticsExpanded) ? 'active' : ''}`}
+          onClick={() => {
+            setLeftRailCollapsed(true);
+            setRightRailCollapsed(true);
+            setAnalyticsExpanded(false);
+          }}
+          aria-hidden="true"
+        />
+
       </div>
 
       {/* STAC Catalog Granules Browser Modal */}
@@ -5427,12 +5463,12 @@ export default function Home() {
       {/* Save Workspace State Dialog */}
       {saveModalOpen && (
         <div 
-          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setSaveModalOpen(false);
           }}
         >
-          <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150 relative z-10">
+          <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150 relative z-10">
             <div className="flex items-center justify-between border-b border-[#EFECE3] pb-3">
               <div className="flex items-center gap-2">
                 <Save className="w-4 h-4 text-[#D9622B]" />
@@ -5503,13 +5539,13 @@ export default function Home() {
       {/* Saved Analyses & Projects Library Modal */}
       {isWorkspaceLibraryOpen && (
         <div 
-          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsWorkspaceLibraryOpen(false);
           }}
         >
           <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 relative z-10">
-            <div className="flex items-center justify-between border-b border-[#EFECE3] px-6 py-4 bg-white/70">
+            <div className="flex items-center justify-between border-b border-[#EFECE3] px-4 sm:px-6 py-3 sm:py-4 bg-white/70">
               <div className="flex items-center gap-2.5">
                 <Folder className="w-4 h-4 text-[#D9622B]" />
                 <h3 className="text-sm font-bold text-[#1A1D23]">Saved Projects & Analyses</h3>
@@ -5527,7 +5563,7 @@ export default function Home() {
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto flex-1 space-y-3">
+            <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 space-y-3">
               {savedWorkspaces.length === 0 ? (
                 <div className="py-12 text-center text-[#8A908A] space-y-3">
                   <div className="w-12 h-12 mx-auto rounded-full bg-[#EAE8E1] flex items-center justify-center text-[#69706A]">
@@ -5542,7 +5578,7 @@ export default function Home() {
                 savedWorkspaces.map((ws) => (
                   <div
                     key={ws.id}
-                    className="p-3.5 bg-white border border-[#D8D5CA] hover:border-[#D9622B] rounded-lg transition group flex items-center justify-between gap-4 shadow-2xs"
+                    className="p-3.5 bg-white border border-[#D8D5CA] hover:border-[#D9622B] rounded-lg transition group flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-2xs"
                   >
                     <div className="space-y-1 min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -5562,7 +5598,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                       <button
                         type="button"
                         onClick={() => handleRestoreWorkspace(ws)}
@@ -5585,7 +5621,7 @@ export default function Home() {
               )}
             </div>
 
-            <div className="border-t border-[#EFECE3] px-6 py-3 bg-[#FAF9F5] flex items-center justify-between text-[11px] text-[#8A908A]">
+            <div className="border-t border-[#EFECE3] px-4 sm:px-6 py-3 bg-[#FAF9F5] flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#8A908A]">
               <span>Saved states are stored in Supabase with local redundancy.</span>
               <button
                 type="button"
@@ -5687,6 +5723,118 @@ export default function Home() {
           </div>
         </div>
       )}
+      {/* Mobile Bottom Navigation Bar (Visible only on < 1024px screens) */}
+      <nav className="mobile-bottom-nav select-none" aria-label="Mobile Navigation">
+        {/* 1. Map Tab */}
+        <button
+          type="button"
+          onClick={() => {
+            setLeftRailCollapsed(true);
+            setRightRailCollapsed(true);
+            setAnalyticsExpanded(false);
+          }}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
+            leftRailCollapsed && rightRailCollapsed && !analyticsExpanded
+              ? 'text-[#D9622B]'
+              : 'text-[#69706A] hover:text-[#1A1D23]'
+          }`}
+        >
+          <div className="relative">
+            <Compass className="w-5 h-5" />
+          </div>
+          <span className={`text-[10px] tracking-tight mt-0.5 ${
+            leftRailCollapsed && rightRailCollapsed && !analyticsExpanded ? 'font-bold' : 'font-medium'
+          }`}>
+            Map
+          </span>
+        </button>
+
+        {/* 2. Workflow Tab */}
+        <button
+          type="button"
+          onClick={() => {
+            const willOpen = leftRailCollapsed;
+            setLeftRailCollapsed(!willOpen);
+            setRightRailCollapsed(true);
+            setAnalyticsExpanded(false);
+          }}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
+            !leftRailCollapsed
+              ? 'text-[#D9622B]'
+              : 'text-[#69706A] hover:text-[#1A1D23]'
+          }`}
+        >
+          <div className="relative">
+            <Target className="w-5 h-5" />
+            {coords.length > 0 && (
+              <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-[#4B8055] ring-2 ring-[#FAF9F5]" />
+            )}
+          </div>
+          <span className={`text-[10px] tracking-tight mt-0.5 ${
+            !leftRailCollapsed ? 'font-bold' : 'font-medium'
+          }`}>
+            Workflow
+          </span>
+        </button>
+
+        {/* 3. Layers Tab */}
+        <button
+          type="button"
+          onClick={() => {
+            const willOpen = rightRailCollapsed;
+            setRightRailCollapsed(!willOpen);
+            setLeftRailCollapsed(true);
+            setAnalyticsExpanded(false);
+          }}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
+            !rightRailCollapsed
+              ? 'text-[#D9622B]'
+              : 'text-[#69706A] hover:text-[#1A1D23]'
+          }`}
+        >
+          <div className="relative">
+            <Layers className="w-5 h-5" />
+            {readyLayersCount > 0 && (
+              <span className="absolute -top-1 -right-2 px-1 text-[8.5px] font-bold rounded-full bg-[#D9622B] text-white">
+                {readyLayersCount}
+              </span>
+            )}
+          </div>
+          <span className={`text-[10px] tracking-tight mt-0.5 ${
+            !rightRailCollapsed ? 'font-bold' : 'font-medium'
+          }`}>
+            Layers
+          </span>
+        </button>
+
+        {/* 4. Analytics Tab */}
+        <button
+          type="button"
+          onClick={() => {
+            const willOpen = !analyticsExpanded;
+            setAnalyticsExpanded(willOpen);
+            setLeftRailCollapsed(true);
+            setRightRailCollapsed(true);
+          }}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
+            analyticsExpanded
+              ? 'text-[#D9622B]'
+              : 'text-[#69706A] hover:text-[#1A1D23]'
+          }`}
+        >
+          <div className="relative">
+            <LayoutGrid className="w-5 h-5" />
+            {statistics && (
+              <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-[#3B7A46] ring-2 ring-[#FAF9F5]" />
+            )}
+          </div>
+          <span className={`text-[10px] tracking-tight mt-0.5 ${
+            analyticsExpanded ? 'font-bold' : 'font-medium'
+          }`}>
+            Analytics
+          </span>
+        </button>
+      </nav>
     </div>
   );
 }

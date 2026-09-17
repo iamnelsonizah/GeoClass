@@ -125,8 +125,8 @@ export function SpectralInspectorPanel({
 
   return (
     <DraggableContainer
-      defaultPosition={{ x: 20, y: 80 }}
-      className="w-[490px] max-w-[calc(100vw-32px)] bg-[#FAF9F5] border border-[#D8D5CA] shadow-xl rounded overflow-hidden text-[#1A1D23] z-[1200] select-none"
+      defaultPosition={{ x: 12, y: 56 }}
+      className="w-[490px] max-w-[calc(100vw-24px)] bg-[#FAF9F5] border border-[#D8D5CA] shadow-xl rounded overflow-hidden text-[#1A1D23] z-[1200] select-none"
     >
       {/* Header / Drag handle */}
       <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#F4F1E8] border-b border-[#D8D5CA] cursor-move">
@@ -164,7 +164,7 @@ export function SpectralInspectorPanel({
       </div>
 
       {/* Content Area */}
-      <div className="p-3.5 space-y-3">
+      <div className="p-3.5 space-y-3 max-h-[calc(82vh-50px)] overflow-y-auto">
         {loading && (
           <div className="flex flex-col items-center justify-center py-10 space-y-2">
             <div className="w-6 h-6 border-2 border-[#D9622B] border-t-transparent rounded-full animate-spin" />
@@ -295,7 +295,7 @@ export function SpectralInspectorPanel({
               <div className="text-[10px] font-semibold text-[#69706A] uppercase tracking-wider mb-1.5">
                 On-The-Fly Diagnostic Multispectral Indices
               </div>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                 {indexCards.map((c) => (
                   <div
                     key={c.key}

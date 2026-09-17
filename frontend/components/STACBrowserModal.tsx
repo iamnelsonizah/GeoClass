@@ -213,24 +213,24 @@ export function STACBrowserModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded w-full max-w-5xl h-[88vh] max-h-[850px] shadow-xl flex flex-col overflow-hidden text-[#1A1D23] animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded w-full max-w-5xl h-[92vh] max-h-[850px] shadow-xl flex flex-col overflow-hidden text-[#1A1D23] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Top Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 bg-[#F4F1E8] border-b border-[#D8D5CA]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-[#FAF9F5] border border-[#D8D5CA] flex items-center justify-center text-[#D9622B]">
+        <div className="flex items-center justify-between px-3.5 sm:px-5 py-3 bg-[#F4F1E8] border-b border-[#D8D5CA]">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-[#FAF9F5] border border-[#D8D5CA] flex items-center justify-center text-[#D9622B]">
               <Database className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold tracking-tight text-[#1A1D23]">STAC Catalog Browser</h3>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-[#FAF9F5] text-[#454B46] font-mono border border-[#D8D5CA]">
-                  Earth Engine Open EO
+                <h3 className="text-xs sm:text-sm font-semibold tracking-tight text-[#1A1D23]">STAC Catalog Browser</h3>
+                <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-[#FAF9F5] text-[#454B46] font-mono border border-[#D8D5CA]">
+                  Open EO
                 </span>
               </div>
-              <p className="text-[11px] text-[#69706A]">
-                Query and inspect Sentinel-2, Landsat 8/9, and Sentinel-1 granules over your AOI
+              <p className="text-[10px] sm:text-[11px] text-[#69706A] line-clamp-1">
+                Query Sentinel-2, Landsat 8/9 &amp; Sentinel-1 granules
               </p>
             </div>
           </div>
@@ -243,7 +243,7 @@ export function STACBrowserModal({
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="px-5 py-3 bg-[#FAF9F5] border-b border-[#D8D5CA] flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="px-3.5 sm:px-5 py-2.5 bg-[#FAF9F5] border-b border-[#D8D5CA] flex flex-wrap items-center justify-between gap-2.5 text-xs">
           {/* Collections Selector */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[#69706A] text-[11px] mr-1 flex items-center gap-1 font-medium">
@@ -271,28 +271,27 @@ export function STACBrowserModal({
             })}
           </div>
 
-          {/* Date range & Cloud controls */}
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="flex items-center gap-1.5 bg-[#FAF9F5] px-2.5 py-1 rounded border border-[#D8D5CA]">
-              <Calendar className="w-3.5 h-3.5 text-[#69706A]" />
+          {/* Date and Cloud Cover Filters */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1 bg-[#F4F1E8] border border-[#D8D5CA] rounded px-2 py-1">
+              <Calendar className="w-3 h-3 text-[#69706A]" />
               <input
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="bg-transparent text-[11px] text-[#1A1D23] focus:outline-none cursor-pointer"
+                className="bg-transparent text-[11px] text-[#1A1D23] focus:outline-none w-24 sm:w-auto"
               />
-              <span className="text-[#8A908A] text-[10px]">to</span>
+              <span className="text-[#8A908A]">→</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="bg-transparent text-[11px] text-[#1A1D23] focus:outline-none cursor-pointer"
+                className="bg-transparent text-[11px] text-[#1A1D23] focus:outline-none w-24 sm:w-auto"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 bg-[#FAF9F5] px-2.5 py-1 rounded border border-[#D8D5CA]">
-              <Cloud className="w-3.5 h-3.5 text-[#69706A]" />
-              <span className="text-[11px] text-[#69706A]">Cloud:</span>
+            <div className="flex items-center gap-1.5 bg-[#F4F1E8] border border-[#D8D5CA] rounded px-2 py-1">
+              <Cloud className="w-3 h-3 text-[#69706A]" />
               <input
                 type="number"
                 min="0"
@@ -315,7 +314,7 @@ export function STACBrowserModal({
                 </>
               ) : (
                 <>
-                  <Search className="w-3.5 h-3.5" /> Search Catalog
+                  <Search className="w-3.5 h-3.5" /> Search
                 </>
               )}
             </button>
@@ -323,10 +322,10 @@ export function STACBrowserModal({
         </div>
 
         {/* Main Body */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           
           {/* Left Side: Scene List */}
-          <div className="w-7/12 border-r border-[#D8D5CA] flex flex-col bg-[#FAF9F5]">
+          <div className="w-full md:w-7/12 h-1/2 md:h-auto border-b md:border-b-0 md:border-r border-[#D8D5CA] flex flex-col bg-[#FAF9F5]">
             {/* Filter Sub-bar */}
             <div className="px-4 py-2 bg-[#F4F1E8] border-b border-[#D8D5CA] flex items-center justify-between text-[11px]">
               <span className="text-[#69706A]">
@@ -453,7 +452,7 @@ export function STACBrowserModal({
           </div>
 
           {/* Right Side: Detailed Granule Inspector */}
-          <div className="w-5/12 bg-[#F4F1E8] flex flex-col p-5 overflow-y-auto">
+          <div className="w-full md:w-5/12 h-1/2 md:h-auto bg-[#F4F1E8] flex flex-col p-3 sm:p-5 overflow-y-auto">
             {selectedScene ? (
               <div className="space-y-4">
                 <div className="flex items-start justify-between pb-3 border-b border-[#D8D5CA]">

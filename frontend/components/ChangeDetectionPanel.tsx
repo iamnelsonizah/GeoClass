@@ -88,8 +88,8 @@ export function ChangeDetectionPanel({
 
   return (
     <DraggableContainer
-      defaultPosition={{ x: 380, y: 70 }}
-      className="w-[360px] sm:w-[440px] bg-[#FAF9F5] border border-[#D8D5CA] rounded shadow-xl overflow-hidden z-[45] font-sans text-[#1A1D23]"
+      defaultPosition={{ x: 14, y: 56 }}
+      className="w-[360px] max-w-[calc(100vw-24px)] sm:w-[440px] bg-[#FAF9F5] border border-[#D8D5CA] rounded shadow-xl overflow-hidden z-[45] font-sans text-[#1A1D23]"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-[#F4F1E8] border-b border-[#D8D5CA] cursor-grab active:cursor-grabbing">
@@ -117,7 +117,7 @@ export function ChangeDetectionPanel({
         </button>
       </div>
 
-      <div className="p-4 space-y-4 max-h-[75vh] overflow-y-auto">
+      <div className="p-4 space-y-4 max-h-[calc(82vh-50px)] overflow-y-auto">
         {/* Controls Bar */}
         <div className="space-y-2.5 p-3 rounded bg-[#F4F1E8] border border-[#D8D5CA]">
           <div className="grid grid-cols-2 gap-2">

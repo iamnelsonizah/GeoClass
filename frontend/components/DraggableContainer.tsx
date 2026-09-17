@@ -80,8 +80,10 @@ export function DraggableContainer({
       const parentRect = parent.getBoundingClientRect();
       const rect = containerRef.current.getBoundingClientRect();
 
-      newX = Math.max(8, Math.min(parentRect.width - rect.width - 8, newX));
-      newY = Math.max(8, Math.min(parentRect.height - rect.height - 8, newY));
+      const maxX = Math.max(8, parentRect.width - rect.width - 8);
+      const maxY = Math.max(8, parentRect.height - rect.height - 8);
+      newX = Math.max(8, Math.min(maxX, newX));
+      newY = Math.max(8, Math.min(maxY, newY));
     }
 
     setPosition({ x: newX, y: newY });

@@ -220,31 +220,27 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D1316] text-[#FFFFFF] selection:bg-[#B7E89F] selection:text-[#0D1316] font-sans flex flex-col justify-between relative">
+    <div className="min-h-screen bg-[#13140e] text-[#f4f3e8] selection:bg-[#ebfc72] selection:text-[#13140e] font-sans flex flex-col justify-between relative">
       
       {/* ────────────────────────────────── Top Bar ────────────────────────────────── */}
-      <header className="relative z-10 border-b border-[#1B2428] bg-[#0D1316]">
-        <div className="max-w-[1240px] mx-auto px-6 h-17 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2.5 cursor-pointer group">
-              <svg width="24" height="20" viewBox="0 0 28 22" fill="none" className="flex-shrink-0">
-                <path d="M14 2L2 19H26L14 2Z" stroke="#B7E89F" strokeWidth="2.2" strokeLinejoin="round" />
-                <path d="M8 14L14 7L20 14" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#B7E89F" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-[#FFFFFF]">
-                GeoClass
+      <header className="relative z-10 border-b border-[#404040] bg-[#13140e]">
+        <div className="max-w-[1240px] mx-auto px-6 h-15 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <span className="font-mono text-sm text-[#ebfc72] font-bold">▲</span>
+              <span className="font-sans text-[16px] font-bold tracking-[-0.02em] text-[#f4f3e8] uppercase">
+                GEOCLASS
               </span>
             </Link>
-            <span className="hidden sm:inline-block font-mono text-[11px] uppercase tracking-[0.12em] text-[#D1D7D3] border-l border-[#222E33] pl-4">
-              Earth Observation
+            <span className="hidden sm:inline-block font-mono text-[11px] uppercase tracking-[0.06em] text-[#84837b] border-l border-[#404040] pl-3">
+              ACCOUNT REGISTRATION
             </span>
           </div>
 
           <div className="flex items-center gap-6">
             <Link 
               href="/" 
-              className="inline-flex items-center gap-2 text-xs font-mono text-[#FFFFFF] hover:text-[#B7E89F] transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-mono text-[#f4f3e8] hover:text-[#ebfc72] transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>RETURN TO OVERVIEW</span>
@@ -255,18 +251,18 @@ export default function SignupPage() {
 
       {/* ────────────────────────────────── Main Signup / Verify Card ────────────────────────────────── */}
       <main className="relative z-10 flex-1 flex items-center justify-center p-6 my-8">
-        <div className="w-full max-w-lg bg-[#131C20] border border-[#1F2A30] rounded-[6px] p-8 sm:p-9 space-y-6 shadow-2xl">
+        <div className="w-full max-w-lg bg-[#181a13] border border-[#404040] rounded-[3.6px] p-8 sm:p-9 space-y-6">
           
           {/* Header Title */}
           <div className="space-y-2 text-center">
-            <div className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-[#B7E89F]">
-              <Shield className="w-3.5 h-3.5 text-[#B7E89F]" />
+            <div className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-[#ebfc72]">
+              <Shield className="w-3.5 h-3.5 text-[#ebfc72]" />
               <span>{step === 1 ? 'PROVISION SCIENTIFIC WORKSPACE' : 'TWO-FACTOR EMAIL VERIFICATION'}</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.03em] text-[#FFFFFF]">
+            <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.03em] text-[#f4f3e8]">
               {step === 1 ? 'Create your account' : 'Enter 6-digit verification code'}
             </h2>
-            <p className="text-xs sm:text-sm text-[#E2E8F0] leading-relaxed max-w-sm mx-auto">
+            <p className="text-xs sm:text-sm text-[#84837b] leading-relaxed max-w-sm mx-auto">
               {step === 1 
                 ? 'Register to access Sentinel-2 MSI and Sentinel-1 SAR classification engines'
                 : `We sent a 6-digit security code to ${email}`}
@@ -275,10 +271,10 @@ export default function SignupPage() {
 
           {/* Live Lockout Alert */}
           {lockoutSeconds > 0 && (
-            <div className="p-3.5 rounded-[4px] bg-[#2A1517] border border-[#EF4444]/40 text-[#FCA5A5] text-xs flex items-start gap-2.5">
+            <div className="p-3.5 rounded-[3.6px] bg-[#2A1517] border border-[#EF4444]/40 text-[#FCA5A5] text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
               <div className="space-y-1 leading-relaxed flex-1">
-                <div className="font-semibold text-[#FFFFFF] flex items-center justify-between">
+                <div className="font-semibold text-[#f4f3e8] flex items-center justify-between">
                   <span>Verification Locked</span>
                   <span className="inline-flex items-center gap-1 font-mono text-[#EF4444]">
                     <Clock className="w-3.5 h-3.5 animate-pulse" />
@@ -287,7 +283,7 @@ export default function SignupPage() {
                 </div>
                 <div className="text-[#FCA5A5]">
                   Too many incorrect attempts. Lockout automatically resets in{' '}
-                  <strong className="font-mono text-[#FFFFFF]">{lockoutSeconds}s</strong>.
+                  <strong className="font-mono text-[#f4f3e8]">{lockoutSeconds}s</strong>.
                 </div>
               </div>
             </div>
@@ -295,14 +291,14 @@ export default function SignupPage() {
 
           {/* Standard Feedback Messages */}
           {errorMsg && lockoutSeconds <= 0 && (
-            <div className="p-3.5 rounded-[4px] bg-[#2A1517] border border-[#EF4444]/40 text-[#FCA5A5] text-xs flex items-start gap-2.5">
+            <div className="p-3.5 rounded-[3.6px] bg-[#2A1517] border border-[#EF4444]/40 text-[#FCA5A5] text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
               <div className="leading-relaxed">{errorMsg}</div>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3.5 rounded-[4px] bg-[#112419] border border-[#4CAF6A]/40 text-[#A7F3D0] text-xs flex items-start gap-2.5">
+            <div className="p-3.5 rounded-[3.6px] bg-[#112419] border border-[#4CAF6A]/40 text-[#A7F3D0] text-xs flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-[#4CAF6A] flex-shrink-0 mt-0.5" />
               <div className="leading-relaxed">{successMsg}</div>
             </div>
@@ -312,7 +308,7 @@ export default function SignupPage() {
           {step === 1 && (
             <form onSubmit={handleRegister} className="space-y-4 pt-1">
               <div className="space-y-1.5">
-                <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#FFFFFF]">
+                <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#f4f3e8]">
                   Full Name
                 </label>
                 <input 
@@ -321,12 +317,12 @@ export default function SignupPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Dr. Elena Vance"
-                  className="w-full bg-[#0D1316] border border-[#1F2A30] focus:border-[#B7E89F] rounded-[4px] px-3.5 py-2.5 text-sm text-[#FFFFFF] placeholder-[#94A3B8] outline-none transition-colors"
+                  className="w-full bg-[#13140e] border border-[#404040] focus:border-[#ebfc72] rounded-[3.6px] px-3.5 py-2.5 text-sm text-[#f4f3e8] placeholder-[#84837b] outline-none transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#FFFFFF]">
+                <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#f4f3e8]">
                   Work / Academic Email
                 </label>
                 <input 
@@ -335,13 +331,13 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="elena@institute.gov"
-                  className="w-full bg-[#0D1316] border border-[#1F2A30] focus:border-[#B7E89F] rounded-[4px] px-3.5 py-2.5 text-sm text-[#FFFFFF] placeholder-[#94A3B8] outline-none transition-colors"
+                  className="w-full bg-[#13140e] border border-[#404040] focus:border-[#ebfc72] rounded-[3.6px] px-3.5 py-2.5 text-sm text-[#f4f3e8] placeholder-[#84837b] outline-none transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#FFFFFF]">
+                  <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#f4f3e8]">
                     Password
                   </label>
                   <input 
@@ -350,12 +346,12 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Min 6 characters"
-                    className="w-full bg-[#0D1316] border border-[#1F2A30] focus:border-[#B7E89F] rounded-[4px] px-3.5 py-2.5 text-sm text-[#FFFFFF] placeholder-[#94A3B8] outline-none transition-colors"
+                    className="w-full bg-[#13140e] border border-[#404040] focus:border-[#ebfc72] rounded-[3.6px] px-3.5 py-2.5 text-sm text-[#f4f3e8] placeholder-[#84837b] outline-none transition-colors"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#FFFFFF]">
+                  <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#f4f3e8]">
                     Confirm Password
                   </label>
                   <input 
@@ -364,14 +360,14 @@ export default function SignupPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repeat password"
-                    className="w-full bg-[#0D1316] border border-[#1F2A30] focus:border-[#B7E89F] rounded-[4px] px-3.5 py-2.5 text-sm text-[#FFFFFF] placeholder-[#94A3B8] outline-none transition-colors"
+                    className="w-full bg-[#13140e] border border-[#404040] focus:border-[#ebfc72] rounded-[3.6px] px-3.5 py-2.5 text-sm text-[#f4f3e8] placeholder-[#84837b] outline-none transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#FFFFFF]">
+                  <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#f4f3e8]">
                     Organization
                   </label>
                   <input 
@@ -379,18 +375,18 @@ export default function SignupPage() {
                     value={organization}
                     onChange={(e) => setOrganization(e.target.value)}
                     placeholder="Geospatial Lab / Agency"
-                    className="w-full bg-[#0D1316] border border-[#1F2A30] focus:border-[#B7E89F] rounded-[4px] px-3.5 py-2.5 text-sm text-[#FFFFFF] placeholder-[#94A3B8] outline-none transition-colors"
+                    className="w-full bg-[#13140e] border border-[#404040] focus:border-[#ebfc72] rounded-[3.6px] px-3.5 py-2.5 text-sm text-[#f4f3e8] placeholder-[#84837b] outline-none transition-colors"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#FFFFFF]">
+                  <label className="block text-xs font-mono uppercase tracking-[0.12em] text-[#f4f3e8]">
                     Primary Specialty
                   </label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className="w-full bg-[#0D1316] border border-[#1F2A30] focus:border-[#B7E89F] rounded-[4px] px-3 py-2.5 text-sm text-[#FFFFFF] outline-none transition-colors cursor-pointer"
+                    className="w-full bg-[#13140e] border border-[#404040] focus:border-[#ebfc72] rounded-[3.6px] px-3 py-2.5 text-sm text-[#f4f3e8] outline-none transition-colors cursor-pointer"
                   >
                     <option value="remote_sensing_analyst">Remote Sensing / GIS</option>
                     <option value="mineral_exploration">Mineral Exploration</option>
@@ -404,7 +400,7 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-3 bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] font-semibold text-sm py-2.5 rounded-[4px] transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                className="w-full mt-3 bg-[#ebfc72] hover:bg-[#f4fd91] text-[#13140e] font-semibold text-sm py-2.5 rounded-[3.6px] transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
                 <span>{loading ? 'Dispatching Verification Email...' : 'Continue to Verification'}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -417,9 +413,9 @@ export default function SignupPage() {
             <form onSubmit={handleVerify} className="space-y-6 pt-2">
               
               {/* Notice that code was sent to their email */}
-              <div className="p-3 rounded-[4px] bg-[#0D1316] border border-[#1F2A30] flex items-center gap-3 text-xs text-[#CBD5E1]">
-                <Mail className="w-4 h-4 text-[#B7E89F] flex-shrink-0" />
-                <span>Verification code sent to <strong className="text-[#FFFFFF]">{email}</strong>. Please check your inbox and spam folder.</span>
+              <div className="p-3 rounded-[3.6px] bg-[#13140e] border border-[#404040] flex items-center gap-3 text-xs text-[#CBD5E1]">
+                <Mail className="w-4 h-4 text-[#ebfc72] flex-shrink-0" />
+                <span>Verification code sent to <strong className="text-[#f4f3e8]">{email}</strong>. Please check your inbox and spam folder.</span>
               </div>
 
               {/* 6 Auto-Advancing Digit Boxes */}
@@ -435,20 +431,20 @@ export default function SignupPage() {
                     disabled={lockoutSeconds > 0}
                     onChange={(e) => handleDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className={`w-11 h-13 sm:w-13 sm:h-15 bg-[#0D1316] border rounded-[6px] text-center text-xl sm:text-2xl font-mono font-bold outline-none transition-colors shadow-inner ${
+                    className={`w-11 h-13 sm:w-13 sm:h-15 bg-[#13140e] border rounded-[3.6px] text-center text-xl sm:text-2xl font-mono font-bold outline-none transition-colors shadow-inner ${
                       lockoutSeconds > 0 
                         ? 'border-[#EF4444]/40 text-[#69766F] cursor-not-allowed' 
-                        : 'border-[#1F2A30] focus:border-[#B7E89F] text-[#FFFFFF]'
+                        : 'border-[#404040] focus:border-[#ebfc72] text-[#f4f3e8]'
                     }`}
                   />
                 ))}
               </div>
 
               {/* Rate Limit / Attempts Indicator */}
-              <div className="text-center text-xs font-mono text-[#94A3B8] space-y-1">
+              <div className="text-center text-xs font-mono text-[#84837b] space-y-1">
                 <div>Maximum 5 incorrect attempts before 60s lockout</div>
-                <div className="flex items-center justify-center gap-1.5 text-xs text-[#E2E8F0]">
-                  <Clock className="w-3.5 h-3.5 text-[#B7E89F]" />
+                <div className="flex items-center justify-center gap-1.5 text-xs text-[#84837b]">
+                  <Clock className="w-3.5 h-3.5 text-[#ebfc72]" />
                   <span>Code valid for 10 minutes</span>
                 </div>
               </div>
@@ -458,10 +454,10 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={loading || lockoutSeconds > 0}
-                  className={`w-full font-semibold text-sm py-3 rounded-[4px] transition-colors flex items-center justify-center gap-2 ${
+                  className={`w-full font-semibold text-sm py-3 rounded-[3.6px] transition-colors flex items-center justify-center gap-2 ${
                     lockoutSeconds > 0
-                      ? 'bg-[#182328] text-[#94A3B8] border border-[#222E33] cursor-not-allowed'
-                      : 'bg-[#B7E89F] hover:bg-[#C8FFB2] text-[#0D1316] cursor-pointer'
+                      ? 'bg-[#182328] text-[#84837b] border border-[#404040] cursor-not-allowed'
+                      : 'bg-[#ebfc72] hover:bg-[#f4fd91] text-[#13140e] cursor-pointer'
                   }`}
                 >
                   <span>
@@ -479,7 +475,7 @@ export default function SignupPage() {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="text-[#94A3B8] hover:text-[#FFFFFF] transition-colors cursor-pointer"
+                    className="text-[#84837b] hover:text-[#f4f3e8] transition-colors cursor-pointer"
                   >
                     Change Email
                   </button>
@@ -490,11 +486,11 @@ export default function SignupPage() {
                     disabled={cooldown > 0 || loading || resending || lockoutSeconds > 0}
                     className={`inline-flex items-center gap-1 font-mono transition-colors cursor-pointer ${
                       cooldown > 0 || loading || resending || lockoutSeconds > 0
-                        ? 'text-[#94A3B8] cursor-not-allowed' 
-                        : 'text-[#B7E89F] hover:underline'
+                        ? 'text-[#84837b] cursor-not-allowed' 
+                        : 'text-[#ebfc72] hover:underline'
                     }`}
                   >
-                    <RotateCcw className={`w-3 h-3 ${cooldown > 0 || loading || resending || lockoutSeconds > 0 ? '' : 'text-[#B7E89F]'} ${resending ? 'animate-spin' : ''}`} />
+                    <RotateCcw className={`w-3 h-3 ${cooldown > 0 || loading || resending || lockoutSeconds > 0 ? '' : 'text-[#ebfc72]'} ${resending ? 'animate-spin' : ''}`} />
                     <span>{resending ? 'Dispatching New Code...' : cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend Code via Email'}</span>
                   </button>
                 </div>
@@ -504,9 +500,9 @@ export default function SignupPage() {
           )}
 
           {/* Switch to Login */}
-          <div className="text-center text-xs text-[#E2E8F0] pt-2 border-t border-[#1F2A30]">
+          <div className="text-center text-xs text-[#84837b] pt-2 border-t border-[#404040]">
             Already have an active account?{' '}
-            <Link href="/login" className="text-[#B7E89F] hover:underline font-medium">
+            <Link href="/login" className="text-[#ebfc72] hover:underline font-medium">
               Sign in
             </Link>
           </div>
@@ -515,7 +511,7 @@ export default function SignupPage() {
       </main>
 
       {/* ────────────────────────────────── Footer ────────────────────────────────── */}
-      <footer className="relative z-10 py-6 text-center text-xs font-mono text-[#94A3B8] border-t border-[#1B2428]">
+      <footer className="relative z-10 py-6 text-center text-xs font-mono text-[#84837b] border-t border-[#404040]">
         GEOCLASS · ZERO TRUST TWO-FACTOR AUTHENTICATION SYSTEM
       </footer>
     </div>

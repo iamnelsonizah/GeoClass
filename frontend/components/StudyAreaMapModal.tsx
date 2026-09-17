@@ -134,26 +134,26 @@ export function StudyAreaMapModal({
       <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded-2xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
         
         {/* Modal Header */}
-        <div className="p-4 border-b border-[#D8D5CA] flex items-center justify-between bg-[#FAF9F5] flex-shrink-0">
+        <div className="p-3 sm:p-4 border-b border-[#D8D5CA] flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 bg-[#FAF9F5] flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#D9622B] flex items-center justify-center text-white shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-[#D9622B] flex items-center justify-center text-white shadow-xs shrink-0">
               <Compass className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#1A1D23] tracking-tight">
-                Publication-Ready Study Area Map Composer
+              <h3 className="text-xs sm:text-sm font-bold text-[#1A1D23] tracking-tight">
+                Study Area Map Composer
               </h3>
-              <p className="text-[11px] text-[#69706A]">
-                Cartographic layout with coordinate graticules, north arrow, metric scale bar &amp; legend
+              <p className="text-[10px] sm:text-[11px] text-[#69706A] line-clamp-1">
+                Cartographic layout with coordinate graticules, scale &amp; legend
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
             <button
               type="button"
               onClick={handlePrint}
-              className="px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded-lg text-xs font-medium cursor-pointer transition flex items-center gap-1.5 shadow-2xs"
+              className="px-2.5 sm:px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded-lg text-xs font-medium cursor-pointer transition flex items-center gap-1.5 shadow-2xs"
             >
               <Printer className="w-3.5 h-3.5 text-[#69706A]" />
               <span className="hidden sm:inline">Print / PDF</span>
@@ -162,10 +162,10 @@ export function StudyAreaMapModal({
               type="button"
               onClick={handleExportPNG}
               disabled={exporting}
-              className="px-3.5 py-1.5 bg-[#D9622B] hover:bg-[#A84A32] text-white rounded-lg text-xs font-semibold cursor-pointer transition flex items-center gap-1.5 shadow-xs"
+              className="px-2.5 sm:px-3.5 py-1.5 bg-[#D9622B] hover:bg-[#A84A32] text-white rounded-lg text-xs font-semibold cursor-pointer transition flex items-center gap-1.5 shadow-xs"
             >
               <Download className="w-3.5 h-3.5 text-white" />
-              <span>{exporting ? 'Generating...' : 'Export High-Res PNG'}</span>
+              <span>{exporting ? 'Generating...' : 'Export PNG'}</span>
             </button>
             <button
               type="button"

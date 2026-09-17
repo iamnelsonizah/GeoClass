@@ -130,8 +130,8 @@ export function PixelTimelinePanel({
 
   return (
     <DraggableContainer
-      defaultPosition={{ x: 28, y: 72 }}
-      className="w-[540px] max-w-[calc(100vw-32px)] bg-[#FAF9F5] border border-[#D8D5CA] shadow-xl rounded overflow-hidden text-[#1A1D23] z-[1200] select-none"
+      defaultPosition={{ x: 12, y: 56 }}
+      className="w-[540px] max-w-[calc(100vw-24px)] bg-[#FAF9F5] border border-[#D8D5CA] shadow-xl rounded overflow-hidden text-[#1A1D23] z-[1200] select-none"
     >
       {/* Header / Drag handle */}
       <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#F4F1E8] border-b border-[#D8D5CA] cursor-move">
@@ -169,7 +169,7 @@ export function PixelTimelinePanel({
       </div>
 
       {/* Content Area */}
-      <div className="p-3.5 space-y-3">
+      <div className="p-3.5 space-y-3 max-h-[calc(82vh-50px)] overflow-y-auto">
         {loading && (
           <div className="flex flex-col items-center justify-center py-12 space-y-2.5">
             <div className="w-7 h-7 border-2 border-[#D9622B] border-t-transparent rounded-full animate-spin" />
