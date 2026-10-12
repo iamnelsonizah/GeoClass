@@ -172,17 +172,16 @@ const LULC_COLORS: Record<string, string> = {
 const SAVED_AREAS: SavedArea[] = [
   {
     id: 'sf-bay',
-    name: 'San Francisco Bay',
+    name: 'San Francisco Peninsula & Central',
     type: 'Coastal region',
-    center: [37.78, -122.35],
-    zoom: 10,
+    center: [37.77, -122.42],
+    zoom: 11,
     coords: [
-      [-122.545, 37.915],
-      [-122.195, 37.91],
-      [-122.145, 37.685],
-      [-122.405, 37.595],
-      [-122.555, 37.735],
-      [-122.545, 37.915],
+      [-122.525, 37.845],
+      [-122.365, 37.840],
+      [-122.355, 37.695],
+      [-122.515, 37.700],
+      [-122.525, 37.845],
     ],
   },
   {
@@ -475,17 +474,13 @@ const getTemporalChangeTone = (className: string, areaChange: number) => {
       };
 };
 
+// Open-access safeguard limit (50,000 hectares = 500 km²)
+export const MAX_AOI_HA = 50000;
+
 export default function Home() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-
-  // Authentication Route Guard
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login?redirect=/app');
-    }
-  }, [authLoading, isAuthenticated, router]);
 
   // Map State
   const [coords, setCoords] = useState<number[][]>([]);
@@ -1333,7 +1328,11 @@ export default function Home() {
       const midLng = (Math.max(...lngs) + Math.min(...lngs)) / 2;
       setMapCenter([midLat, midLng]);
       setMapZoom(12);
-      setSuccessMessage(`AOI defined (${drawnCoords.length} vertices, ${area.toFixed(1)} ha). Ready to fetch imagery.`);
+      if (area > MAX_AOI_HA) {
+        setErrorMessage(`AOI area (${area.toFixed(1)} ha) exceeds the 50,000 ha open-access limit (~500 km²). Please delineate a smaller boundary to protect processing resources.`);
+      } else {
+        setSuccessMessage(`AOI defined (${drawnCoords.length} vertices, ${area.toFixed(1)} ha). Ready to fetch imagery.`);
+      }
       setDismissedInvite(true);
     } else {
       setAoiAreaHa(null);
@@ -2046,6 +2045,10 @@ export default function Home() {
       setErrorMessage("Please draw or upload an Area of Interest (AOI) boundary first.");
       return;
     }
+    if (aoiAreaHa !== null && aoiAreaHa > MAX_AOI_HA) {
+      setErrorMessage(`AOI area (${aoiAreaHa.toFixed(1)} ha) exceeds the 50,000 ha open-access limit. Please delineate a smaller boundary before fetching imagery.`);
+      return;
+    }
     if (temporalValidationMessage) {
       setErrorMessage(temporalValidationMessage);
       return;
@@ -2194,6 +2197,10 @@ export default function Home() {
   const runClassification = async () => {
     if (coords.length === 0) {
       setErrorMessage("Please draw or upload an Area of Interest (AOI) boundary first.");
+      return;
+    }
+    if (aoiAreaHa !== null && aoiAreaHa > MAX_AOI_HA) {
+      setErrorMessage(`AOI area (${aoiAreaHa.toFixed(1)} ha) exceeds the 50,000 ha open-access limit. Please delineate a smaller boundary before running classification.`);
       return;
     }
     if (temporalValidationMessage) {
@@ -2791,15 +2798,6 @@ export default function Home() {
 
   const readyLayersCount = layerStack.filter(l => l.hasUrl).length;
 
-  if (authLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[#0D1316] text-[#FFFFFF] flex flex-col items-center justify-center p-6 space-y-4">
-        <div className="w-8 h-8 rounded-full border-2 border-[#1F2A30] border-t-[#B7E89F] animate-spin" />
-        <div className="text-xs font-mono tracking-widest text-[#B7E89F] uppercase">Authenticating Geospatial Node...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="geo-app">
       
@@ -2881,12 +2879,12 @@ export default function Home() {
               className="flex items-center gap-2 pl-2 cursor-pointer select-none group"
             >
               <div className="w-7 h-7 rounded-full bg-[#2D4A34] text-[#B7E89F] border border-[#306840] flex items-center justify-center text-[11px] font-bold">
-                {user?.fullName 
+                {isAuthenticated && user?.fullName 
                   ? user.fullName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
-                  : 'NI'}
+                  : 'OP'}
               </div>
               <span className="text-xs font-semibold text-[#1A1D23] hidden md:inline">
-                {user?.fullName || 'Nelson Izah'}
+                {isAuthenticated ? (user?.fullName || 'Operator') : 'Operator (Guest)'}
               </span>
               <ChevronDown className={`w-3.5 h-3.5 text-[#69706A] transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -2894,26 +2892,44 @@ export default function Home() {
             {userDropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-[#FAF9F5] border border-[#D8D5CA] rounded-[6px] shadow-xl p-3 space-y-2 z-50 text-xs">
                 <div className="border-b border-[#E3E0D5] pb-2">
-                  <div className="font-semibold text-[#1A1D23]">{user?.fullName || 'Analyst'}</div>
-                  <div className="text-[11px] text-[#676E7D] truncate">{user?.email || 'analyst@organization.org'}</div>
+                  <div className="font-semibold text-[#1A1D23]">
+                    {isAuthenticated ? (user?.fullName || 'Operator') : 'Guest Operator'}
+                  </div>
+                  <div className="text-[11px] text-[#676E7D] truncate">
+                    {isAuthenticated ? (user?.email || 'analyst@organization.org') : 'Open Access Session'}
+                  </div>
                   <div className="inline-block mt-1.5 font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#E4E9DF] text-[#2D4A34] font-medium">
-                    {user?.role?.replace(/_/g, ' ') || 'Remote Sensing Analyst'}
+                    {isAuthenticated ? (user?.role?.replace(/_/g, ' ') || 'Remote Sensing Analyst') : 'Open Access // No Login Required'}
                   </div>
                 </div>
 
-                <div className="pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      logout();
-                      router.push('/login');
-                    }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] text-xs font-medium text-[#A84E42] hover:bg-[#FCECE4] transition cursor-pointer"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Sign Out / Logout</span>
-                  </button>
-                </div>
+                {isAuthenticated ? (
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        router.push('/login');
+                      }}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] text-xs font-medium text-[#A84E42] hover:bg-[#FCECE4] transition cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out / Logout</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pt-1 space-y-1.5">
+                    <div className="text-[11px] text-[#69706A] leading-relaxed">
+                      All AOI boundaries and workspaces are saved in your local browser cache.
+                    </div>
+                    <Link
+                      href="/login"
+                      className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-[4px] text-xs font-medium bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#F4F1E8] text-[#1A1D23] transition"
+                    >
+                      <span>Sign In (Optional Cloud Sync)</span>
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -2935,8 +2951,15 @@ export default function Home() {
           {coords.length > 0 && (
             <div>
               <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">AOI AREA</div>
-              <div className="font-mono text-[#1A1D23] font-medium">
-                {calculateAOIArea(coords).toFixed(1)} ha
+              <div className="font-mono text-[#1A1D23] font-medium flex items-center gap-1.5">
+                <span className={calculateAOIArea(coords) > MAX_AOI_HA ? 'text-[#C56A5A] font-bold' : ''}>
+                  {calculateAOIArea(coords).toFixed(1)} ha
+                </span>
+                {calculateAOIArea(coords) > MAX_AOI_HA && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#C56A5A]/20 text-[#C56A5A] uppercase font-bold tracking-tight">
+                    EXCEEDS 50K HA LIMIT
+                  </span>
+                )}
               </div>
             </div>
           )}

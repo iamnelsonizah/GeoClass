@@ -4,10 +4,16 @@ import zipfile
 import base64
 import requests
 import logging
+import math
+import time
+from collections import defaultdict
+from threading import Lock
 from datetime import date
 from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, status, Response
+from fastapi import FastAPI, HTTPException, status, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
 from pydantic import BaseModel, Field, model_validator
 import ee
 
@@ -55,6 +61,138 @@ from stac_service import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Open Access Safeguard Constants
+MAX_AOI_HA = float(os.getenv("MAX_AOI_HA", "50000.0"))  # 50,000 hectares = 500 km² limit
+RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
+
+def calculate_aoi_area_ha(coords: List[List[float]]) -> float:
+    """
+    Calculate approximate planar projection area of a polygon in hectares.
+    coords: [[lng1, lat1], [lng2, lat2], ...]
+    """
+    if not coords or len(coords) < 3:
+        return 0.0
+
+    flat_coords = coords[0] if (len(coords) > 0 and isinstance(coords[0][0], list)) else coords
+    if len(flat_coords) < 3:
+        return 0.0
+
+    try:
+        mean_lat = sum(p[1] for p in flat_coords) / len(flat_coords)
+        lat_rad = math.radians(mean_lat)
+        meters_per_deg_lat = 111320.0
+        meters_per_deg_lng = 111320.0 * math.cos(lat_rad)
+
+        total = 0.0
+        n = len(flat_coords)
+        for i in range(n):
+            j = (i + 1) % n
+            p1 = flat_coords[i]
+            p2 = flat_coords[j]
+            x1 = p1[0] * meters_per_deg_lng
+            y1 = p1[1] * meters_per_deg_lat
+            x2 = p2[0] * meters_per_deg_lng
+            y2 = p2[1] * meters_per_deg_lat
+            total += (x1 * y2) - (x2 * y1)
+
+        area_sq_m = abs(total) / 2.0
+        return area_sq_m / 10000.0
+    except Exception as err:
+        logger.warning(f"Could not calculate AOI area: {err}")
+        return 0.0
+
+def validate_aoi_area_limit(coords: List[List[float]], max_ha: float = MAX_AOI_HA) -> float:
+    """
+    Validate that an AOI polygon does not exceed the max allowable area limit.
+    Raises ValueError if limit exceeded.
+    """
+    area_ha = calculate_aoi_area_ha(coords)
+    if area_ha > max_ha:
+        raise ValueError(
+            f"AOI area ({area_ha:,.1f} ha) exceeds the open-access limit of {max_ha:,.0f} ha (~500 km²). "
+            f"Please delineate a smaller study area to protect processing capacity."
+        )
+    return area_ha
+
+class IPRateLimiterMiddleware(BaseHTTPMiddleware):
+    """
+    In-memory IP-level sliding window rate limiter for open-access protection.
+    Provides standard HTTP 429 response when request threshold is exceeded.
+    """
+    def __init__(self, app, requests_per_minute: int = 60):
+        super().__init__(app)
+        self.rpm = requests_per_minute
+        self.window_seconds = 60.0
+        self.requests: Dict[str, List[float]] = defaultdict(list)
+        self.lock = Lock()
+        self.last_cleanup = time.time()
+
+    def get_client_ip(self, request: Request) -> str:
+        x_forwarded_for = request.headers.get("x-forwarded-for")
+        if x_forwarded_for:
+            client_ip = x_forwarded_for.split(",")[0].strip()
+            if client_ip:
+                return client_ip
+        cf_connecting_ip = request.headers.get("cf-connecting-ip")
+        if cf_connecting_ip:
+            return cf_connecting_ip.strip()
+        x_real_ip = request.headers.get("x-real-ip")
+        if x_real_ip:
+            return x_real_ip.strip()
+        return request.client.host if request.client else "unknown"
+
+    async def dispatch(self, request: Request, call_next):
+        # Bypass rate limiting for CORS preflight and basic telemetry/health checks
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
+        path = request.url.path
+        if path in ("/", "/api/status", "/docs", "/openapi.json", "/health", "/favicon.ico"):
+            return await call_next(request)
+
+        ip = self.get_client_ip(request)
+        now = time.time()
+
+        with self.lock:
+            # Periodic cleanup of expired timestamps every 5 minutes
+            if now - self.last_cleanup > 300:
+                expired_threshold = now - self.window_seconds
+                for k in list(self.requests.keys()):
+                    self.requests[k] = [t for t in self.requests[k] if t > expired_threshold]
+                    if not self.requests[k]:
+                        del self.requests[k]
+                self.last_cleanup = now
+
+            timestamps = self.requests[ip]
+            cutoff = now - self.window_seconds
+            timestamps = [t for t in timestamps if t > cutoff]
+            self.requests[ip] = timestamps
+
+            if len(timestamps) >= self.rpm:
+                retry_after = int(self.window_seconds - (now - timestamps[0])) + 1
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "detail": (
+                            f"Rate limit exceeded: maximum {self.rpm} requests per minute allowed per IP address. "
+                            f"Please wait {max(1, retry_after)} seconds before retrying."
+                        )
+                    },
+                    headers={
+                        "Retry-After": str(max(1, retry_after)),
+                        "X-RateLimit-Limit": str(self.rpm),
+                        "X-RateLimit-Remaining": "0"
+                    }
+                )
+
+            timestamps.append(now)
+            remaining = self.rpm - len(timestamps)
+
+        response = await call_next(request)
+        response.headers["X-RateLimit-Limit"] = str(self.rpm)
+        response.headers["X-RateLimit-Remaining"] = str(max(0, remaining))
+        return response
+
 def parse_csv_env(name: str, default: str = "") -> List[str]:
     return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
 
@@ -62,6 +200,12 @@ app = FastAPI(
     title="GeoClass AI Backend",
     description="FastAPI backend to communicate with Google Earth Engine for LULC classification",
     version="1.0.0"
+)
+
+# Open access IP-level rate limiting middleware (innermost, CORS remains outermost)
+app.add_middleware(
+    IPRateLimiterMiddleware,
+    requests_per_minute=RATE_LIMIT_PER_MINUTE
 )
 
 # Enable CORS for frontend API calls.
@@ -116,6 +260,8 @@ class AOIRequest(BaseModel):
 
         if start >= end:
             raise ValueError("end_date must be after start_date")
+
+        validate_aoi_area_limit(self.coords)
         return self
 
 class ClassifyRequest(AOIRequest):
@@ -139,6 +285,11 @@ class STACSearchRequest(BaseModel):
     max_cloud_cover: Optional[float] = Field(30.0, description="Max scene cloud cover percentage")
     limit: Optional[int] = Field(25, description="Maximum number of scenes to return")
 
+    @model_validator(mode="after")
+    def validate_stac_aoi(self):
+        validate_aoi_area_limit(self.coords)
+        return self
+
 class LandsatCompositeRequest(BaseModel):
     coords: List[List[float]] = Field(
         ...,
@@ -147,6 +298,11 @@ class LandsatCompositeRequest(BaseModel):
     start_date: str = Field("2024-01-01", description="Start date YYYY-MM-DD")
     end_date: str = Field("2024-12-31", description="End date YYYY-MM-DD")
     cloud_percentage: Optional[float] = Field(20.0, description="Max cloud cover threshold")
+
+    @model_validator(mode="after")
+    def validate_landsat_aoi(self):
+        validate_aoi_area_limit(self.coords)
+        return self
 
 class SmartSelectRequest(BaseModel):
     point: List[float] = Field(
@@ -186,6 +342,11 @@ class QualityAssessmentRequest(BaseModel):
         description="Max cloud cover percentage allowed"
     )
 
+    @model_validator(mode="after")
+    def validate_quality_aoi(self):
+        validate_aoi_area_limit(self.coords)
+        return self
+
 class DeepChangeRequest(BaseModel):
     coords: List[List[float]] = Field(
         ..., 
@@ -198,6 +359,11 @@ class DeepChangeRequest(BaseModel):
     cloud_cover: float = Field(20.0, description="Cloud cover percentage threshold")
     target_stats: Optional[Dict[str, Any]] = None
     baseline_stats: Optional[Dict[str, Any]] = None
+
+    @model_validator(mode="after")
+    def validate_deepchange_aoi(self):
+        validate_aoi_area_limit(self.coords)
+        return self
 
 class SuperResolutionRequest(AOIRequest):
     pass
@@ -243,6 +409,11 @@ class ChangeDetectionRequest(BaseModel):
     index_name: Optional[str] = Field("nbr", description="Spectral index: 'nbr' (canopy disturbance), 'ndvi' (vegetation decline), 'ndbi' (urban sprawl)")
     sensitivity: Optional[str] = Field("moderate", description="Disturbance sensitivity: 'low', 'moderate', 'high'")
 
+    @model_validator(mode="after")
+    def validate_changedetect_aoi(self):
+        validate_aoi_area_limit(self.coords)
+        return self
+
 class PDFBriefingRequest(BaseModel):
     coords: List[List[float]] = Field(..., description="AOI polygon coordinates")
     statistics: Dict[str, Any] = Field(..., description="Classified statistics dictionary")
@@ -258,9 +429,18 @@ class PDFBriefingRequest(BaseModel):
 def coords_to_ee_geometry(coords: List[List[float]]) -> ee.Geometry:
     """
     Helper function to convert coords [[lng, lat], ...] to ee.Geometry.Polygon.
-    Ensures that coordinate structure is closed and correctly formatted.
+    Ensures that coordinate structure is closed and correctly formatted,
+    and enforces maximum allowable area safeguard for open-access protection.
     """
     try:
+        # Enforce maximum allowable AOI area limit before invoking Earth Engine
+        area_ha = calculate_aoi_area_ha(coords)
+        if area_ha > MAX_AOI_HA:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"AOI exceeds maximum allowable area of {MAX_AOI_HA:,.0f} ha ({area_ha:,.1f} ha requested). Please select a smaller boundary."
+            )
+
         # GEE expects polygon coordinates to be wrapped: [[[lng, lat], [lng, lat], ...]]
         # Check if the coordinates are already double wrapped
         if len(coords) > 0 and isinstance(coords[0][0], list):
@@ -270,6 +450,8 @@ def coords_to_ee_geometry(coords: List[List[float]]) -> ee.Geometry:
             if coords[0] != coords[-1]:
                 coords.append(coords[0])
             return ee.Geometry.Polygon([coords])
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error parsing coordinates to Earth Engine Geometry: {e}")
         raise HTTPException(

@@ -71,15 +71,15 @@ export default function LandingPage() {
               <div className="flex items-center gap-4">
                 <Link 
                   href="/login" 
-                  className="font-mono text-[12.5px] text-[#f4f3e8] hover:text-[#ebfc72] transition-colors whitespace-nowrap uppercase tracking-wider py-1.5"
+                  className="font-mono text-[12.5px] text-[#84837b] hover:text-[#f4f3e8] transition-colors whitespace-nowrap uppercase tracking-wider py-1.5 hidden sm:inline-block"
                 >
                   SIGN IN
                 </Link>
                 <Link 
-                  href="/signup" 
+                  href="/app" 
                   className="inversa-btn-lime h-9 px-3.5 text-[12px] inline-flex items-center gap-1.5 whitespace-nowrap"
                 >
-                  <span>LAUNCH TERMINAL</span>
+                  <span>LAUNCH WORKSPACE</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -159,7 +159,7 @@ export default function LandingPage() {
                 {/* Linear Action Cluster */}
                 <div className="flex flex-wrap items-center gap-4 pt-2">
                   <Link 
-                    href={isAuthenticated ? "/app" : "/signup"} 
+                    href="/app" 
                     className="inversa-btn-lime h-11 px-5 !text-[13px] inline-flex items-center gap-2 shrink-0"
                   >
                     <span>START CLASSIFYING FREE</span>
@@ -490,7 +490,7 @@ export default function LandingPage() {
 
               <div className="flex items-center gap-4 pt-2">
                 <Link 
-                  href={isAuthenticated ? "/app" : "/signup"} 
+                  href="/app" 
                   className="inversa-btn-lime"
                 >
                   <span>TEST WITH YOUR REGION</span>
@@ -566,17 +566,17 @@ export default function LandingPage() {
 
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
               <Link 
-                href={isAuthenticated ? "/app" : "/signup"} 
+                href="/app" 
                 className="inversa-btn-lime !text-[15px] !py-3.5 !px-6"
               >
                 <span>LAUNCH FIELD WORKSPACE NOW</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link 
-                href="/login" 
+                href="/methods" 
                 className="inversa-btn-ghost !text-[15px] !py-3.5 !px-6"
               >
-                <span>SIGN IN WITH CREDENTIALS</span>
+                <span>EXPLORE METHODS &amp; API</span>
               </Link>
             </div>
 
@@ -666,8 +666,8 @@ export default function LandingPage() {
               © {new Date().getFullYear()} GEOCLASS. ALL COORDINATES RECORDED IN WGS 84.
             </div>
             <div className="flex items-center gap-6">
-              <Link href="/login" className="hover:text-[#f4f3e8]">SIGN IN</Link>
-              <Link href="/signup" className="hover:text-[#f4f3e8]">NEW ACCOUNT</Link>
+              <Link href="/app" className="hover:text-[#f4f3e8]">OPEN WORKSPACE</Link>
+              <Link href="/login" className="hover:text-[#f4f3e8]">SIGN IN (OPTIONAL)</Link>
               <Link href="/methods" className="hover:text-[#f4f3e8]">DOCUMENTATION</Link>
             </div>
           </div>
