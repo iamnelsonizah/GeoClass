@@ -1,0 +1,14 @@
+{
+  "name": "geoclass-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run --prefix frontend build",
+    "dev": "npm run --prefix frontend dev",
+    "start": "npm run --prefix frontend start",
+    "lint": "npm run --prefix frontend lint"
+  }
+}
