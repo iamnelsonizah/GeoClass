@@ -2803,7 +2803,7 @@ export default function Home() {
       
       {/* ---------- Top bar ---------- */}
       {/* ---------- Top bar ---------- */}
-      <header className="topbar bg-[#FAF9F5] border-b border-[#D8D5CA] px-5 py-2.5 flex items-center justify-between">
+      <header className="topbar relative bg-[#FAF9F5] border-b border-[#D8D5CA] px-5 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2.5">
             <Link href="/" className="flex items-center gap-2.5 cursor-pointer group" title="Return to Overview">
@@ -2823,7 +2823,7 @@ export default function Home() {
         </div>
 
         {/* Center Understated Navigation Tabs */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-medium" aria-label="Main Navigation">
+        <nav className="hidden md:flex items-center gap-8 text-xs font-medium absolute left-1/2 -translate-x-1/2" aria-label="Main Navigation">
           <button 
             type="button"
             onClick={() => { setLeftRailCollapsed(false); setPhase1Open(true); }}
@@ -2854,56 +2854,40 @@ export default function Home() {
           </button>
         </nav>
 
-        {/* Right Header Controls matching Mockup */}
+        {/* Right Header Controls */}
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="text-[#69706A] hover:text-[#1A1D23] transition cursor-pointer p-1"
-            title="Search"
-          >
-            <Search className="w-4 h-4" />
-          </button>
-
-          <button
-            type="button"
-            className="text-[#69706A] hover:text-[#1A1D23] transition cursor-pointer p-1 relative"
-            title="Notifications"
-          >
-            <Bell className="w-4 h-4" />
-          </button>
-
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-              className="flex items-center gap-2 pl-2 cursor-pointer select-none group"
-            >
-              <div className="w-7 h-7 rounded-full bg-[#2D4A34] text-[#B7E89F] border border-[#306840] flex items-center justify-center text-[11px] font-bold">
-                {isAuthenticated && user?.fullName 
-                  ? user.fullName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
-                  : 'OP'}
-              </div>
-              <span className="text-xs font-semibold text-[#1A1D23] hidden md:inline">
-                {isAuthenticated ? (user?.fullName || 'Operator') : 'Operator (Guest)'}
-              </span>
-              <ChevronDown className={`w-3.5 h-3.5 text-[#69706A] transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {userDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-[#FAF9F5] border border-[#D8D5CA] rounded-[6px] shadow-xl p-3 space-y-2 z-50 text-xs">
-                <div className="border-b border-[#E3E0D5] pb-2">
-                  <div className="font-semibold text-[#1A1D23]">
-                    {isAuthenticated ? (user?.fullName || 'Operator') : 'Guest Operator'}
-                  </div>
-                  <div className="text-[11px] text-[#676E7D] truncate">
-                    {isAuthenticated ? (user?.email || 'analyst@organization.org') : 'Open Access Session'}
-                  </div>
-                  <div className="inline-block mt-1.5 font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#E4E9DF] text-[#2D4A34] font-medium">
-                    {isAuthenticated ? (user?.role?.replace(/_/g, ' ') || 'Remote Sensing Analyst') : 'Open Access // No Login Required'}
-                  </div>
+          {isAuthenticated && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="flex items-center gap-2 pl-2 cursor-pointer select-none group"
+              >
+                <div className="w-7 h-7 rounded-full bg-[#2D4A34] text-[#B7E89F] border border-[#306840] flex items-center justify-center text-[11px] font-bold">
+                  {user?.fullName 
+                    ? user.fullName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+                    : 'OP'}
                 </div>
+                <span className="text-xs font-semibold text-[#1A1D23] hidden md:inline">
+                  {user?.fullName || 'Operator'}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 text-[#69706A] transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
 
-                {isAuthenticated ? (
+              {userDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-[#FAF9F5] border border-[#D8D5CA] rounded-[6px] shadow-xl p-3 space-y-2 z-50 text-xs">
+                  <div className="border-b border-[#E3E0D5] pb-2">
+                    <div className="font-semibold text-[#1A1D23]">
+                      {user?.fullName || 'Operator'}
+                    </div>
+                    <div className="text-[11px] text-[#676E7D] truncate">
+                      {user?.email || 'analyst@organization.org'}
+                    </div>
+                    <div className="inline-block mt-1.5 font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#E4E9DF] text-[#2D4A34] font-medium">
+                      {user?.role?.replace(/_/g, ' ') || 'Remote Sensing Analyst'}
+                    </div>
+                  </div>
+
                   <div className="pt-1">
                     <button
                       type="button"
@@ -2917,22 +2901,10 @@ export default function Home() {
                       <span>Sign Out / Logout</span>
                     </button>
                   </div>
-                ) : (
-                  <div className="pt-1 space-y-1.5">
-                    <div className="text-[11px] text-[#69706A] leading-relaxed">
-                      All AOI boundaries and workspaces are saved in your local browser cache.
-                    </div>
-                    <Link
-                      href="/login"
-                      className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-[4px] text-xs font-medium bg-[#FAF9F5] border border-[#D8D5CA] hover:bg-[#F4F1E8] text-[#1A1D23] transition"
-                    >
-                      <span>Sign In (Optional Cloud Sync)</span>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
