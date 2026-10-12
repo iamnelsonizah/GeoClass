@@ -10,5 +10,9 @@
     "dev": "npm run --prefix frontend dev",
     "start": "npm run --prefix frontend start",
     "lint": "npm run --prefix frontend lint"
+  },
+  "optionalDependencies": {
+    "lightningcss-linux-x64-gnu": "^1.32.0",
+    "lightningcss-linux-x64-musl": "^1.32.0"
   }
 }
