@@ -70,12 +70,6 @@ export default function LandingPage() {
             ) : (
               <div className="flex items-center gap-4">
                 <Link 
-                  href="/login" 
-                  className="font-mono text-[12.5px] text-[#84837b] hover:text-[#f4f3e8] transition-colors whitespace-nowrap uppercase tracking-wider py-1.5 hidden sm:inline-block"
-                >
-                  SIGN IN
-                </Link>
-                <Link 
                   href="/app" 
                   className="inversa-btn-lime h-9 px-3.5 text-[12px] inline-flex items-center gap-1.5 whitespace-nowrap"
                 >
