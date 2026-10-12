@@ -892,7 +892,6 @@ for class_name, metrics in data["statistics"].items():
             <Link href="/#tools" className="hover:text-[#ebfc72] transition-colors">Tools</Link>
             <Link href="/#use-cases" className="hover:text-[#ebfc72] transition-colors">Use cases</Link>
             <Link href="/methods" className="text-[#ebfc72] transition-colors">Methods &amp; API</Link>
-            <Link href="/login" className="hover:text-[#ebfc72] transition-colors">Log in</Link>
           </div>
 
           <div className="font-mono text-[11px] text-[#84837b]">

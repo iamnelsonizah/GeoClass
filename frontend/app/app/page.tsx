@@ -2893,7 +2893,7 @@ export default function Home() {
                       type="button"
                       onClick={() => {
                         logout();
-                        router.push('/login');
+                        router.push('/');
                       }}
                       className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] text-xs font-medium text-[#A84E42] hover:bg-[#FCECE4] transition cursor-pointer"
                     >

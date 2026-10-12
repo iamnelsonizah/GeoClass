@@ -661,7 +661,6 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-6">
               <Link href="/app" className="hover:text-[#f4f3e8]">OPEN WORKSPACE</Link>
-              <Link href="/login" className="hover:text-[#f4f3e8]">SIGN IN (OPTIONAL)</Link>
               <Link href="/methods" className="hover:text-[#f4f3e8]">DOCUMENTATION</Link>
             </div>
           </div>
