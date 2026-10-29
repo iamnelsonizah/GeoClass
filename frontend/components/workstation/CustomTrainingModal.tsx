@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LULC_COLORS, LULC_CLASS_NAMES } from './types';
 
 interface CustomTrainingModalProps {
@@ -136,9 +136,23 @@ export default function CustomTrainingModal({
     onApplyTrainingData(null);
   };
 
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="w-full max-w-xl bg-[#FAF9F5] border border-[#D8D5CA] rounded-md shadow-2xl overflow-hidden flex flex-col font-sans">
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="w-full max-w-xl bg-[#FAF9F5] border border-[#D8D5CA] rounded-md shadow-2xl overflow-hidden flex flex-col font-sans relative z-10 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="px-5 py-3.5 bg-[#F4F1E8] border-b border-[#D8D5CA] flex items-center justify-between">
           <div className="flex items-center gap-2">

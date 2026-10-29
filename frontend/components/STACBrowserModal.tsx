@@ -213,7 +213,7 @@ export function STACBrowserModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
+    <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
       <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded w-full max-w-5xl h-[92vh] max-h-[850px] shadow-xl flex flex-col overflow-hidden text-[#1A1D23] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Top Header */}
