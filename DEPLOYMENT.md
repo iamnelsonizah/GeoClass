@@ -1,151 +1,117 @@
-# Deployment Guide
+# Deployment Guide: GeoClass Platform
 
-Deploy one backend service and one frontend project:
+This guide outlines how to deploy the **GeoClass** platform:
+- **Backend API**: [FastAPI Cloud](https://fastapicloud.com), root directory `backend`
+- **Frontend Workstation**: [Cloudflare Pages](https://pages.cloudflare.com) or [Vercel](https://vercel.com), root directory `frontend`
 
-- Frontend: Vercel, root directory `frontend`
-- Backend: Render or Railway, root directory `backend`
+---
 
-## 1. Push the project to GitHub
+## 1. Google Earth Engine Credentials Preparation
 
-This folder is not currently a Git repository. Create one and push it before importing it into the hosting platforms.
+Before deploying, convert your Google Earth Engine service account JSON key into a single-line base64 string so it can be securely passed as an environment variable without storing key files in the repository.
 
-```powershell
-git init
-git add .
-git commit -m "Configure deployment"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-git push -u origin main
+### On macOS / Linux:
+```bash
+base64 -i backend/credentials.json | tr -d '\n' | pbcopy
+# (Or on Linux: base64 -w 0 backend/credentials.json)
 ```
 
-Do not commit `backend/.env` or `backend/credentials.json`. They are ignored by `.gitignore`.
-
-## 2. Create the Earth Engine secret
-
-Convert the local service account JSON into a single-line base64 value.
-
-If you are in the project root `land_cover`, run:
-
+### On Windows (PowerShell):
 ```powershell
 [Convert]::ToBase64String([IO.File]::ReadAllBytes("backend\credentials.json")) | Set-Clipboard
 ```
 
-If you are already inside the `backend` folder, run:
+Keep this clipboard string ready for the `GEE_SERVICE_ACCOUNT_JSON_B64` environment variable.
 
-```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes(".\credentials.json")) | Set-Clipboard
-```
+---
 
-Paste that clipboard value into the hosting platform as:
+## 2. Deploy Backend to FastAPI Cloud (https://fastapicloud.com)
 
-```text
-GEE_SERVICE_ACCOUNT_JSON_B64
-```
+[FastAPI Cloud](https://fastapicloud.com) is the native hosting platform for FastAPI applications, providing automatic Python dependency management, HTTPS SSL termination, auto-scaling, and health check monitoring.
 
-## 3. Deploy the backend to Render
-
-You can use the included `render.yaml` as a Render Blueprint, or create the service manually.
-
-Manual settings:
-
-- Service type: Web Service
-- Root Directory: `backend`
-- Runtime: Python
-- Build Command: `pip install -r requirements.txt`
-- Start Command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-- Health Check Path: `/api/status`
-
-Environment variables:
+### Step-by-Step Deployment:
+1. Log in to your [FastAPI Cloud](https://fastapicloud.com) dashboard.
+2. Click **New Project** and connect your GitHub repository (`Geoclass`).
+3. Configure the build and runtime parameters:
+   - **Root Directory**: `backend`
+   - **Entrypoint**: `main:app`
+   - **Python Version**: `3.11` (or `3.12`)
+   - **Health Check Path**: `/api/status`
+4. Add the following **Environment Variables** in the FastAPI Cloud settings:
 
 ```text
 PYTHON_VERSION=3.11.9
 GEE_PROJECT=your-google-cloud-project-id
 GEE_SERVICE_ACCOUNT=your-service-account@your-project.iam.gserviceaccount.com
 GEE_SERVICE_ACCOUNT_JSON_B64=your-base64-service-account-json
-FRONTEND_ORIGINS=http://localhost:3000
+FRONTEND_ORIGINS=https://your-frontend-domain.pages.dev,http://localhost:3000
+FRONTEND_ORIGIN_REGEX=https://.*\.pages\.dev|https://.*\.vercel\.app
+RATE_LIMIT_PER_MINUTE=60
+MAX_AOI_HA=50000
 ```
 
-After deploy, open:
-
+*(Optional: If using distributed Redis for multi-instance rate limiting across worker replicas)*:
 ```text
-https://your-render-service.onrender.com/api/status
+REDIS_URL=redis://default:password@your-redis-host:6379
 ```
 
-## 4. Or deploy the backend to Railway
+5. Click **Deploy**.
+6. Once deployment finishes, FastAPI Cloud will provide your live API URL:
+   ```text
+   https://geoclass-api.fastapicloud.app
+   ```
+7. Verify deployment by opening:
+   ```text
+   https://geoclass-api.fastapicloud.app/api/status
+   ```
+   You should see:
+   ```json
+   {
+     "status": "healthy",
+     "gee_connected": true,
+     "version": "1.0.0"
+   }
+   ```
 
-Create a Railway service from the same GitHub repository.
+---
 
-Settings:
+## 3. Deploy Frontend (Cloudflare Pages or Vercel)
 
-- Service root directory: `backend`
-- Build config: `backend/railway.json`
-- Start command is already configured as `uvicorn main:app --host 0.0.0.0 --port $PORT`
+The frontend is a Next.js 16 application configured with static HTML export (`output: "export"`) optimized for Cloudflare Pages and modern static CDNs.
 
-Environment variables:
+### A. Deploy to Cloudflare Pages:
+1. Go to the **Cloudflare Dashboard** > **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
+2. Select your `Geoclass` repository.
+3. Configure build settings:
+   - **Framework Preset**: `Next.js (Static Export)`
+   - **Root directory**: `frontend`
+   - **Build command**: `npm run build`
+   - **Build output directory**: `out`
+4. Set the Environment Variable:
+   ```text
+   NEXT_PUBLIC_API_BASE_URL=https://geoclass-api.fastapicloud.app
+   ```
+5. Click **Save and Deploy**.
 
-```text
-GEE_PROJECT=your-google-cloud-project-id
-GEE_SERVICE_ACCOUNT=your-service-account@your-project.iam.gserviceaccount.com
-GEE_SERVICE_ACCOUNT_JSON_B64=your-base64-service-account-json
-FRONTEND_ORIGINS=http://localhost:3000
-```
+### B. Or Deploy to Vercel:
+1. Import the same repository into Vercel.
+2. Select root directory: `frontend`.
+3. Set environment variable:
+   ```text
+   NEXT_PUBLIC_API_BASE_URL=https://geoclass-api.fastapicloud.app
+   ```
+4. Deploy.
 
-After deploy, open:
+---
 
-```text
-https://your-railway-domain.up.railway.app/api/status
-```
+## 4. Connect Frontend & Backend Verification
 
-## 5. Deploy the frontend to Vercel
+1. Open your live frontend URL (e.g. `https://geoclass.pages.dev`).
+2. Verify that the **GEE Engine** indicator in the workstation header displays `CONNECTED (10m MSI)`.
+3. Select an Area of Interest (AOI), load True Color imagery, and click **Run Classification**.
+4. Check that browser network requests succeed against your FastAPI Cloud backend URL.
 
-Import the same GitHub repository into Vercel.
-
-Project settings:
-
-- Framework Preset: Next.js
-- Root Directory: `frontend`
-- Build Command: `npm run build`
-- Install Command: `npm install`
-
-Environment variable:
-
-```text
-NEXT_PUBLIC_API_BASE_URL=https://your-backend-url
-```
-
-Deploy the frontend.
-
-## 6. Connect frontend and backend
-
-After Vercel gives you the final frontend URL, update the backend environment variable:
-
-```text
-FRONTEND_ORIGINS=https://your-vercel-app.vercel.app
-```
-
-Redeploy or restart the backend after changing this value.
-
-If you want Vercel preview deployments to call the backend too, add a controlled regex:
-
-```text
-FRONTEND_ORIGIN_REGEX=https://.*\.vercel\.app
-```
-
-Use the exact `FRONTEND_ORIGINS` value for production whenever possible.
-
-## 7. Verify
-
-Open the Vercel app and check:
-
-- The status indicator should show the backend as online.
-- Browser network requests should go to the hosted backend, not `localhost:8000`.
-- Location search should zoom the map.
-- Draw an AOI, load imagery, and run classification.
-- `/api/status` should return `gee_connected: true`.
-
-Common fixes:
-
-- CORS error: update `FRONTEND_ORIGINS` to the exact Vercel URL and restart the backend.
-- Earth Engine offline: verify `GEE_PROJECT`, `GEE_SERVICE_ACCOUNT`, and `GEE_SERVICE_ACCOUNT_JSON_B64`.
-- Mixed content error: make sure `NEXT_PUBLIC_API_BASE_URL` starts with `https://`.
-- Frontend still calls localhost: update `NEXT_PUBLIC_API_BASE_URL` in Vercel and redeploy the frontend.
+### Troubleshooting:
+- **CORS Error**: Ensure `FRONTEND_ORIGINS` in your FastAPI Cloud dashboard includes your exact frontend URL.
+- **Earth Engine Offline**: Verify `GEE_PROJECT` and `GEE_SERVICE_ACCOUNT_JSON_B64` in FastAPI Cloud.
+- **504 Timeouts**: For large AOI operations, use the `/api/jobs/submit/...` asynchronous background endpoints.

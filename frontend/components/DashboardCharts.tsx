@@ -21,6 +21,7 @@ import {
   PolarRadiusAxis,
   Treemap,
 } from 'recharts';
+import TransitionSankey from './workstation/TransitionSankey';
 
 /* ─── Interfaces ─────────────────────────────────────────────── */
 
@@ -1013,6 +1014,9 @@ export default function DashboardCharts({
               );
             })}
           </div>
+
+          {/* Interactive Sankey Flow Diagram */}
+          <TransitionSankey matrix={transitionData.matrix} />
 
           {/* Top Flows Table */}
           <div className="border border-[#D8D5CA] rounded overflow-hidden">

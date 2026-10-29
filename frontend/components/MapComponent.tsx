@@ -171,6 +171,35 @@ const LAYER_INFO: Record<string, { title: string; description: string; bands?: {
       { label: 'Critical Canopy Removal (> 0.40)', color: '#7F1D1D' },
     ],
   },
+  climate_temp: {
+    title: 'ERA5-Land 2m Temperature Reanalysis',
+    description: 'ECMWF ERA5-Land monthly surface air temperature (°C):',
+    bands: [
+      { label: '< 0°C (Freezing)', color: '#000080' },
+      { label: '15°C (Temperate)', color: '#00ffff' },
+      { label: '25°C (Warm)', color: '#ffff00' },
+      { label: '> 35°C (Extreme Heat)', color: '#800000' },
+    ],
+  },
+  climate_precip: {
+    title: 'ERA5-Land Total Precipitation Sum',
+    description: 'ECMWF ERA5-Land cumulative precipitation reanalysis (mm):',
+    bands: [
+      { label: '0-50 mm (Arid)', color: '#ffffff' },
+      { label: '100-300 mm (Moderate)', color: '#99ccff' },
+      { label: '500-1000 mm (Heavy)', color: '#0066cc' },
+      { label: '> 1500 mm (Very Heavy)', color: '#000066' },
+    ],
+  },
+  climate_soil: {
+    title: 'ERA5-Land Volumetric Soil Moisture',
+    description: 'ECMWF ERA5-Land root-zone soil water layer 1 (0-7cm, m³/m³):',
+    bands: [
+      { label: '< 0.10 m³/m³ (Dry)', color: '#ffffe5' },
+      { label: '0.20-0.30 m³/m³ (Moist)', color: '#78c679' },
+      { label: '> 0.40 m³/m³ (Saturated)', color: '#006837' },
+    ],
+  },
 };
 
 
@@ -195,6 +224,9 @@ interface MapComponentProps {
   landsatNdviUrl?: string;
   changeYearUrl?: string;
   changeMagnitudeUrl?: string;
+  climateTempUrl?: string;
+  climatePrecipUrl?: string;
+  climateSoilUrl?: string;
   baselineTrueColorUrl?: string;
   baselineFalseColorUrl?: string;
   baselineNdviUrl?: string;
@@ -202,7 +234,7 @@ interface MapComponentProps {
   compareMode?: boolean;
   activeTimePeriod?: 'target' | 'baseline';
   opacity: number;
-  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude' | 'landsat_true_color' | 'landsat_false_color' | 'landsat_ndvi';
+  activeLayer: 'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude' | 'landsat_true_color' | 'landsat_false_color' | 'landsat_ndvi' | 'climate_temp' | 'climate_precip' | 'climate_soil';
   mapCenter: [number, number];
   mapZoom: number;
   searchLocation?: SearchLocation | null;
@@ -2431,6 +2463,9 @@ export default function MapComponent({
   mndwiUrl,
   nbrUrl,
   sarUrl,
+  climateTempUrl,
+  climatePrecipUrl,
+  climateSoilUrl,
   landsatTrueColorUrl,
   landsatFalseColorUrl,
   landsatNdviUrl,
@@ -2545,6 +2580,9 @@ export default function MapComponent({
     mndwiUrl ||
     nbrUrl ||
     sarUrl ||
+    climateTempUrl ||
+    climatePrecipUrl ||
+    climateSoilUrl ||
     landsatTrueColorUrl ||
     landsatFalseColorUrl ||
     landsatNdviUrl ||
@@ -2592,6 +2630,9 @@ export default function MapComponent({
         change_year: changeYearUrl,
         change_magnitude: changeMagnitudeUrl,
         classified: classifiedUrl,
+        climate_temp: climateTempUrl,
+        climate_precip: climatePrecipUrl,
+        climate_soil: climateSoilUrl,
         slope: slopeUrl,
         elevation: elevationUrl,
         hillshade: hillshadeUrl,

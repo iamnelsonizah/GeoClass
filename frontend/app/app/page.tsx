@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/AuthContext';
@@ -89,6 +89,39 @@ import { STACBrowserModal } from '@/components/STACBrowserModal';
 import { StudyAreaMapModal } from '@/components/StudyAreaMapModal';
 import { generateJupyterNotebook } from '@/lib/notebookGenerator';
 import { parseVectorFile } from '@/lib/vectorParsers';
+import { WorkstationHeader } from '@/components/workstation/WorkstationHeader';
+import { TelemetryBar } from '@/components/workstation/TelemetryBar';
+import { WorkstationToolstrip } from '@/components/workstation/WorkstationToolstrip';
+import {
+  ClassData,
+  SavedArea,
+  MapNote,
+  LocationSuggestion,
+  SmartInsight,
+  LULC_CLASS_NAMES,
+  LULC_COLORS,
+  SAVED_AREAS,
+} from '@/components/workstation/types';
+import CustomTrainingModal from '@/components/workstation/CustomTrainingModal';
+import ClimateContextCard, { ClimateContextData } from '@/components/workstation/ClimateContextCard';
+import ProjectShareModal from '@/components/workstation/ProjectShareModal';
+import {
+  MAX_AOI_HA,
+  CONFIDENCE_ROWS,
+  CONFIDENCE_COLS,
+  VEGETATION_CLASSES,
+  calculateAOIArea,
+  formatHectares,
+  getYearFromDate,
+  getClassArea,
+  getSingleClassArea,
+  createBoundingBoxAOI,
+  parseCoordinateQuery,
+  getLocationZoom,
+  getConfidenceScore,
+  getConfidenceReview,
+  getTemporalChangeTone,
+} from '@/components/workstation/utils';
 
 // Dynamically import the map component to avoid SSR errors with Leaflet
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
@@ -102,118 +135,6 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
     </div>
   )
 });
-
-interface ClassData {
-  id: number;
-  area_ha: number;
-  pixel_count: number;
-  percentage: number;
-}
-
-interface SavedArea {
-  id: string;
-  name: string;
-  type: string;
-  center: [number, number];
-  zoom: number;
-  coords: number[][];
-}
-
-interface MapNote {
-  id: string;
-  title: string;
-  body: string;
-  lat: number;
-  lng: number;
-}
-
-interface LocationSuggestion {
-  id: string;
-  label: string;
-  shortLabel: string;
-  lat: number;
-  lng: number;
-  type?: string;
-}
-
-type InsightTone = 'positive' | 'warning' | 'critical' | 'neutral';
-
-interface SmartInsight {
-  label: string;
-  value: string;
-  detail: string;
-  tone: InsightTone;
-}
-
-const LULC_CLASS_NAMES = [
-  'Water',
-  'Forest',
-  'Grass',
-  'Wetland',
-  'Agriculture',
-  'Shrub',
-  'Urban',
-  'Bare Land',
-  'Snow/Ice'
-];
-
-const LULC_COLORS: Record<string, string> = {
-  Water: '#419BDF',
-  Forest: '#397D49',
-  Grass: '#88B053',
-  Wetland: '#7A87C6',
-  Agriculture: '#E49635',
-  Shrub: '#DFC35A',
-  Urban: '#C4281B',
-  'Bare Land': '#A59B8F',
-  'Snow/Ice': '#B39FE1',
-};
-
-const SAVED_AREAS: SavedArea[] = [
-  {
-    id: 'sf-bay',
-    name: 'San Francisco Peninsula & Central',
-    type: 'Coastal region',
-    center: [37.77, -122.42],
-    zoom: 11,
-    coords: [
-      [-122.525, 37.845],
-      [-122.365, 37.840],
-      [-122.355, 37.695],
-      [-122.515, 37.700],
-      [-122.525, 37.845],
-    ],
-  },
-  {
-    id: 'oakland-east',
-    name: 'East Oakland Review',
-    type: 'Urban edge',
-    center: [37.76, -122.16],
-    zoom: 12,
-    coords: [
-      [-122.245, 37.825],
-      [-122.075, 37.805],
-      [-122.06, 37.71],
-      [-122.2, 37.675],
-      [-122.245, 37.825],
-    ],
-  },
-  {
-    id: 'marin-coast',
-    name: 'Marin Coast Greenbelt',
-    type: 'Vegetation reserve',
-    center: [37.91, -122.62],
-    zoom: 11,
-    coords: [
-      [-122.705, 38.035],
-      [-122.505, 38.015],
-      [-122.465, 37.855],
-      [-122.65, 37.79],
-      [-122.745, 37.91],
-      [-122.705, 38.035],
-    ],
-  },
-];
 
 // Notification component with auto-dismiss
 function Notification({ 
@@ -257,226 +178,6 @@ function Notification({
   );
 }
 
-// Helper to calculate area of a polygon in hectares using flat-Earth approximation
-const calculateAOIArea = (polygonCoords: number[][]) => {
-  if (polygonCoords.length < 3) return 0;
-  let totalArea = 0;
-  
-  const first = polygonCoords[0];
-  const latRadian = (first[1] * Math.PI) / 180;
-  const metersPerDegLat = 111320;
-  const metersPerDegLng = 111320 * Math.cos(latRadian);
-  
-  for (let i = 0; i < polygonCoords.length - 1; i++) {
-    const p1 = polygonCoords[i];
-    const p2 = polygonCoords[i + 1];
-    
-    const x1 = p1[0] * metersPerDegLng;
-    const y1 = p1[1] * metersPerDegLat;
-    const x2 = p2[0] * metersPerDegLng;
-    const y2 = p2[1] * metersPerDegLat;
-    
-    totalArea += (x1 * y2) - (x2 * y1);
-  }
-  
-  const p1 = polygonCoords[polygonCoords.length - 1];
-  const p2 = polygonCoords[0];
-  const x1 = p1[0] * metersPerDegLng;
-  const y1 = p1[1] * metersPerDegLat;
-  const x2 = p2[0] * metersPerDegLng;
-  const y2 = p2[1] * metersPerDegLat;
-  totalArea += (x1 * y2) - (x2 * y1);
-  
-  const areaSqMeters = Math.abs(totalArea) / 2;
-  return areaSqMeters / 10000;
-};
-
-const VEGETATION_CLASSES = ['Forest', 'Grass', 'Wetland', 'Agriculture', 'Shrub'];
-const CONFIDENCE_ROWS = 5;
-const CONFIDENCE_COLS = 6;
-
-const formatHectares = (value: number) => `${Math.abs(value).toFixed(1)} ha`;
-
-const getYearFromDate = (value: string) => {
-  const parsed = Number(value.slice(0, 4));
-  return Number.isFinite(parsed) ? parsed : null;
-};
-
-const getClassArea = (stats: Record<string, ClassData> | undefined, classNames: string[]) => {
-  if (!stats) return 0;
-  return classNames.reduce((total, className) => total + (stats[className]?.area_ha || 0), 0);
-};
-
-const getSingleClassArea = (stats: Record<string, ClassData> | undefined, className: string) => (
-  stats?.[className]?.area_ha || 0
-);
-
-const createBoundingBoxAOI = (lat: number, lng: number, sizeKm = 5): number[][] => {
-  const half = sizeKm / 2;
-  const dLat = half / 111.32;
-  const dLng = half / (111.32 * Math.cos((lat * Math.PI) / 180));
-  const minLat = Number((lat - dLat).toFixed(6));
-  const maxLat = Number((lat + dLat).toFixed(6));
-  const minLng = Number((lng - dLng).toFixed(6));
-  const maxLng = Number((lng + dLng).toFixed(6));
-  // Closed GeoJSON polygon: [lng, lat]
-  return [
-    [minLng, minLat],
-    [maxLng, minLat],
-    [maxLng, maxLat],
-    [minLng, maxLat],
-    [minLng, minLat],
-  ];
-};
-
-const parseCoordinateQuery = (query: string): { lat: number; lng: number } | null => {
-  const cleaned = query.replace(/[\[\]\(\)\{\}]/g, '').trim();
-  if (!cleaned) return null;
-
-  // Format 1: With N/S/E/W e.g., "9.0765 N, 7.3986 E" or "37.7749° N, 122.4194° W"
-  const dmsRegex = /^([+-]?\d+(?:\.\d+)?)\s*°?\s*([NS])?[\s,;]+([+-]?\d+(?:\.\d+)?)\s*°?\s*([EW])?$/i;
-  const match = cleaned.match(dmsRegex);
-  if (match) {
-    let lat = parseFloat(match[1]);
-    const latDir = match[2]?.toUpperCase();
-    let lng = parseFloat(match[3]);
-    const lngDir = match[4]?.toUpperCase();
-
-    if (latDir === 'S') lat = -Math.abs(lat);
-    if (latDir === 'N') lat = Math.abs(lat);
-    if (lngDir === 'W') lng = -Math.abs(lng);
-    if (lngDir === 'E') lng = Math.abs(lng);
-
-    if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-      return { lat, lng };
-    }
-  }
-
-  // Format 2: Standard lat, lng or lat lng (e.g. "9.0765, 7.3986" or "-33.8688, 151.2093")
-  const simpleMatch = cleaned.match(/^([+-]?\d+(?:\.\d+)?)[,\s]+([+-]?\d+(?:\.\d+)?)$/);
-  if (simpleMatch) {
-    const lat = parseFloat(simpleMatch[1]);
-    const lng = parseFloat(simpleMatch[2]);
-    if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-      return { lat, lng };
-    }
-  }
-
-  return null;
-};
-
-const getLocationZoom = (type?: string) => {
-  if (!type) return 13;
-  if (['coordinate'].includes(type)) return 14;
-  if (['country'].includes(type)) return 5;
-  if (['state', 'province', 'region'].includes(type)) return 7;
-  if (['county', 'administrative'].includes(type)) return 9;
-  if (['city', 'town', 'municipality'].includes(type)) return 12;
-  if (['village', 'suburb', 'neighbourhood', 'quarter'].includes(type)) return 14;
-  if (['house', 'building', 'address', 'road'].includes(type)) return 16;
-  return 13;
-};
-
-const getConfidenceScore = (row: number, col: number) => (
-  58 + Math.round(Math.abs(Math.sin((row + 1.7) * (col + 2.3))) * 38)
-);
-
-const getConfidenceReview = (threshold: number) => {
-  const zoneCounts: Record<string, number> = {
-    northwest: 0,
-    northeast: 0,
-    southwest: 0,
-    southeast: 0,
-  };
-  let scoreTotal = 0;
-  let reviewCells = 0;
-  let criticalCells = 0;
-  let lowestScore = 100;
-
-  for (let row = 0; row < CONFIDENCE_ROWS; row++) {
-    for (let col = 0; col < CONFIDENCE_COLS; col++) {
-      const score = getConfidenceScore(row, col);
-      scoreTotal += score;
-      lowestScore = Math.min(lowestScore, score);
-
-      if (score < threshold) {
-        reviewCells += 1;
-        if (threshold - score > 16) criticalCells += 1;
-        const vertical = row < CONFIDENCE_ROWS / 2 ? 'north' : 'south';
-        const horizontal = col < CONFIDENCE_COLS / 2 ? 'west' : 'east';
-        zoneCounts[`${vertical}${horizontal}`] += 1;
-      }
-    }
-  }
-
-  const focusZone = Object.entries(zoneCounts).sort((a, b) => b[1] - a[1])[0][0];
-  const reviewShare = Math.round((reviewCells / (CONFIDENCE_ROWS * CONFIDENCE_COLS)) * 100);
-
-  return {
-    averageScore: Math.round(scoreTotal / (CONFIDENCE_ROWS * CONFIDENCE_COLS)),
-    criticalCells,
-    focusZone,
-    lowestScore,
-    reviewCells,
-    reviewShare,
-    totalCells: CONFIDENCE_ROWS * CONFIDENCE_COLS,
-  };
-};
-
-const getTemporalChangeTone = (className: string, areaChange: number) => {
-  const stable = Math.abs(areaChange) < 0.1;
-  if (stable) {
-    return {
-      borderClass: 'border-[#35372E]',
-      textClass: 'text-[#8B8C7F]',
-      iconClass: 'text-[#8B8C7F]',
-    };
-  }
-
-  if (className === 'Urban' || className === 'Bare Land') {
-    return areaChange > 0
-      ? {
-          borderClass: 'border-[#C8834C]/40',
-          textClass: 'text-[#C8834C]',
-          iconClass: 'text-[#C8834C]',
-        }
-      : {
-          borderClass: 'border-[#7FA35C]/30',
-          textClass: 'text-[#7FA35C]',
-          iconClass: 'text-[#7FA35C]',
-        };
-  }
-
-  if (VEGETATION_CLASSES.includes(className) || className === 'Water') {
-    return areaChange < 0
-      ? {
-          borderClass: 'border-[#C56A5A]/35',
-          textClass: 'text-[#C56A5A]',
-          iconClass: 'text-[#C56A5A]',
-        }
-      : {
-          borderClass: 'border-[#7FA35C]/30',
-          textClass: 'text-[#7FA35C]',
-          iconClass: 'text-[#7FA35C]',
-        };
-  }
-
-  return areaChange < 0
-    ? {
-        borderClass: 'border-[#C56A5A]/30',
-        textClass: 'text-[#C56A5A]',
-        iconClass: 'text-[#C56A5A]',
-      }
-    : {
-        borderClass: 'border-[#7FA35C]/30',
-        textClass: 'text-[#7FA35C]',
-        iconClass: 'text-[#7FA35C]',
-      };
-};
-
-// Open-access safeguard limit (50,000 hectares = 500 km²)
-export const MAX_AOI_HA = 50000;
-
 export default function Home() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
@@ -516,7 +217,7 @@ export default function Home() {
   const [timelineTargetYear, setTimelineTargetYear] = useState(2024);
 
   // Overlay Layer States
-  const [activeLayer, setActiveLayer] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude' | 'landsat_true_color' | 'landsat_false_color' | 'landsat_ndvi'>('none');
+  const [activeLayer, setActiveLayer] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified' | 'slope' | 'elevation' | 'hillshade' | 'ndbi' | 'mndwi' | 'nbr' | 'sar' | 'change_year' | 'change_magnitude' | 'landsat_true_color' | 'landsat_false_color' | 'landsat_ndvi' | 'climate_temp' | 'climate_precip' | 'climate_soil'>('none');
   const [selectedSensor, setSelectedSensor] = useState<'sentinel_2' | 'landsat'>('sentinel_2');
   const [isSTACModalOpen, setIsSTACModalOpen] = useState(false);
   const [useSarFusion, setUseSarFusion] = useState(false);
@@ -639,7 +340,29 @@ export default function Home() {
     baselineFalseColor?: string;
     baselineNdvi?: string;
     baselineClassified?: string;
+    climateTemp?: string;
+    climatePrecip?: string;
+    climateSoil?: string;
   }>({});
+
+  // Roadmap Items State
+  // Item 1: User Custom Training Polygons
+  const [customTrainingData, setCustomTrainingData] = useState<any | null>(null);
+  const [showCustomTrainingModal, setShowCustomTrainingModal] = useState(false);
+
+  // Item 2: ERA5-Land Climate Context
+  const [climateData, setClimateData] = useState<ClimateContextData | null>(null);
+  const [loadingClimate, setLoadingClimate] = useState(false);
+  const [activeClimateOverlay, setActiveClimateOverlay] = useState<'temp' | 'precip' | 'soil' | null>(null);
+
+  // Item 4: Cloud Projects & Shareable Permalinks
+  const [showProjectShareModal, setShowProjectShareModal] = useState(false);
+
+  const customTrainingCount = useMemo(() => {
+    if (!customTrainingData) return 0;
+    const feats = customTrainingData.type === 'FeatureCollection' ? customTrainingData.features : [customTrainingData];
+    return feats ? feats.length : 0;
+  }, [customTrainingData]);
 
   // Classification Results
   const [statistics, setStatistics] = useState<Record<string, ClassData> | undefined>(undefined);
@@ -1472,6 +1195,23 @@ export default function Home() {
           setDismissedInvite(true);
         }
       }
+
+      // Check URL search parameters for shared cloud permalink (?project=prj_...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('project');
+      if (projectId) {
+        fetch(`${API_BASE}/api/projects/${projectId}`)
+          .then((res) => {
+            if (res.ok) return res.json();
+            throw new Error(`HTTP ${res.status}`);
+          })
+          .then((data) => {
+            if (data) {
+              handleLoadProject(data);
+            }
+          })
+          .catch((e) => console.warn('Could not load project permalink:', e));
+      }
     } catch (err) {
       console.warn('Auto-restore error', err);
     }
@@ -2013,6 +1753,104 @@ export default function Home() {
     }
   };
 
+  // Roadmap Item 2: Fetch ERA5 Climate Reanalysis Context
+  const fetchClimateContext = async () => {
+    if (coords.length === 0) {
+      setErrorMessage("Please draw or select an Area of Interest first to analyze climate context.");
+      return;
+    }
+    setLoadingClimate(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/climate/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coords,
+          start_date: startDate,
+          end_date: endDate,
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || "ERA5 Climate analysis failed.");
+      }
+      const data: ClimateContextData = await response.json();
+      setClimateData(data);
+      setTileUrls(prev => ({
+        ...prev,
+        climateTemp: data.temperature_tile_url,
+        climatePrecip: data.precipitation_tile_url,
+        climateSoil: data.soil_moisture_tile_url,
+      }));
+      setSuccessMessage(
+        `ERA5 Climate Reanalysis complete: ${data.mean_temperature_c}°C mean temp, ${data.total_precipitation_mm}mm total rainfall (${data.climate_classification}).`
+      );
+      setAnalyticsExpanded(true);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to analyze ERA5 climate context.");
+    } finally {
+      setLoadingClimate(false);
+    }
+  };
+
+  const handleToggleClimateOverlay = (overlay: 'temp' | 'precip' | 'soil' | null) => {
+    setActiveClimateOverlay(overlay);
+    if (!overlay) {
+      if (activeLayer === 'climate_temp' || activeLayer === 'climate_precip' || activeLayer === 'climate_soil') {
+        setActiveLayer('true_color');
+      }
+      return;
+    }
+    if (overlay === 'temp') setActiveLayer('climate_temp');
+    else if (overlay === 'precip') setActiveLayer('climate_precip');
+    else if (overlay === 'soil') setActiveLayer('climate_soil');
+  };
+
+  // Roadmap Item 4: Load Cloud Project State from permalink
+  const handleLoadProject = (projectData: any) => {
+    if (!projectData) return;
+    try {
+      const aoi = projectData.aoi_geojson;
+      if (aoi) {
+        let polyCoords: number[][] = [];
+        if (aoi.type === 'Polygon' && Array.isArray(aoi.coordinates)) {
+          polyCoords = aoi.coordinates[0];
+        } else if (aoi.type === 'FeatureCollection' && aoi.features?.[0]?.geometry?.coordinates) {
+          polyCoords = aoi.features[0].geometry.coordinates[0];
+        } else if (Array.isArray(aoi)) {
+          polyCoords = aoi;
+        }
+        if (polyCoords.length >= 3) {
+          handleAOIDrawn(polyCoords);
+        }
+      }
+
+      const ls = projectData.layer_state;
+      if (ls) {
+        if (ls.startDate) setStartDate(ls.startDate);
+        if (ls.endDate) setEndDate(ls.endDate);
+        if (ls.cloudCover !== undefined) setCloudCover(ls.cloudCover);
+        if (ls.selectedSensor) setSelectedSensor(ls.selectedSensor);
+        if (ls.modelType) setModelType(ls.modelType);
+        if (ls.numTrees) setNumTrees(ls.numTrees);
+        if (ls.samplePoints) setSamplePoints(ls.samplePoints);
+        if (ls.activeLayer) setActiveLayer(ls.activeLayer);
+        if (ls.tileUrls) setTileUrls(ls.tileUrls);
+        if (ls.statistics) {
+          setStatistics(ls.statistics);
+          setAnalyticsExpanded(true);
+        }
+        if (ls.totalAreaHa !== undefined) setTotalAreaHa(ls.totalAreaHa);
+      }
+
+      setSuccessMessage(`Loaded project: "${projectData.title}"`);
+    } catch (err: any) {
+      console.warn("Could not load project:", err);
+      setErrorMessage(`Failed to restore project: ${err.message}`);
+    }
+  };
+
   // Handle Vector File Upload (GeoJSON, KML, KMZ, Shapefile .zip, GPX)
   const handleVectorUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2228,7 +2066,8 @@ export default function Home() {
         mask_shadows: maskShadows,
         seasonal_filter: seasonalFilter,
         use_sar_fusion: useSarFusion,
-        sensor: selectedSensor
+        sensor: selectedSensor,
+        custom_training_data: customTrainingData || undefined
       };
 
       if (!compareMode) {
@@ -2261,7 +2100,10 @@ export default function Home() {
         
         const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
         setProcessingTime(parseFloat(elapsed));
-        setSuccessMessage(`Classification completed in ${elapsed}s (${Object.keys(data.statistics).length} classes).`);
+        const customBadge = data.training_source === 'custom_field_samples'
+          ? ` with ${data.sample_count} user ground-truth points (${data.training_accuracy ? data.training_accuracy + '% accuracy' : ''})`
+          : '';
+        setSuccessMessage(`Classification completed in ${elapsed}s (${Object.keys(data.statistics).length} classes)${customBadge}.`);
       } else {
         const payloadB = {
           ...payloadA,
@@ -2800,227 +2642,58 @@ export default function Home() {
 
   return (
     <div className="geo-app">
-      
-      {/* ---------- Top bar ---------- */}
-      {/* ---------- Top bar ---------- */}
-      <header className="topbar relative bg-[#FAF9F5] border-b border-[#D8D5CA] px-5 py-2.5 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2.5">
-            <Link href="/" className="flex items-center gap-2.5 cursor-pointer group" title="Return to Overview">
-              <svg width="24" height="20" viewBox="0 0 28 22" fill="none" className="flex-shrink-0">
-                <path d="M14 2L2 19H26L14 2Z" stroke="#2D4A34" strokeWidth="2.2" strokeLinejoin="round" />
-                <path d="M8 14L14 7L20 14" stroke="#2D4A34" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M5 19C8 16 10.5 16 14 19C17.5 16 20 16 23 19" stroke="#2D4A34" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              <span className="font-sans text-[18px] font-bold tracking-[-0.02em] text-[#1A1D23]">
-                GeoClass
-              </span>
-              <span className="hidden xl:inline-block text-xs font-mono uppercase tracking-[0.1em] text-[#69706A] border-l border-[#D8D5CA] pl-3 ml-2 group-hover:text-[#1A1D23] transition">
-                Earth Observation
-              </span>
-            </Link>
-          </div>
-        </div>
+      {/* ---------- Modular Top Navigation & Telemetry Bar ---------- */}
+      <WorkstationHeader
+        user={user}
+        isAuthenticated={isAuthenticated}
+        userDropdownOpen={userDropdownOpen}
+        setUserDropdownOpen={setUserDropdownOpen}
+        onNavigateTab={(tab) => {
+          if (tab === 'projects') {
+            setLeftRailCollapsed(false);
+            setPhase1Open(true);
+          } else if (tab === 'imagery') {
+            setLeftRailCollapsed(false);
+            setPhase2Open(true);
+          } else if (tab === 'classification') {
+            setLeftRailCollapsed(false);
+            setPhase3Open(true);
+          } else if (tab === 'analytics') {
+            setAnalyticsExpanded(true);
+          }
+        }}
+        onLogout={() => {
+          logout();
+          router.push('/');
+        }}
+      />
 
-        {/* Center Understated Navigation Tabs */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-medium absolute left-1/2 -translate-x-1/2" aria-label="Main Navigation">
-          <button 
-            type="button"
-            onClick={() => { setLeftRailCollapsed(false); setPhase1Open(true); }}
-            className="pb-1 border-b-2 border-[#D9622B] text-[#D9622B] font-semibold cursor-pointer transition"
-          >
-            Projects
-          </button>
-          <button 
-            type="button"
-            onClick={() => { setLeftRailCollapsed(false); setPhase2Open(true); }}
-            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#1A1D23] cursor-pointer transition"
-          >
-            Imagery
-          </button>
-          <button 
-            type="button"
-            onClick={() => { setLeftRailCollapsed(false); setPhase3Open(true); }}
-            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#1A1D23] cursor-pointer transition"
-          >
-            Classification
-          </button>
-          <button 
-            type="button"
-            onClick={() => { setAnalyticsExpanded(true); }}
-            className="pb-1 border-b-2 border-transparent text-[#454B46] hover:text-[#1A1D23] cursor-pointer transition"
-          >
-            Analytics
-          </button>
-        </nav>
-
-        {/* Right Header Controls */}
-        <div className="flex items-center gap-4">
-          {isAuthenticated && (
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 pl-2 cursor-pointer select-none group"
-              >
-                <div className="w-7 h-7 rounded-full bg-[#2D4A34] text-[#B7E89F] border border-[#306840] flex items-center justify-center text-[11px] font-bold">
-                  {user?.fullName 
-                    ? user.fullName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
-                    : 'OP'}
-                </div>
-                <span className="text-xs font-semibold text-[#1A1D23] hidden md:inline">
-                  {user?.fullName || 'Operator'}
-                </span>
-                <ChevronDown className={`w-3.5 h-3.5 text-[#69706A] transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-[#FAF9F5] border border-[#D8D5CA] rounded-[6px] shadow-xl p-3 space-y-2 z-50 text-xs">
-                  <div className="border-b border-[#E3E0D5] pb-2">
-                    <div className="font-semibold text-[#1A1D23]">
-                      {user?.fullName || 'Operator'}
-                    </div>
-                    <div className="text-[11px] text-[#676E7D] truncate">
-                      {user?.email || 'analyst@organization.org'}
-                    </div>
-                    <div className="inline-block mt-1.5 font-mono text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#E4E9DF] text-[#2D4A34] font-medium">
-                      {user?.role?.replace(/_/g, ' ') || 'Remote Sensing Analyst'}
-                    </div>
-                  </div>
-
-                  <div className="pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        logout();
-                        router.push('/');
-                      }}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] text-xs font-medium text-[#A84E42] hover:bg-[#FCECE4] transition cursor-pointer"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>Sign Out / Logout</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </header>
-
-      {/* ---------- Scientific Workstation Telemetry & Summary Bar ---------- */}
-      <div className="flex items-center justify-between px-3 sm:px-5 py-1.5 sm:py-2 bg-[#FAF9F5] border-b border-[#D8D5CA] text-xs select-none overflow-x-auto scrollbar-none">
-        {/* Telemetry Metrics */}
-        <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto py-0.5 flex-shrink-0">
-          <div>
-            <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">STATUS</div>
-            <div className="flex items-center gap-1.5 font-medium text-[#1A1D23]">
-              <span className={`w-2 h-2 rounded-full ${geeConnected === false ? 'bg-[#A84E42]' : 'bg-[#D9622B]'}`}></span>
-              <span>{loadingMapId ? 'Preparing imagery' : loadingClassify ? 'Classifying' : geeConnected === false ? 'Disconnected' : 'Ready'}</span>
-            </div>
-          </div>
-
-          {coords.length > 0 && (
-            <div>
-              <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">AOI AREA</div>
-              <div className="font-mono text-[#1A1D23] font-medium flex items-center gap-1.5">
-                <span className={calculateAOIArea(coords) > MAX_AOI_HA ? 'text-[#C56A5A] font-bold' : ''}>
-                  {calculateAOIArea(coords).toFixed(1)} ha
-                </span>
-                {calculateAOIArea(coords) > MAX_AOI_HA && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#C56A5A]/20 text-[#C56A5A] uppercase font-bold tracking-tight">
-                    EXCEEDS 50K HA LIMIT
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">DATE WINDOW</div>
-            <div className="font-mono text-[#1A1D23] font-medium">{startDate} → {endDate}</div>
-          </div>
-
-          <div>
-            <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">CLOUD COVER</div>
-            <div className="font-mono text-[#1A1D23] font-medium">{cloudCover}% Max</div>
-          </div>
-
-          <div>
-            <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">ACTIVE LAYERS</div>
-            <div className="font-mono text-[#1A1D23] font-medium">{readyLayersCount > 0 ? readyLayersCount : 6} / {layerStack.length}</div>
-          </div>
-
-          {processingTime !== null && (
-            <div>
-              <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">EXEC TIME</div>
-              <div className="font-mono text-[#1A1D23] font-medium">{processingTime}s</div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
-          {/* Study Area Map Generator */}
-          <button 
-            type="button"
-            onClick={() => setIsStudyAreaModalOpen(true)}
-            className="px-2 sm:px-2.5 py-1 rounded border border-[#D8D5CA] bg-[#FAF9F5] hover:bg-[#F4F1E8] text-[#1A1D23] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium shadow-2xs"
-            title="Generate Publication-Ready Study Area Map"
-          >
-            <Compass className="w-3.5 h-3.5 text-[#D9622B]" />
-            <span className="hidden sm:inline">Study Map</span>
-          </button>
-
-          {/* Save Analysis State */}
-          <button 
-            type="button"
-            onClick={() => setSaveModalOpen(true)}
-            disabled={coords.length === 0}
-            className={`px-2 sm:px-2.5 py-1 rounded border transition cursor-pointer flex items-center gap-1.5 text-xs font-medium ${
-              coords.length > 0 
-                ? 'bg-[#FAF9F5] text-[#1A1D23] border-[#D8D5CA] hover:bg-[#F4F1E8] shadow-2xs' 
-                : 'text-[#8A908A] border-[#E5E5E0] cursor-not-allowed opacity-60'
-            }`}
-            title={coords.length > 0 ? "Save Current Analysis State to Supabase" : "Select an AOI to save analysis"}
-          >
-            <Save className="w-3.5 h-3.5 text-[#D9622B]" />
-            <span className="hidden sm:inline">Save</span>
-          </button>
-
-          {/* Saved Analyses Library */}
-          <button 
-            type="button"
-            onClick={() => setIsWorkspaceLibraryOpen(true)}
-            className="px-2 sm:px-2.5 py-1 rounded border border-[#D8D5CA] bg-transparent text-[#69706A] hover:text-[#1A1D23] hover:bg-[#F4F1E8] transition cursor-pointer flex items-center gap-1.5 text-xs font-medium"
-            title="Open Saved Analyses Library"
-          >
-            <Folder className="w-3.5 h-3.5 text-[#69706A]" />
-            <span className="hidden md:inline">Saved ({savedWorkspaces.length})</span>
-          </button>
-
-          <button 
-            type="button"
-            onClick={() => setAnalyticsExpanded(!analyticsExpanded)}
-            className="p-1 hover:bg-[#F4F1E8] rounded text-[#69706A] hover:text-[#1A1D23] transition cursor-pointer"
-            title="Toggle Analytics Drawer"
-          >
-            <LayoutGrid className="w-4 h-4" />
-          </button>
-          <button 
-            type="button"
-            onClick={() => setRightRailCollapsed(!rightRailCollapsed)}
-            className={`px-2 sm:px-2.5 py-1 rounded border transition cursor-pointer flex items-center gap-1.5 text-xs font-medium ${
-              !rightRailCollapsed 
-                ? 'bg-[#FAF9F5] text-[#D9622B] border-[#D9622B]/40 shadow-xs' 
-                : 'bg-transparent text-[#69706A] border-[#D8D5CA] hover:text-[#1A1D23] hover:bg-[#F4F1E8]'
-            }`}
-            title={rightRailCollapsed ? "Open Layers & Tools" : "Collapse Layers & Tools"}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Layers &amp; Tools</span>
-          </button>
-        </div>
-      </div>
+      <TelemetryBar
+        geeConnected={geeConnected}
+        loadingMapId={loadingMapId}
+        loadingClassify={loadingClassify}
+        coords={coords}
+        startDate={startDate}
+        endDate={endDate}
+        cloudCover={cloudCover}
+        readyLayersCount={readyLayersCount}
+        totalLayersCount={layerStack.length}
+        processingTime={processingTime}
+        savedWorkspacesCount={savedWorkspaces.length}
+        isFullscreen={isFullscreen}
+        rightRailCollapsed={rightRailCollapsed}
+        analyticsExpanded={analyticsExpanded}
+        customTrainingCount={customTrainingCount}
+        onOpenStudyMap={() => setIsStudyAreaModalOpen(true)}
+        onOpenSaveModal={() => setSaveModalOpen(true)}
+        onOpenSavedLibrary={() => setIsWorkspaceLibraryOpen(true)}
+        onOpenCustomTraining={() => setShowCustomTrainingModal(true)}
+        onOpenCloudShare={() => setShowProjectShareModal(true)}
+        onOpenClimate={fetchClimateContext}
+        onToggleFullscreen={toggleMapFullscreen}
+        onToggleAnalyticsDrawer={() => setAnalyticsExpanded(!analyticsExpanded)}
+        onToggleLayersRail={() => setRightRailCollapsed(!rightRailCollapsed)}
+      />
 
       {/* ---------- Main grid ---------- */}
       <div className={`main-grid ${leftRailCollapsed ? 'left-collapsed' : ''} ${rightRailCollapsed ? 'right-collapsed' : ''}`}>
@@ -3671,341 +3344,23 @@ export default function Home() {
             )}
 
             {/* Custom Horizontal Toolstrip */}
-            {!toolstripCollapsed && (
-              <DraggableContainer defaultPosition={{ x: 14, y: 14 }} zIndex={1000} className="pointer-events-auto">
-                <div className="toolstrip">
-                  {/* Drag Grip Handle */}
-                  <div 
-                    className="flex flex-col gap-0.5 px-1 py-1 cursor-grab active:cursor-grabbing select-none opacity-40 hover:opacity-90 transition-opacity"
-                    title="Drag toolbar"
-                  >
-                    <div className="flex gap-0.5">
-                      <div className="w-1 h-1 rounded-full bg-[#8A908A]" />
-                      <div className="w-1 h-1 rounded-full bg-[#8A908A]" />
-                    </div>
-                    <div className="flex gap-0.5">
-                      <div className="w-1 h-1 rounded-full bg-[#8A908A]" />
-                      <div className="w-1 h-1 rounded-full bg-[#8A908A]" />
-                    </div>
-                    <div className="flex gap-0.5">
-                      <div className="w-1 h-1 rounded-full bg-[#8A908A]" />
-                      <div className="w-1 h-1 rounded-full bg-[#8A908A]" />
-                    </div>
-                  </div>
-
-                  <div className="divider" />
-
-                  {/* 1. Pan / Pointer */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('pan')}
-                    className={`t ${activeTool === 'pan' ? 'active' : ''}`}
-                    aria-label="Select & Pan"
-                  >
-                    <MousePointer className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Select & Pan</span>
-                        <span className="tool-tip-badge">NAV</span>
-                      </div>
-                      <div className="tool-tip-desc">Explore satellite imagery and navigate freely without drawing geometry.</div>
-                    </div>
-                  </button>
-
-                  {/* 2. Rectangle */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('rect')}
-                    className={`t ${activeTool === 'rect' ? 'active' : ''}`}
-                    aria-label="Draw Rectangle"
-                  >
-                    <Square className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Draw Rectangle</span>
-                        <span className="tool-tip-badge">AOI</span>
-                      </div>
-                      <div className="tool-tip-desc">Click and drag on the map to define a rectangular Area of Interest.</div>
-                    </div>
-                  </button>
-
-                  {/* 3. Polygon */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('poly')}
-                    className={`t ${activeTool === 'poly' ? 'active' : ''}`}
-                    aria-label="Draw Polygon"
-                  >
-                    <Pentagon className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Draw Polygon</span>
-                        <span className="tool-tip-badge">AOI</span>
-                      </div>
-                      <div className="tool-tip-desc">Click to plot custom polygon vertices around your target boundary.</div>
-                    </div>
-                  </button>
-
-                  {/* 4. Measure Distance (Ruler) */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('measure')}
-                    className={`t ${measurementMode ? 'active' : ''}`}
-                    aria-label="Measure Distance"
-                  >
-                    <Ruler className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Measure Distance</span>
-                        <span className="tool-tip-badge">RULER</span>
-                      </div>
-                      <div className="tool-tip-desc">Click sequential points on the map to calculate linear distance in kilometers.</div>
-                    </div>
-                  </button>
-
-                  {/* 5. Elevation Transect */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('transect')}
-                    className={`t ${transectMode ? 'active' : ''}`}
-                    aria-label="Elevation Transect"
-                  >
-                    <Activity className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Elevation Transect</span>
-                        <span className="tool-tip-badge">DEM</span>
-                      </div>
-                      <div className="tool-tip-desc">Draw a cross-sectional line across terrain to slice a 3D elevation profile.</div>
-                    </div>
-                  </button>
-
-                  {/* 6. Text Annotation */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('text')}
-                    className={`t ${activeTool === 'text' ? 'active' : ''}`}
-                    aria-label="Text Annotation"
-                  >
-                    <Type className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Text Annotation</span>
-                        <span className="tool-tip-badge">TEXT</span>
-                      </div>
-                      <div className="tool-tip-desc">Click anywhere on the map to type and place custom notes or field labels.</div>
-                    </div>
-                  </button>
-
-                  {/* 7. Info / Smart Select */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('smart')}
-                    className={`t ${smartSelectMode ? 'active' : ''}`}
-                    aria-label="Smart Select & Inspect"
-                  >
-                    <Info className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Smart Select & Inspect</span>
-                        <span className="tool-tip-badge">AI GEO</span>
-                      </div>
-                      <div className="tool-tip-desc">Click any pixel to automatically segment features or inspect pixel attributes.</div>
-                    </div>
-                  </button>
-
-                  {/* 8. MapPin / Notes */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('notes')}
-                    className={`t ${noteMode ? 'active' : ''}`}
-                    aria-label="Field Note Pin"
-                  >
-                    <MapPin className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Field Note Pin</span>
-                        <span className="tool-tip-badge">NOTE</span>
-                      </div>
-                      <div className="tool-tip-desc">Click anywhere to place geo-referenced notes and field observations.</div>
-                    </div>
-                  </button>
-
-                  <div className="divider" />
-
-                  {/* 9. Crosshair (Center on AOI) */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (coords.length > 0) {
-                        const latSum = coords.reduce((acc, c) => acc + c[0], 0);
-                        const lngSum = coords.reduce((acc, c) => acc + c[1], 0);
-                        setMapCenter([latSum / coords.length, lngSum / coords.length]);
-                      } else if (selectedLocation) {
-                        setMapCenter([selectedLocation.lat, selectedLocation.lng]);
-                      } else {
-                        setMapCenter([37.7749, -122.4194]);
-                      }
-                    }}
-                    className="t"
-                    aria-label="Center on Target"
-                  >
-                    <Crosshair className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Center on Target</span>
-                        <span className="tool-tip-badge">VIEW</span>
-                      </div>
-                      <div className="tool-tip-desc">Center view directly on the active Area of Interest.</div>
-                    </div>
-                  </button>
-
-                  {/* 10. Layers / Spectral Inspector */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('spectral')}
-                    className={`t ${spectralInspectorMode ? 'active' : ''}`}
-                    aria-label="Spectral Inspector"
-                  >
-                    <Layers className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Spectral Inspector</span>
-                        <span className="tool-tip-badge">10-BAND</span>
-                      </div>
-                      <div className="tool-tip-desc">Click any pixel to extract its 10-band Sentinel-2 reflectance curve.</div>
-                    </div>
-                  </button>
-
-                  {/* 11. Swipe Split */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('swipe')}
-                    className={`t ${swipeActive ? 'active' : ''}`}
-                    aria-label="Split Comparison"
-                  >
-                    <SplitSquareVertical className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Split Comparison</span>
-                        <span className="tool-tip-badge">SWIPE</span>
-                      </div>
-                      <div className="tool-tip-desc">Draggable curtain slider to visually wipe between dates or modalities.</div>
-                    </div>
-                  </button>
-
-                  <div className="divider" />
-
-                  {/* 12. Zoom In */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMapZoom((z) => Math.min(18, z + 1));
-                      window.dispatchEvent(new CustomEvent('map-zoom-in'));
-                    }}
-                    className="t"
-                    aria-label="Zoom In"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Zoom In</span>
-                        <span className="tool-tip-badge">+</span>
-                      </div>
-                      <div className="tool-tip-desc">Increase map magnification level.</div>
-                    </div>
-                  </button>
-
-                  {/* 13. Zoom Out */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMapZoom((z) => Math.max(3, z - 1));
-                      window.dispatchEvent(new CustomEvent('map-zoom-out'));
-                    }}
-                    className="t"
-                    aria-label="Zoom Out"
-                  >
-                    <Minus className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Zoom Out</span>
-                        <span className="tool-tip-badge">-</span>
-                      </div>
-                      <div className="tool-tip-desc">Decrease map magnification level.</div>
-                    </div>
-                  </button>
-
-                  {/* 14. Compass */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMapZoom(11);
-                      if (coords.length > 0) {
-                        const latSum = coords.reduce((acc, c) => acc + c[0], 0);
-                        const lngSum = coords.reduce((acc, c) => acc + c[1], 0);
-                        setMapCenter([latSum / coords.length, lngSum / coords.length]);
-                      } else if (selectedLocation) {
-                        setMapCenter([selectedLocation.lat, selectedLocation.lng]);
-                      } else {
-                        setMapCenter([37.7749, -122.4194]);
-                      }
-                    }}
-                    className="t"
-                    aria-label="Reset North & Extent"
-                  >
-                    <Compass className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Reset Extent</span>
-                        <span className="tool-tip-badge">NORTH</span>
-                      </div>
-                      <div className="tool-tip-desc">Reset orientation and zoom to the default project coordinates.</div>
-                    </div>
-                  </button>
-
-                  {/* 15. Expand / Fullscreen Mode */}
-                  <button
-                    type="button"
-                    onClick={toggleMapFullscreen}
-                    className={`t ${isFullscreen ? 'active' : ''}`}
-                    aria-label={isFullscreen ? "Exit Fullscreen" : "View Map in Full Mode"}
-                  >
-                    {isFullscreen ? (
-                      <Minimize2 className="w-4 h-4" />
-                    ) : (
-                      <Maximize2 className="w-4 h-4" />
-                    )}
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>{isFullscreen ? "Exit Fullscreen" : "Full Map Mode"}</span>
-                        <span className="tool-tip-badge">VIEW</span>
-                      </div>
-                      <div className="tool-tip-desc">Expand map canvas to full screen for unobstructed geospatial analysis.</div>
-                    </div>
-                  </button>
-
-                  <div className="divider" />
-
-                  {/* 16. Clear / Delete Boundary */}
-                  <button
-                    type="button"
-                    onClick={() => triggerTool('clear')}
-                    className="t hover:text-[#C24E43]"
-                    aria-label="Clear Boundary"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <div className="tool-tip">
-                      <div className="tool-tip-title">
-                        <span>Clear Boundary</span>
-                        <span className="tool-tip-badge">RESET</span>
-                      </div>
-                      <div className="tool-tip-desc">Erase the active boundary geometry from the map and reset drawing tools.</div>
-                    </div>
-                  </button>
-                </div>
-              </DraggableContainer>
-            )}
+            <WorkstationToolstrip
+              toolstripCollapsed={toolstripCollapsed}
+              activeTool={activeTool}
+              measurementMode={measurementMode}
+              transectMode={transectMode}
+              smartSelectMode={smartSelectMode}
+              noteMode={noteMode}
+              spectralInspectorMode={spectralInspectorMode}
+              swipeActive={swipeActive}
+              isFullscreen={isFullscreen}
+              coords={coords}
+              selectedLocation={selectedLocation}
+              triggerTool={triggerTool}
+              setMapZoom={setMapZoom}
+              setMapCenter={setMapCenter}
+              toggleMapFullscreen={toggleMapFullscreen}
+            />
 
             {/* AOI Guidance Empty State */}
             {coords.length === 0 && !dismissedInvite && !selectedLocation && !locationQuery.trim() && (
@@ -4122,6 +3477,9 @@ export default function Home() {
               mndwiUrl={tileUrls.mndwi}
               nbrUrl={tileUrls.nbr}
               sarUrl={tileUrls.sar}
+              climateTempUrl={tileUrls.climateTemp}
+              climatePrecipUrl={tileUrls.climatePrecip}
+              climateSoilUrl={tileUrls.climateSoil}
               landsatTrueColorUrl={tileUrls.landsatTrueColor}
               landsatFalseColorUrl={tileUrls.landsatFalseColor}
               landsatNdviUrl={tileUrls.landsatNdvi}
@@ -4355,11 +3713,22 @@ export default function Home() {
                   <>
                 {/* Empty state if not classified yet */}
                 {!statistics && (
-                  <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded p-4 flex items-center gap-3 text-xs text-[#69706A]">
-                    <div className="w-7 h-7 rounded bg-[#F4F1E8] border border-[#D8D5CA] flex items-center justify-center text-[#69706A] flex-shrink-0">
-                      <Layers className="w-4 h-4" />
+                  <div className="space-y-4">
+                    <div className="bg-[#FAF9F5] border border-[#D8D5CA] rounded p-4 flex items-center gap-3 text-xs text-[#69706A]">
+                      <div className="w-7 h-7 rounded bg-[#F4F1E8] border border-[#D8D5CA] flex items-center justify-center text-[#69706A] flex-shrink-0">
+                        <Layers className="w-4 h-4" />
+                      </div>
+                      <span>Class breakdown and area totals appear here once a classification run finishes.</span>
                     </div>
-                    <span>Class breakdown and area totals appear here once a classification run finishes.</span>
+
+                    {/* Pre-classification Climate Reanalysis Access */}
+                    <ClimateContextCard
+                      data={climateData}
+                      loading={loadingClimate}
+                      onAnalyzeClimate={fetchClimateContext}
+                      activeClimateOverlay={activeClimateOverlay}
+                      onToggleClimateOverlay={handleToggleClimateOverlay}
+                    />
                   </div>
                 )}
 
@@ -4461,6 +3830,17 @@ export default function Home() {
                       onTriggerSpectral={triggerAnalyzeSpectral}
                       onSelectLayer={(l) => setActiveLayer(l as any)}
                     />
+
+                    {/* ECMWF ERA5-Land Climate Context Reanalysis */}
+                    <div className="pt-2">
+                      <ClimateContextCard
+                        data={climateData}
+                        loading={loadingClimate}
+                        onAnalyzeClimate={fetchClimateContext}
+                        activeClimateOverlay={activeClimateOverlay}
+                        onToggleClimateOverlay={handleToggleClimateOverlay}
+                      />
+                    </div>
 
                     {/* Ecological Guidelines */}
                     {reportInsights && (
@@ -5718,6 +5098,45 @@ export default function Home() {
           </div>
         </div>
       )}
+      {/* Custom Training Ground-Truth Vector Modal */}
+      <CustomTrainingModal
+        isOpen={showCustomTrainingModal}
+        onClose={() => setShowCustomTrainingModal(false)}
+        activeData={customTrainingData}
+        onApplyTrainingData={(data) => {
+          setCustomTrainingData(data);
+          if (data) {
+            setSuccessMessage("Custom ground-truth field data applied to GEE classifier.");
+          } else {
+            setSuccessMessage("Cleared custom ground-truth data. Classifier will use stratified Dynamic World samples.");
+          }
+        }}
+      />
+
+      {/* Cloud Projects & Shareable Permalinks Modal */}
+      <ProjectShareModal
+        isOpen={showProjectShareModal}
+        onClose={() => setShowProjectShareModal(false)}
+        aoiCoords={coords}
+        layerState={{
+          startDate,
+          endDate,
+          cloudCover,
+          selectedSensor,
+          modelType,
+          numTrees,
+          samplePoints,
+          activeLayer,
+          tileUrls,
+          statistics,
+          totalAreaHa,
+          mapCenter,
+          mapZoom,
+          aoiAreaHa,
+        }}
+        onLoadProject={handleLoadProject}
+      />
+
       {/* Mobile Bottom Navigation Bar (Visible only on < 1024px screens) */}
       <nav className="mobile-bottom-nav select-none" aria-label="Mobile Navigation">
         {/* 1. Map Tab */}

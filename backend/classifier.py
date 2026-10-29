@@ -40,6 +40,114 @@ LULC_CLASSES = {
     8: "Snow/Ice"
 }
 
+CLASS_NAME_TO_ID = {v.lower(): k for k, v in LULC_CLASSES.items()}
+CLASS_NAME_TO_ID.update({
+    "water": 0,
+    "water body": 0,
+    "lake": 0,
+    "river": 0,
+    "ocean": 0,
+    "forest": 1,
+    "trees": 1,
+    "woodland": 1,
+    "grass": 2,
+    "grassland": 2,
+    "vegetation": 2,
+    "pasture": 2,
+    "meadow": 2,
+    "wetland": 3,
+    "marsh": 3,
+    "swamp": 3,
+    "flooded vegetation": 3,
+    "flooded": 3,
+    "crops": 4,
+    "cropland": 4,
+    "agriculture": 4,
+    "farmland": 4,
+    "shrub": 5,
+    "scrub": 5,
+    "shrubland": 5,
+    "built": 6,
+    "built-up": 6,
+    "builtup": 6,
+    "building": 6,
+    "settlement": 6,
+    "infrastructure": 6,
+    "urban": 6,
+    "bare": 7,
+    "bare land": 7,
+    "bare ground": 7,
+    "sand": 7,
+    "soil": 7,
+    "rock": 7,
+    "barren": 7,
+    "ice": 8,
+    "snow": 8,
+    "snow/ice": 8
+})
+
+def parse_custom_training_fc(custom_geojson: Dict[str, Any]) -> Tuple[Optional[ee.FeatureCollection], int]:
+    """
+    Parses a user-supplied GeoJSON FeatureCollection containing ground-truth training points
+    or polygons into an Earth Engine FeatureCollection with an integer 'label' property.
+    """
+    raw_features = custom_geojson.get("features", [])
+    if not raw_features:
+        return None, 0
+
+    ee_features = []
+    for feat in raw_features:
+        geom = feat.get("geometry")
+        props = feat.get("properties", {})
+        if not geom:
+            continue
+
+        label_val = props.get("label")
+        if label_val is None:
+            label_val = props.get("class_id") or props.get("class") or props.get("target")
+        if label_val is None and "class_name" in props:
+            label_val = CLASS_NAME_TO_ID.get(str(props["class_name"]).lower().strip())
+        elif isinstance(label_val, str):
+            clean_str = label_val.lower().strip()
+            if clean_str in CLASS_NAME_TO_ID:
+                label_val = CLASS_NAME_TO_ID[clean_str]
+            else:
+                try:
+                    label_val = int(label_val)
+                except (ValueError, TypeError):
+                    label_val = None
+        else:
+            try:
+                label_val = int(label_val)
+            except (ValueError, TypeError):
+                label_val = None
+
+        if label_val is None:
+            continue
+
+        g_type = geom.get("type")
+        coords = geom.get("coordinates")
+        if not coords:
+            continue
+
+        try:
+            if g_type == "Point":
+                ee_geom = ee.Geometry.Point(coords)
+            elif g_type == "Polygon":
+                ee_geom = ee.Geometry.Polygon(coords)
+            elif g_type == "MultiPolygon":
+                ee_geom = ee.Geometry.MultiPolygon(coords)
+            else:
+                continue
+            ee_features.append(ee.Feature(ee_geom, {"label": int(label_val)}))
+        except Exception as err:
+            logger.warning(f"Skipping malformed training feature: {err}")
+
+    if not ee_features:
+        return None, 0
+
+    return ee.FeatureCollection(ee_features), len(ee_features)
+
 def train_and_classify_gee(
     s2_composite: ee.Image,
     label_composite: ee.Image,
@@ -47,7 +155,8 @@ def train_and_classify_gee(
     num_trees: int = 100,
     sample_points: int = 150,
     sar_composite: Optional[ee.Image] = None,
-    sensor: str = "sentinel_2"
+    sensor: str = "sentinel_2",
+    custom_training_geojson: Optional[Dict[str, Any]] = None
 ) -> Tuple[ee.Image, Dict[str, Any]]:
     """
     Trains an ee.Classifier.smileRandomForest on the GEE server.
@@ -98,36 +207,65 @@ def train_and_classify_gee(
         feature_image = feature_image.addBands(sar_composite.select(sar_bands))
         feature_bands.extend(sar_bands)
 
-    # Combine features with target label
-    # The label image must be integer
-    target_label = label_composite.select('label').toInt().rename('label')
-    training_src = feature_image.addBands(target_label)
+    # 2. Extract Training Samples (Custom user vectors or Dynamic World stratified)
+    custom_fc = None
+    custom_feature_count = 0
+    if custom_training_geojson:
+        custom_fc, custom_feature_count = parse_custom_training_fc(custom_training_geojson)
+        if custom_fc and custom_feature_count > 0:
+            logger.info(f"Ingesting {custom_feature_count} user custom ground-truth vector features.")
 
-    # 2. Stratified Sampling
-    # Draw points from each class to balance the training dataset
-    try:
-        training_data = training_src.stratifiedSample(
-            numPoints=sample_points,
-            classBand='label',
-            region=aoi,
-            scale=scale,
-            projection='EPSG:4326',
-            geometries=True
-        )
-        # Check if we got any samples
-        sample_count = training_data.size().getInfo()
-        logger.info(f"Successfully collected {sample_count} training pixels.")
-    except Exception as e:
-        logger.warning(f"Stratified sample failed, falling back to random sampling: {e}")
-        # Fallback: simple random sampling if stratified fails (e.g., if some classes are missing in a small AOI)
-        training_data = training_src.sample(
-            region=aoi,
-            scale=scale,
-            numPixels=sample_points * 5,
-            geometries=True
-        )
-        sample_count = training_data.size().getInfo()
-        logger.info(f"Collected {sample_count} pixels via random sampling.")
+    training_source = "dynamic_world_stratified"
+    training_data = None
+    sample_count = 0
+
+    if custom_fc and custom_feature_count > 0:
+        try:
+            sampled = feature_image.sampleRegions(
+                collection=custom_fc,
+                properties=['label'],
+                scale=scale,
+                geometries=True,
+                tileScale=4
+            )
+            sc = sampled.size().getInfo()
+            if sc > 0:
+                training_data = sampled
+                sample_count = sc
+                training_source = "custom_field_samples"
+                logger.info(f"Extracted {sample_count} training pixels from custom ground-truth vectors.")
+            else:
+                logger.warning("Custom training vectors yielded 0 pixel samples. Falling back to stratified Dynamic World.")
+        except Exception as custom_err:
+            logger.warning(f"Failed to sample custom training regions: {custom_err}. Falling back to Dynamic World.")
+
+    if training_data is None:
+        # Combine features with target Dynamic World label
+        target_label = label_composite.select('label').toInt().rename('label')
+        training_src = feature_image.addBands(target_label)
+
+        # Stratified Sampling: Draw points from each class to balance the training dataset
+        try:
+            training_data = training_src.stratifiedSample(
+                numPoints=sample_points,
+                classBand='label',
+                region=aoi,
+                scale=scale,
+                projection='EPSG:4326',
+                geometries=True
+            )
+            sample_count = training_data.size().getInfo()
+            logger.info(f"Successfully collected {sample_count} training pixels from Dynamic World.")
+        except Exception as e:
+            logger.warning(f"Stratified sample failed, falling back to random sampling: {e}")
+            training_data = training_src.sample(
+                region=aoi,
+                scale=scale,
+                numPixels=sample_points * 5,
+                geometries=True
+            )
+            sample_count = training_data.size().getInfo()
+            logger.info(f"Collected {sample_count} pixels via random sampling.")
 
     if sample_count == 0:
         raise ValueError("Could not extract any training samples within the Area of Interest. Make sure the AOI is large enough.")
@@ -139,6 +277,13 @@ def train_and_classify_gee(
             classProperty='label',
             inputProperties=feature_bands
         )
+        training_accuracy = None
+        try:
+            train_acc = classifier.confusionMatrix().accuracy().getInfo()
+            if train_acc is not None:
+                training_accuracy = round(float(train_acc) * 100.0, 1)
+        except Exception:
+            training_accuracy = None
     except Exception as e:
         if "only one class" in str(e).lower():
             raise ValueError(
@@ -194,7 +339,10 @@ def train_and_classify_gee(
 
     return classified_image, {
         "classes": processed_stats,
-        "total_area_ha": round(total_area_ha, 2)
+        "total_area_ha": round(total_area_ha, 2),
+        "training_source": training_source,
+        "sample_count": sample_count,
+        "training_accuracy": training_accuracy
     }
 
 def train_and_classify_deep_learning_gee(
@@ -204,7 +352,8 @@ def train_and_classify_deep_learning_gee(
     num_trees: int = 150,
     sample_points: int = 200,
     sar_composite: Optional[ee.Image] = None,
-    sensor: str = "sentinel_2"
+    sensor: str = "sentinel_2",
+    custom_training_geojson: Optional[Dict[str, Any]] = None
 ) -> Tuple[ee.Image, Dict[str, Any]]:
     """
     Deep Learning spatial contextual segmentation on GEE.
@@ -275,29 +424,62 @@ def train_and_classify_deep_learning_gee(
         feature_image = feature_image.addBands(sar_composite.select(sar_bands))
         feature_bands.extend(sar_bands)
 
-    target_label = label_composite.select('label').toInt().rename('label')
-    training_src = feature_image.addBands(target_label)
+    # 3. Extract Training Samples (Custom user vectors or Dynamic World stratified)
+    custom_fc = None
+    custom_feature_count = 0
+    if custom_training_geojson:
+        custom_fc, custom_feature_count = parse_custom_training_fc(custom_training_geojson)
+        if custom_fc and custom_feature_count > 0:
+            logger.info(f"Ingesting {custom_feature_count} user custom ground-truth vector features for DL pipeline.")
 
-    # 3. Stratified Sampling
-    try:
-        training_data = training_src.stratifiedSample(
-            numPoints=sample_points,
-            classBand='label',
-            region=aoi,
-            scale=scale,
-            projection='EPSG:4326',
-            geometries=True
-        )
-        sample_count = training_data.size().getInfo()
-    except Exception as e:
-        logger.warning(f"Stratified sample fallback for DL: {e}")
-        training_data = training_src.sample(
-            region=aoi,
-            scale=scale,
-            numPixels=sample_points * 6,
-            geometries=True
-        )
-        sample_count = training_data.size().getInfo()
+    training_source = "dynamic_world_stratified"
+    training_data = None
+    sample_count = 0
+
+    if custom_fc and custom_feature_count > 0:
+        try:
+            sampled = feature_image.sampleRegions(
+                collection=custom_fc,
+                properties=['label'],
+                scale=scale,
+                geometries=True,
+                tileScale=4
+            )
+            sc = sampled.size().getInfo()
+            if sc > 0:
+                training_data = sampled
+                sample_count = sc
+                training_source = "custom_field_samples"
+                logger.info(f"Extracted {sample_count} training pixels from custom ground-truth vectors for DL pipeline.")
+            else:
+                logger.warning("Custom training vectors yielded 0 pixel samples in DL. Falling back to stratified Dynamic World.")
+        except Exception as custom_err:
+            logger.warning(f"Failed to sample custom training regions for DL: {custom_err}. Falling back to Dynamic World.")
+
+    if training_data is None:
+        target_label = label_composite.select('label').toInt().rename('label')
+        training_src = feature_image.addBands(target_label)
+
+        # Stratified Sampling
+        try:
+            training_data = training_src.stratifiedSample(
+                numPoints=sample_points,
+                classBand='label',
+                region=aoi,
+                scale=scale,
+                projection='EPSG:4326',
+                geometries=True
+            )
+            sample_count = training_data.size().getInfo()
+        except Exception as e:
+            logger.warning(f"Stratified sample fallback for DL: {e}")
+            training_data = training_src.sample(
+                region=aoi,
+                scale=scale,
+                numPixels=sample_points * 6,
+                geometries=True
+            )
+            sample_count = training_data.size().getInfo()
 
     if sample_count == 0:
         raise ValueError("Could not extract training samples within the AOI.")
@@ -313,6 +495,13 @@ def train_and_classify_deep_learning_gee(
             classProperty='label',
             inputProperties=feature_bands
         )
+        training_accuracy = None
+        try:
+            train_acc = classifier.confusionMatrix().accuracy().getInfo()
+            if train_acc is not None:
+                training_accuracy = round(float(train_acc) * 100.0, 1)
+        except Exception:
+            training_accuracy = None
     except Exception as e:
         if "only one class" in str(e).lower():
             raise ValueError(
@@ -363,7 +552,10 @@ def train_and_classify_deep_learning_gee(
 
     return classified_image, {
         "classes": processed_stats,
-        "total_area_ha": round(total_area_ha, 2)
+        "total_area_ha": round(total_area_ha, 2),
+        "training_source": training_source,
+        "sample_count": sample_count,
+        "training_accuracy": training_accuracy
     }
 
 def get_precomputed_statistics(label_image: ee.Image, aoi: ee.Geometry) -> Dict[str, Any]:

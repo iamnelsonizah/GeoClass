@@ -56,6 +56,15 @@ from stac_service import (
     search_stac_scenes,
     get_landsat_composite
 )
+from climate_service import (
+    get_era5_climate_context
+)
+from project_service import (
+    save_project,
+    get_project,
+    list_projects,
+    delete_project
+)
 
 # Configure Logger
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +73,15 @@ logger = logging.getLogger(__name__)
 # Open Access Safeguard Constants
 MAX_AOI_HA = float(os.getenv("MAX_AOI_HA", "50000.0"))  # 50,000 hectares = 500 km² limit
 RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
+
+from jobs_service import job_manager, JobStatus
+
+# Optional Redis import for distributed multi-instance rate limiting (e.g. on FastAPI Cloud)
+try:
+    import redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
 
 def calculate_aoi_area_ha(coords: List[List[float]]) -> float:
     """
@@ -116,8 +134,9 @@ def validate_aoi_area_limit(coords: List[List[float]], max_ha: float = MAX_AOI_H
 
 class IPRateLimiterMiddleware(BaseHTTPMiddleware):
     """
-    In-memory IP-level sliding window rate limiter for open-access protection.
-    Provides standard HTTP 429 response when request threshold is exceeded.
+    IP-level sliding window rate limiter for open-access protection.
+    Supports distributed Redis (e.g. for multi-instance deployments on FastAPI Cloud)
+    with seamless fallback to an in-memory thread-safe sliding window.
     """
     def __init__(self, app, requests_per_minute: int = 60):
         super().__init__(app)
@@ -126,33 +145,89 @@ class IPRateLimiterMiddleware(BaseHTTPMiddleware):
         self.requests: Dict[str, List[float]] = defaultdict(list)
         self.lock = Lock()
         self.last_cleanup = time.time()
+        
+        # Check for distributed Redis backend (e.g. Redis URL on FastAPI Cloud)
+        redis_url = os.getenv("REDIS_URL") or os.getenv("UPSTASH_REDIS_URL")
+        self.redis_client = None
+        if redis_url and REDIS_AVAILABLE:
+            try:
+                self.redis_client = redis.from_url(redis_url, decode_responses=True)
+                self.redis_client.ping()
+                logger.info("IPRateLimiterMiddleware connected to distributed Redis backend.")
+            except Exception as e:
+                logger.warning(f"Could not initialize Redis rate limiter ({e}). Using in-memory fallback.")
+                self.redis_client = None
 
     def get_client_ip(self, request: Request) -> str:
+        # 1. Cloudflare edge header (high priority)
+        cf_connecting_ip = request.headers.get("cf-connecting-ip")
+        if cf_connecting_ip:
+            return cf_connecting_ip.strip()
+
+        # 2. X-Forwarded-For (standard proxy header; first IP is the original client)
         x_forwarded_for = request.headers.get("x-forwarded-for")
         if x_forwarded_for:
             client_ip = x_forwarded_for.split(",")[0].strip()
             if client_ip:
                 return client_ip
-        cf_connecting_ip = request.headers.get("cf-connecting-ip")
-        if cf_connecting_ip:
-            return cf_connecting_ip.strip()
+
+        # 3. X-Real-IP
         x_real_ip = request.headers.get("x-real-ip")
         if x_real_ip:
             return x_real_ip.strip()
+
+        # 4. Direct socket address
         return request.client.host if request.client else "unknown"
 
     async def dispatch(self, request: Request, call_next):
-        # Bypass rate limiting for CORS preflight and basic telemetry/health checks
+        # Bypass rate limiting for CORS preflight, telemetry, health checks, and job polling
         if request.method == "OPTIONS":
             return await call_next(request)
 
         path = request.url.path
-        if path in ("/", "/api/status", "/docs", "/openapi.json", "/health", "/favicon.ico"):
+        if (
+            path in ("/", "/api/status", "/docs", "/openapi.json", "/health", "/api/v1/health", "/favicon.ico")
+            or path.startswith("/api/jobs")
+        ):
             return await call_next(request)
 
         ip = self.get_client_ip(request)
         now = time.time()
 
+        # Branch 1: Redis distributed rate limiter
+        if self.redis_client:
+            try:
+                redis_key = f"geoclass:ratelimit:{ip}:{int(now // self.window_seconds)}"
+                pipeline = self.redis_client.pipeline()
+                pipeline.incr(redis_key)
+                pipeline.expire(redis_key, int(self.window_seconds) * 2)
+                current_count, _ = pipeline.execute()
+
+                if current_count > self.rpm:
+                    retry_after = int(self.window_seconds - (now % self.window_seconds)) + 1
+                    return JSONResponse(
+                        status_code=429,
+                        content={
+                            "detail": (
+                                f"Rate limit exceeded: maximum {self.rpm} requests per minute allowed. "
+                                f"Please wait {max(1, retry_after)} seconds before retrying."
+                            )
+                        },
+                        headers={
+                            "Retry-After": str(max(1, retry_after)),
+                            "X-RateLimit-Limit": str(self.rpm),
+                            "X-RateLimit-Remaining": "0"
+                        }
+                    )
+                remaining = max(0, self.rpm - current_count)
+                response = await call_next(request)
+                response.headers["X-RateLimit-Limit"] = str(self.rpm)
+                response.headers["X-RateLimit-Remaining"] = str(remaining)
+                return response
+            except Exception as re_err:
+                logger.warning(f"Redis rate limiting error, falling back to local: {re_err}")
+
+        # Branch 2: In-memory sliding-window limiter
         with self.lock:
             # Periodic cleanup of expired timestamps every 5 minutes
             if now - self.last_cleanup > 300:
@@ -270,6 +345,10 @@ class ClassifyRequest(AOIRequest):
     model_type: str = Field("random_forest", description="Model type: 'random_forest', 'deep_learning', or 'dynamic_world'")
     use_sar_fusion: Optional[bool] = Field(False, description="Whether to fuse Sentinel-1 C-band SAR backscatter features (VV, VH, VV/VH ratio) with optical imagery")
     sensor: Optional[str] = Field("sentinel_2", description="Sensor constellation: 'sentinel_2' (Sentinel-2 MSI 10m) or 'landsat' (Landsat 8/9 OLI 30m)")
+    custom_training_data: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional GeoJSON FeatureCollection containing ground-truth training points or polygons with 'label' or 'class_name' properties"
+    )
 
 class STACSearchRequest(BaseModel):
     coords: List[List[float]] = Field(
@@ -384,6 +463,16 @@ class ElevationProfileRequest(BaseModel):
     )
     num_samples: int = Field(80, ge=10, le=250, description="Number of sample elevation points along the line")
     start_location: Optional[str] = Field(None, description="Human readable name or address of the start location")
+
+class ClimateRequest(AOIRequest):
+    pass
+
+class ProjectSaveRequest(BaseModel):
+    title: str = Field(..., description="Project title name")
+    description: Optional[str] = Field("", description="Optional project description or notes")
+    aoi_geojson: Dict[str, Any] = Field(..., description="GeoJSON geometry or FeatureCollection of the study area")
+    layer_state: Dict[str, Any] = Field(..., description="UI layer configuration (sensor, dates, model, opacities, etc.)")
+    project_id: Optional[str] = Field(None, description="Existing project ID to update, if any")
     end_location: Optional[str] = Field(None, description="Human readable name or address of the end location")
 
 class SpectralAnalyzeRequest(AOIRequest):
@@ -635,7 +724,8 @@ def classify_aoi(payload: ClassifyRequest):
                     num_trees=payload.num_trees,
                     sample_points=payload.sample_points,
                     sar_composite=sar_composite,
-                    sensor=sensor_choice
+                    sensor=sensor_choice,
+                    custom_training_geojson=payload.custom_training_data
                 )
             else:
                 classified_image, stats = train_and_classify_gee(
@@ -645,7 +735,8 @@ def classify_aoi(payload: ClassifyRequest):
                     num_trees=payload.num_trees,
                     sample_points=payload.sample_points,
                     sar_composite=sar_composite,
-                    sensor=sensor_choice
+                    sensor=sensor_choice,
+                    custom_training_geojson=payload.custom_training_data
                 )
 
         # Visual params for LULC classes
@@ -663,7 +754,10 @@ def classify_aoi(payload: ClassifyRequest):
             "total_area_ha": stats["total_area_ha"],
             "model_used": payload.model_type,
             "sensor_used": sensor_choice,
-            "sar_fusion_active": payload.use_sar_fusion and (sar_composite is not None)
+            "sar_fusion_active": payload.use_sar_fusion and (sar_composite is not None),
+            "training_source": stats.get("training_source", "dynamic_world_stratified"),
+            "sample_count": stats.get("sample_count", payload.sample_points),
+            "training_accuracy": stats.get("training_accuracy")
         }
 
     except Exception as e:
@@ -1477,6 +1571,271 @@ def api_v1_landsat_composite(payload: LandsatCompositeRequest):
     Developer API v1 endpoint generating Landsat 8/9 Level 2 Tier 1 composites and map tile URLs.
     """
     return get_landsat_map_tiles(payload)
+
+
+# ---------------------------------------------------------------------------
+# Asynchronous Background Jobs Engine (Mitigating 504 Timeouts on Cloud Hosting)
+# ---------------------------------------------------------------------------
+
+@app.get("/api/jobs", tags=["Async Jobs"])
+def list_background_jobs(limit: int = 25):
+    """
+    Lists recent asynchronous background jobs and their current execution state.
+    """
+    return {
+        "status": "success",
+        "jobs": job_manager.list_jobs(limit=limit)
+    }
+
+
+@app.get("/api/jobs/{job_id}", tags=["Async Jobs"])
+def get_background_job_status(job_id: str):
+    """
+    Polls the real-time execution status, progress percentage, and results of an async background job.
+    """
+    job = job_manager.get_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job with ID '{job_id}' not found."
+        )
+    return job.to_dict()
+
+
+@app.delete("/api/jobs/{job_id}", tags=["Async Jobs"])
+def cancel_background_job(job_id: str):
+    """
+    Cancels an active or pending asynchronous background job.
+    """
+    job = job_manager.get_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job with ID '{job_id}' not found."
+        )
+    job_manager.update_job(
+        job_id,
+        status=JobStatus.CANCELLED,
+        message="Job cancelled by client request."
+    )
+    return {"status": "success", "message": f"Job '{job_id}' cancelled."}
+
+
+@app.post("/api/jobs/submit/change-detection", tags=["Async Jobs"])
+def submit_async_change_detection(payload: ChangeDetectionRequest):
+    """
+    Asynchronously executes multi-temporal LandTrendr change detection.
+    Returns immediately with a job_id to poll via GET /api/jobs/{job_id}.
+    """
+    job_id = job_manager.submit_task(
+        task_type="change_detection",
+        params=payload.dict(),
+        target_func=compute_temporal_change_engine,
+        aoi_coords=payload.coords,
+        start_year=payload.start_year or 2020,
+        end_year=payload.end_year or 2024,
+        index_name=payload.index_name or "nbr",
+        sensitivity=payload.sensitivity or "moderate"
+    )
+    return {
+        "status": "queued",
+        "job_id": job_id,
+        "poll_url": f"/api/jobs/{job_id}",
+        "message": "Change detection task dispatched to background worker."
+    }
+
+
+@app.post("/api/jobs/submit/pdf-briefing", tags=["Async Jobs"])
+def submit_async_pdf_briefing(payload: PDFBriefingRequest):
+    """
+    Asynchronously renders the executive ReportLab PDF briefing.
+    Returns immediately with a job_id. When completed, result holds base64-encoded PDF.
+    """
+    def generate_pdf_base64():
+        pdf_bytes = generate_executive_pdf(
+            coords=payload.coords,
+            statistics=payload.statistics,
+            total_area_ha=payload.total_area_ha,
+            start_date=payload.start_date,
+            end_date=payload.end_date,
+            cloud_cover=payload.cloud_cover or 20.0,
+            model_type=payload.model_type or "random_forest",
+            cloud_mask_type=payload.cloud_mask_type or "both",
+            seasonal_filter=payload.seasonal_filter or "all",
+            location_name=payload.location_name
+        )
+        return {
+            "pdf_base64": base64.b64encode(pdf_bytes).decode("ascii"),
+            "filename": f"GeoClass_Executive_Briefing_{date.today().isoformat()}.pdf"
+        }
+
+    job_id = job_manager.submit_task(
+        task_type="pdf_briefing",
+        params={"location_name": payload.location_name, "start_date": payload.start_date},
+        target_func=generate_pdf_base64
+    )
+    return {
+        "status": "queued",
+        "job_id": job_id,
+        "poll_url": f"/api/jobs/{job_id}",
+        "message": "PDF briefing generation task dispatched to background worker."
+    }
+
+
+@app.post("/api/jobs/submit/pixel-history", tags=["Async Jobs"])
+def submit_async_pixel_history(payload: PixelTimelineRequest):
+    """
+    Asynchronously extracts multi-year Sentinel-2 quarterly/monthly pixel history.
+    Returns immediately with a job_id to poll.
+    """
+    job_id = job_manager.submit_task(
+        task_type="pixel_history",
+        params=payload.dict(),
+        target_func=extract_pixel_timeseries,
+        lat=payload.lat,
+        lng=payload.lng,
+        start_year=payload.start_year or 2021,
+        end_year=payload.end_year or 2025,
+        interval=payload.interval or "quarterly"
+    )
+    return {
+        "status": "queued",
+        "job_id": job_id,
+        "poll_url": f"/api/jobs/{job_id}",
+        "message": "Pixel time-series extraction dispatched to background worker."
+    }
+
+
+# ==============================================================================
+# ERA5-Land Climate Context Endpoints
+# ==============================================================================
+
+@app.post("/api/climate/analyze", tags=["Climate"])
+def analyze_climate(payload: ClimateRequest):
+    """
+    Synchronously extracts ECMWF ERA5-Land monthly climate metrics over the study area:
+    - 2m Temperature (°C)
+    - Total Precipitation (mm)
+    - Soil Moisture Layer 1
+    - Map Tile URLs for spatial overlay layers
+    - Monthly time-series data
+    """
+    if not initialize_gee():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google Earth Engine is not initialized."
+        )
+
+    try:
+        aoi = coords_to_ee_geometry(payload.coords)
+        return get_era5_climate_context(
+            aoi=aoi,
+            start_date=payload.start_date,
+            end_date=payload.end_date
+        )
+    except Exception as e:
+        logger.error(f"Error analyzing ERA5 climate context: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"ERA5 Climate analysis error: {e}"
+        )
+
+
+@app.post("/api/jobs/submit/climate", tags=["Async Jobs"])
+def submit_async_climate_analysis(payload: ClimateRequest):
+    """
+    Asynchronously extracts ECMWF ERA5-Land monthly climate reanalysis.
+    Returns immediately with a job_id to poll via GET /api/jobs/{job_id}.
+    """
+    aoi = coords_to_ee_geometry(payload.coords)
+    job_id = job_manager.submit_task(
+        task_type="climate_analysis",
+        params=payload.dict(),
+        target_func=get_era5_climate_context,
+        aoi=aoi,
+        start_date=payload.start_date,
+        end_date=payload.end_date
+    )
+    return {
+        "status": "queued",
+        "job_id": job_id,
+        "poll_url": f"/api/jobs/{job_id}",
+        "message": "ERA5 Climate context task dispatched to background worker."
+    }
+
+
+# ==============================================================================
+# Cloud-Saved Projects and Permalinks
+# ==============================================================================
+
+@app.post("/api/projects", tags=["Projects"])
+def create_or_update_project(payload: ProjectSaveRequest):
+    """
+    Saves or updates a project state (AOI geometry + layer parameters).
+    Returns saved project metadata along with permalink string.
+    """
+    try:
+        saved = save_project(
+            title=payload.title,
+            aoi_geojson=payload.aoi_geojson,
+            layer_state=payload.layer_state,
+            description=payload.description,
+            project_id=payload.project_id
+        )
+        saved["share_url"] = f"/app?project={saved['id']}"
+        return saved
+    except Exception as e:
+        logger.error(f"Failed to save project: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save project: {e}"
+        )
+
+
+@app.get("/api/projects", tags=["Projects"])
+def get_all_projects(limit: int = 50):
+    """
+    Returns list of saved user projects ordered by last update.
+    """
+    try:
+        return list_projects(limit=limit)
+    except Exception as e:
+        logger.error(f"Failed to list projects: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve projects: {e}"
+        )
+
+
+@app.get("/api/projects/{project_id}", tags=["Projects"])
+def get_single_project(project_id: str):
+    """
+    Retrieves full saved project state for permalink reconstruction.
+    """
+    project = get_project(project_id)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project '{project_id}' not found."
+        )
+    project["share_url"] = f"/app?project={project['id']}"
+    return project
+
+
+@app.delete("/api/projects/{project_id}", tags=["Projects"])
+def remove_project(project_id: str):
+    """
+    Deletes a saved project by ID.
+    """
+    success = delete_project(project_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project '{project_id}' not found or already deleted."
+        )
+    return {"status": "success", "message": f"Project '{project_id}' removed."}
+
+
 
 
 

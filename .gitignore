@@ -19,6 +19,8 @@ venv/
 # Local tooling artifacts
 .chrome-profile/
 *.log
+*.db
+*.sqlite3
 
 # Generated local screenshots and exports
 frontend/land-cover-*.png
