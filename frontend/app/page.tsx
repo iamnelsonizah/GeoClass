@@ -1,673 +1,397 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
+import { ArrowRight, ArrowUpRight, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
-import { 
-  ArrowRight, 
-  LogOut,
-  Crosshair,
-  Layers,
-  Activity
-} from 'lucide-react';
+import SatelliteBackdrop from '@/components/landing/SatelliteBackdrop';
+
+/* ───────────────────────────── Content ───────────────────────────── */
+
+const NAV = [
+  { href: '#workspace', label: 'Workspace' },
+  { href: '#layers', label: 'Layers' },
+  { href: '#tools', label: 'Tools' },
+  { href: '#exports', label: 'Exports' },
+  { href: '/methods', label: 'Methods' },
+];
+
+const STEPS = [
+  {
+    n: '01',
+    title: 'Draw your area',
+    body: 'Sketch a boundary on the map, search a place, or drop in a shapefile, KML or GeoJSON.',
+  },
+  {
+    n: '02',
+    title: 'Pull clean imagery',
+    body: 'Cloud-masked Sentinel-2, Landsat and Sentinel-1 radar composites for the dates you choose.',
+  },
+  {
+    n: '03',
+    title: 'Classify and export',
+    body: 'Land cover, vegetation and change maps — out as GeoTIFF, GeoJSON or a PDF report.',
+  },
+];
+
+const LAYERS = [
+  { name: 'True colour', source: 'Sentinel-2 · 10 m', note: 'What the eye would see, minus the clouds.', img: '/layer-thumbnails/true_color.png' },
+  { name: 'False colour', source: 'Sentinel-2 · NIR', note: 'Healthy vegetation glows red; bare ground stays grey.', img: '/layer-thumbnails/false_color.png' },
+  { name: 'Land cover', source: 'Classifier output', note: 'Nine classes, from water and cropland to built-up.', img: '/layer-thumbnails/land_cover.png' },
+  { name: 'Vegetation (NDVI)', source: 'Sentinel-2 · B8/B4', note: 'Canopy vigour, from stressed to dense growth.', img: '/layer-thumbnails/vegetation.png' },
+  { name: 'Water (MNDWI)', source: 'Sentinel-2 · B3/B11', note: 'Open water and seasonal flooding.', img: '/layer-thumbnails/water.png' },
+  { name: 'Built-up (NDBI)', source: 'Sentinel-2 · B11/B8', note: 'Roofs, roads and other impervious surfaces.', img: '/layer-thumbnails/built_up.png' },
+  { name: 'Burn ratio (NBR)', source: 'Sentinel-2 · B8/B12', note: 'Fire scars and burn severity.', img: '/layer-thumbnails/burn_ratio.png' },
+  { name: 'Radar backscatter', source: 'Sentinel-1 · VV/VH', note: 'Sees through cloud and smoke, day or night.', img: '/layer-thumbnails/sar_radar.png' },
+  { name: 'Elevation', source: 'Copernicus DEM · 30 m', note: 'Height above sea level.', img: '/layer-thumbnails/digital_elevation.png' },
+  { name: 'Slope', source: 'Derived from DEM', note: 'Gradient in degrees, for stability and runoff.', img: '/layer-thumbnails/slope_stability.png' },
+  { name: 'Hillshade', source: 'Derived from DEM', note: 'Relief shading lit from the north-west.', img: '/layer-thumbnails/terrain_hillshade.png' },
+  { name: 'Landsat true colour', source: 'Landsat 8/9 · 30 m', note: 'A longer archive for older baselines.', img: '/layer-thumbnails/landsat_rgb.png' },
+];
+
+const TOOLS = [
+  {
+    n: '01',
+    title: 'Spectral inspector',
+    body: 'Click any pixel to read its surface reflectance across ten Sentinel-2 bands, from coastal blue to shortwave infrared.',
+    meta: 'B2 – B12',
+  },
+  {
+    n: '02',
+    title: 'Pixel timeline',
+    body: 'Plot NDVI, water and burn indices for a single point across years, with breaks flagged where the ground actually changed.',
+    meta: '2018 – present',
+  },
+  {
+    n: '03',
+    title: 'Change detection',
+    body: 'Compare a baseline year with a target year and see which land cover moved where, in hectares.',
+    meta: 'Baseline vs target',
+  },
+];
+
+const EXPORTS = [
+  { fmt: 'GeoTIFF', what: 'Classified rasters and index layers', ext: '.tif' },
+  { fmt: 'GeoJSON', what: 'Your area and vectorised classes', ext: '.geojson' },
+  { fmt: 'KMZ', what: 'Ground overlays for Google Earth', ext: '.kmz' },
+  { fmt: 'PDF report', what: 'Maps, area tables and accuracy figures', ext: '.pdf' },
+  { fmt: 'Notebook', what: 'Reproducible Earth Engine Python', ext: '.ipynb' },
+];
+
+/* ───────────────────────────── Page ───────────────────────────── */
 
 export default function LandingPage() {
   const { user, isAuthenticated, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#13140e] text-[#f4f3e8] selection:bg-[#ebfc72] selection:text-[#13140e] font-sans relative overflow-x-hidden antialiased">
-      
-      {/* ────────────────────────────────── Top Navigation Bar ────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#13140e]/95 backdrop-blur-md border-b border-[#404040]">
-        <div className="max-w-[1240px] mx-auto px-6 h-15 flex items-center justify-between gap-4">
-          
-          {/* Brand Wordmark */}
-          <div className="flex items-center gap-3 shrink-0">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <span className="font-mono text-sm text-[#ebfc72] font-bold">▲</span>
-              <span className="font-sans text-[16px] font-bold tracking-[-0.02em] text-[#f4f3e8] uppercase">
-                GEOCLASS
-              </span>
+    <div className="min-h-screen bg-[#F4F1E8] text-[#1F231E] antialiased selection:bg-[#E8C9A8] selection:text-[#1F231E]">
+      {/* ─────────── Hero ─────────── */}
+      <section className="relative text-white min-h-[100svh] lg:min-h-[680px] lg:h-[100svh] lg:max-h-[1100px] flex flex-col overflow-hidden">
+        {/* Niger–Benue confluence, Lokoja — Esri World Imagery */}
+        <SatelliteBackdrop z={12} x0={2120} y0={1956} cols={10} rows={6} focusX={0.55} focusY={0.5} />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(14,18,12,0.55) 0%, rgba(14,18,12,0.05) 28%, rgba(14,18,12,0.1) 55%, rgba(14,18,12,0.78) 100%), linear-gradient(90deg, rgba(14,18,12,0.55) 0%, rgba(14,18,12,0) 60%)',
+          }}
+        />
+
+        {/* Nav */}
+        <header className="relative z-10 px-5 sm:px-10 lg:px-14 pt-6 sm:pt-8 grid grid-cols-[1fr_auto] md:grid-cols-3 items-start gap-6">
+          <Link href="/" className="flex items-center gap-2.5 w-fit">
+            <LogoMark />
+            <span className="font-display text-[19px] font-medium tracking-[-0.02em]">GeoClass</span>
+          </Link>
+
+          <p className="hidden md:block justify-self-center text-center text-[13px] leading-snug text-white/75">
+            Niger–Benue confluence, Lokoja
+            <br />
+            <span className="font-mono text-[11.5px] text-white/55">7.80° N · 6.74° E</span>
+          </p>
+
+          <div className="justify-self-end flex items-start gap-8">
+            <nav className="hidden md:flex flex-col items-end gap-0.5 font-display text-[17px] leading-[1.35]" aria-label="Main">
+              {NAV.map((item) =>
+                item.href.startsWith('/') ? (
+                  <Link key={item.href} href={item.href} className="text-white/85 hover:text-white transition-colors">
+                    {item.label}
+                  </Link>
+                ) : (
+                  <a key={item.href} href={item.href} className="text-white/85 hover:text-white transition-colors">
+                    {item.label}
+                  </a>
+                ),
+              )}
+            </nav>
+            <Link
+              href="/app"
+              className="md:hidden inline-flex items-center gap-1.5 rounded-full bg-white/12 border border-white/25 backdrop-blur-sm px-3.5 py-1.5 text-[13px] font-medium"
+            >
+              Open app <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-            <span className="hidden xl:inline-block font-mono text-[11px] text-[#84837b] border-l border-[#404040] pl-3 uppercase tracking-[0.06em] whitespace-nowrap">
-              EO-TERMINAL // 08°29&apos;N 05°31&apos;E
-            </span>
+          </div>
+        </header>
+
+        {/* Headline + steps */}
+        <div className="relative z-10 flex-1 flex flex-col justify-end px-5 sm:px-10 lg:px-14 pt-20 lg:pt-0 pb-10 sm:pb-12">
+          <div className="max-w-[1100px]">
+            <h1 className="font-display font-medium tracking-[-0.045em] leading-[0.95] text-[clamp(44px,8.2vw,124px)]">
+              Satellite <span className="text-[#E9C79F]">analysis,</span>
+              <br />
+              <span className="text-[#E9C79F]">without the GIS</span> overhead.
+            </h1>
+            <p className="mt-6 sm:mt-8 max-w-[440px] text-[17px] sm:text-[19px] leading-[1.45] text-white/85">
+              Map land cover, vegetation and water for any place on Earth — right in your browser.
+            </p>
           </div>
 
-          {/* Navigation Links — JetBrains Mono */}
-          <nav className="hidden md:flex items-center gap-6 font-mono text-[12.5px] text-[#f4f3e8] shrink-0" aria-label="Terminal Navigation">
-            <a href="#workflow" className="hover:text-[#ebfc72] transition-colors whitespace-nowrap">01 // WORKFLOW</a>
-            <a href="#platform" className="hover:text-[#ebfc72] transition-colors whitespace-nowrap">02 // SENSORS</a>
-            <a href="#tools" className="hover:text-[#ebfc72] transition-colors whitespace-nowrap">03 // DIAGNOSTICS</a>
-            <a href="#deliverables" className="hover:text-[#ebfc72] transition-colors whitespace-nowrap">04 // EXPORTS</a>
-            <Link href="/methods" className="hover:text-[#ebfc72] transition-colors whitespace-nowrap">05 // METHODS [API]</Link>
-          </nav>
-
-          {/* Right Actions: Perfectly Linear Auth Cluster */}
-          <div className="flex items-center gap-4 shrink-0">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <span className="font-mono text-[11px] text-[#84837b] hidden lg:inline whitespace-nowrap">
-                  USR // {user?.fullName?.toUpperCase() || 'OPERATOR'}
-                </span>
-                <Link 
-                  href="/app" 
-                  className="inversa-btn-lime h-9 px-3.5 text-[12px] inline-flex items-center gap-1.5 whitespace-nowrap"
-                >
-                  <span>WORKSPACE</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+          <div className="mt-10 sm:mt-14 grid grid-cols-1 lg:grid-cols-[1fr_auto] items-end gap-10">
+            <div className="flex flex-wrap items-center gap-3 order-2 lg:order-1">
+              <Link
+                href="/app"
+                className="group inline-flex items-center gap-2 rounded-lg bg-[#E9C79F] hover:bg-[#F1D5B4] text-[#1F231E] px-5 py-3 text-[15px] font-medium transition-colors"
+              >
+                Open the workspace
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              {isAuthenticated && (
                 <button
                   type="button"
                   onClick={logout}
-                  className="text-[#84837b] hover:text-[#f4f3e8] p-1.5 transition-colors cursor-pointer"
-                  title="Disconnect terminal"
+                  className="inline-flex items-center gap-1.5 text-[13px] text-white/70 hover:text-white px-2 py-2 cursor-pointer"
+                  title="Sign out"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
+                  {user?.fullName ? `Sign out ${user.fullName.split(' ')[0]}` : 'Sign out'}
                 </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-4">
-                <Link 
-                  href="/app" 
-                  className="inversa-btn-lime h-9 px-3.5 text-[12px] inline-flex items-center gap-1.5 whitespace-nowrap"
-                >
-                  <span>LAUNCH WORKSPACE</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* Mobile Menu trigger */}
-            <button 
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden flex items-center gap-2 font-mono text-[12px] text-[#f4f3e8] border border-[#404040] px-2.5 py-1 rounded-[3.6px]"
-              aria-label="Toggle Navigation Menu"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ebfc72]"></span>
-              <span>MENU</span>
-            </button>
+            <ol className="order-1 lg:order-2 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 lg:max-w-[880px]">
+              {STEPS.map((s) => (
+                <li key={s.n} className="max-w-[260px]">
+                  <div className="font-display text-[28px] sm:text-[34px] font-normal tracking-[-0.03em] leading-none">{s.n}</div>
+                  <h2 className="mt-3 sm:mt-4 font-display text-[19px] sm:text-[22px] font-normal tracking-[-0.02em] leading-[1.15]">
+                    {s.title}
+                  </h2>
+                  <p className="mt-2 sm:mt-3 text-[13.5px] leading-[1.5] text-white/72">{s.body}</p>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
 
-        {/* Mobile Dropdown */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-[#404040] bg-[#13140e] px-6 py-4 space-y-3 font-mono text-[13px]">
-            <a href="#workflow" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-[#f4f3e8] hover:text-[#ebfc72]">01 // WORKFLOW</a>
-            <a href="#platform" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-[#f4f3e8] hover:text-[#ebfc72]">02 // SENSORS</a>
-            <a href="#tools" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-[#f4f3e8] hover:text-[#ebfc72]">03 // DIAGNOSTICS</a>
-            <a href="#deliverables" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-[#f4f3e8] hover:text-[#ebfc72]">04 // EXPORTS</a>
-            <Link href="/methods" onClick={() => setMobileMenuOpen(false)} className="block py-1 text-[#f4f3e8] hover:text-[#ebfc72]">05 // METHODS &amp; API</Link>
-          </div>
-        )}
-      </header>
+        <p className="absolute z-10 bottom-2 right-3 text-[10px] text-white/45">Imagery © Esri, Maxar, Earthstar Geographics</p>
+      </section>
 
       <main>
-
-        {/* ────────────────────────────────── Hero Section: Side-by-Side 2-Column ────────────────────────────────── */}
-        <section className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 border-b border-[#404040] overflow-hidden bg-[#13140e]">
-          <div className="max-w-[1240px] mx-auto px-6">
-            
-            {/* Top Telemetry Strip */}
-            <div className="flex flex-wrap items-center justify-between gap-4 py-2 mb-10 border-b border-[#404040]/80 font-mono text-[11px] sm:text-[12px] text-[#84837b]">
-              <div className="flex items-center gap-3">
-                <span className="w-2 h-2 rounded-full bg-[#ebfc72] animate-pulse"></span>
-                <span className="text-[#f4f3e8]">SENTINEL-2 MSI // 10M L2A</span>
-                <span className="text-[#404040]">|</span>
-                <span>WGS 84 / UTM 31N</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[#ebfc72]">TERMINAL ENGINE // ONLINE</span>
-              </div>
-            </div>
-
-            {/* 2-Column Grid: Copy Left, App Dashboard Right */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-              
-              {/* Left Column: Editorial Narrative & Linear CTAs */}
-              <div className="lg:col-span-5 space-y-6">
-                
-                <div className="flex items-center gap-2.5">
-                  <span className="inversa-tag !text-[11px]">
-                    MISSION 01 // EO FIELD WORKSTATION
-                  </span>
-                  <span className="inversa-tag-dark !text-[11px]">
-                    RESOLUTION 10M
-                  </span>
-                </div>
-
-                {/* Editorial Display Headline */}
-                <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-normal leading-[0.98] tracking-[-0.035em] text-[#f4f3e8]">
-                  Satellite analysis,<br />
-                  without the GIS<br />
-                  overhead.
-                </h1>
-
-                {/* Body Copy */}
-                <p className="inversa-body text-[#84837b] text-[16px] sm:text-[17px] leading-[1.6]">
-                  GeoClass turns multi-spectral Earth observation data into verifiable land cover classifications, canopy vitality indices, and microwave radar diagnostics. Define your boundary, compute in the cloud, and extract actionable spatial proof.
-                </p>
-
-                {/* Linear Action Cluster */}
-                <div className="flex flex-wrap items-center gap-4 pt-2">
-                  <Link 
-                    href="/app" 
-                    className="inversa-btn-lime h-11 px-5 !text-[13px] inline-flex items-center gap-2 shrink-0"
-                  >
-                    <span>START CLASSIFYING FREE</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                  <a 
-                    href="#workflow" 
-                    className="inversa-btn-ghost h-11 px-5 !text-[13px] inline-flex items-center shrink-0"
-                  >
-                    <span>SEE HOW IT WORKS</span>
-                  </a>
-                </div>
-
-                {/* Telemetry Coordinate Readout */}
-                <div className="pt-4 border-t border-[#404040]/70 flex items-center gap-6 font-mono text-[11px] text-[#84837b]">
-                  <div>
-                    <span className="text-[#404040] block text-[9px] uppercase tracking-wider">PRIMARY TARGET</span>
-                    <span className="text-[#f4f3e8]">YAGBA WEST // NIGERIA</span>
-                  </div>
-                  <div className="border-l border-[#404040] pl-6">
-                    <span className="text-[#404040] block text-[9px] uppercase tracking-wider">COORDINATES</span>
-                    <span className="text-[#f4f3e8]">08°29&apos;14&quot;N 05°31&apos;42&quot;E</span>
-                  </div>
-                  <div className="border-l border-[#404040] pl-6 hidden sm:block">
-                    <span className="text-[#404040] block text-[9px] uppercase tracking-wider">ENGINE</span>
-                    <span className="text-[#ebfc72]">GEE SUPERCOMPUTE</span>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Right Column: Framed Dashboard Mockup (/app) by the side */}
-              <div className="lg:col-span-7">
-                <div className="border border-[#404040] bg-[#13140e] rounded-[3.6px] overflow-hidden">
-                  
-                  {/* Terminal Header Chrome */}
-                  <div className="px-4 py-2.5 bg-[#13140e] border-b border-[#404040] flex items-center justify-between font-mono text-[11px] text-[#84837b]">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-2 h-2 rounded-full bg-[#ebfc72]"></span>
-                      <span className="text-[#f4f3e8] font-medium tracking-wide">GEOCLASS WORKSTATION // LIVE APP VIEW</span>
-                    </div>
-                    <span className="text-[#84837b] hidden sm:inline">12 SPECTRAL PRODUCTS</span>
-                  </div>
-
-                  {/* App Workspace Screenshot */}
-                  <div className="relative aspect-[16/10] overflow-hidden bg-[#0D1316]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src="/geoclass-hero-mockup.png" 
-                      alt="GeoClass Workstation — Gold Prospectivity Yagba West" 
-                      className="w-full h-full object-cover object-top block"
-                    />
-                  </div>
-
-                  {/* Terminal Footer Strip */}
-                  <div className="px-4 py-2 bg-[#13140e] border-t border-[#404040] flex items-center justify-between font-mono text-[10.5px] text-[#84837b]">
-                    <span>AOI: YAGBA WEST LGA (7.3187°N, 6.9231°E)</span>
-                    <span className="text-[#ebfc72]">DYNAMIC WORLD CONSENSUS</span>
-                  </div>
-
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-        </section>
-
-        {/* ────────────────────────────────── Section: Operational Workflow ────────────────────────────────── */}
-        <section id="workflow" className="py-24 bg-[#13140e]">
-          <div className="max-w-[1240px] mx-auto px-6">
-            
-            {/* Section Tag & Heading */}
-            <div className="space-y-4 mb-16">
-              <span className="inversa-tag">
-                SEQUENCE 01 // OPERATIONAL DIRECTIVE
-              </span>
-              <h2 className="inversa-heading">
-                From coordinates to classified truth.
+        {/* ─────────── Workspace ─────────── */}
+        <section id="workspace" className="px-5 sm:px-10 lg:px-14 pt-24 sm:pt-32 pb-20 bg-[#F4F1E8]">
+          <div className="max-w-[1320px] mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end">
+              <h2 className="lg:col-span-7 font-display text-[clamp(34px,4.6vw,64px)] font-medium tracking-[-0.04em] leading-[1.02]">
+                One screen, built around the map.
               </h2>
-              <p className="inversa-body text-[#84837b] max-w-xl">
-                Four execution steps engineered for zero-friction spatial discovery. No desktop GIS installation, no dependency management, no satellite data harvesting required.
+              <p className="lg:col-span-5 text-[17px] leading-[1.6] text-[#5B6159] max-w-[480px]">
+                The workflow sits on the left, layers and tools on the right, and the map takes everything in between.
+                Results open underneath only when there is something to read.
               </p>
             </div>
 
-            {/* 4-Step Utilitarian Sequence */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              
-              {/* Step 01 */}
-              <div className="space-y-4 border-t border-[#404040] pt-6">
-                <div className="font-mono text-xl text-[#ebfc72] font-semibold">01 // BOUNDARY</div>
-                <h3 className="text-xl font-normal text-[#f4f3e8] tracking-[-0.03em]">
-                  Define study area
-                </h3>
-                <p className="inversa-body text-[#84837b] !text-[15px]">
-                  Draw freeform polygons directly on satellite feeds or import shapefiles, KML, and GeoJSON vectors up to 2,500 km².
-                </p>
-                <div className="font-mono text-[11px] text-[#84837b] pt-2">
-                  TAG // AOI-VECTOR-DELINEATION
-                </div>
+            <figure className="mt-12 sm:mt-16">
+              <div className="rounded-xl overflow-hidden border border-[#D8D5CA] bg-[#E9E6DC] shadow-[0_30px_60px_-30px_rgba(31,35,30,0.35)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/geoclass-workspace-real.jpg"
+                  alt="The GeoClass workspace: workflow panel on the left, satellite map in the centre, layer list on the right"
+                  className="block w-full h-auto"
+                  loading="lazy"
+                />
               </div>
-
-              {/* Step 02 */}
-              <div className="space-y-4 border-t border-[#404040] pt-6">
-                <div className="font-mono text-xl text-[#ebfc72] font-semibold">02 // HARMONIZE</div>
-                <h3 className="text-xl font-normal text-[#f4f3e8] tracking-[-0.03em]">
-                  Select sensor array
-                </h3>
-                <p className="inversa-body text-[#84837b] !text-[15px]">
-                  Fuse Sentinel-2 MSI optical bands, Sentinel-1 SAR C-band radar, and Copernicus 30m digital elevation topography.
-                </p>
-                <div className="font-mono text-[11px] text-[#84837b] pt-2">
-                  TAG // MULTI-SPECTRAL-STACK
+              <figcaption className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-[14.5px] leading-[1.55] text-[#5B6159]">
+                <div>
+                  <span className="block text-[#1F231E] font-medium mb-1">Workflow</span>
+                  Area, imagery, classifier and accuracy settings — in the order you use them.
                 </div>
-              </div>
-
-              {/* Step 03 */}
-              <div className="space-y-4 border-t border-[#404040] pt-6">
-                <div className="font-mono text-xl text-[#ebfc72] font-semibold">03 // INFERENCE</div>
-                <h3 className="text-xl font-normal text-[#f4f3e8] tracking-[-0.03em]">
-                  Run cloud machine learning
-                </h3>
-                <p className="inversa-body text-[#84837b] !text-[15px]">
-                  Execute Random Forest and spatial U-Net contextual models on Google Earth Engine cloud clusters in seconds.
-                </p>
-                <div className="font-mono text-[11px] text-[#84837b] pt-2">
-                  TAG // RANDOM-FOREST-UNET
+                <div>
+                  <span className="block text-[#1F231E] font-medium mb-1">Map</span>
+                  Draw, measure, annotate and swipe between years directly on the imagery.
                 </div>
-              </div>
-
-              {/* Step 04 */}
-              <div className="space-y-4 border-t border-[#404040] pt-6">
-                <div className="font-mono text-xl text-[#ebfc72] font-semibold">04 // TELEMETRY</div>
-                <h3 className="text-xl font-normal text-[#f4f3e8] tracking-[-0.03em]">
-                  Audit and export
-                </h3>
-                <p className="inversa-body text-[#84837b] !text-[15px]">
-                  Inspect confusion matrices, biophysical pixel curves, and export 32-bit GeoTIFF, GeoJSON, or publication dossiers.
-                </p>
-                <div className="font-mono text-[11px] text-[#84837b] pt-2">
-                  TAG // 32BIT-GEOTIFF-EXPORT
+                <div>
+                  <span className="block text-[#1F231E] font-medium mb-1">Layers &amp; tools</span>
+                  Twelve layers to toggle and blend, plus pixel-level inspection.
                 </div>
-              </div>
-
-            </div>
-
+              </figcaption>
+            </figure>
           </div>
         </section>
 
-        {/* ────────────────────────────────── Section: Diagnostic Suite ────────────────────────────────── */}
-        <section id="tools" className="py-24 bg-[#13140e] border-t border-[#404040]">
-          <div className="max-w-[1240px] mx-auto px-6">
-            
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-16">
-              <div className="lg:col-span-7 space-y-4">
-                <span className="inversa-tag">
-                  INSTRUMENTATION // DIAGNOSTICS
-                </span>
-                <h2 className="inversa-heading">
-                  Field-calibrated remote sensing physics.
+        {/* ─────────── Layers ─────────── */}
+        <section id="layers" className="px-5 sm:px-10 lg:px-14 py-24 sm:py-32 bg-[#FAF9F5] border-t border-[#E3E0D5]">
+          <div className="max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-12">
+                <h2 className="font-display text-[clamp(34px,4.2vw,56px)] font-medium tracking-[-0.04em] leading-[1.02]">
+                  Twelve ways to read the same ground.
                 </h2>
-                <p className="inversa-body text-[#84837b]">
-                  GeoClass avoids decorative abstractions. Every metric is computed directly from physical electromagnetic reflectance, radar backscatter coefficients, and topographic elevation models.
+                <p className="mt-6 text-[17px] leading-[1.6] text-[#5B6159] max-w-[400px]">
+                  Every layer is computed on Google Earth Engine for your area and dates — nothing is pre-rendered or
+                  cached from somewhere else.
                 </p>
-              </div>
-
-              <div className="lg:col-span-5 font-mono text-[13px] text-[#84837b] space-y-3 pt-4 border-l border-[#404040] pl-6">
-                <div className="text-[#ebfc72] font-semibold uppercase">ACTIVE INSTRUMENT TELEMETRY</div>
-                <div className="flex justify-between border-b border-[#404040] pb-2">
-                  <span>OPTICAL RESOLUTION:</span>
-                  <span className="text-[#f4f3e8]">10m / PIXEL</span>
-                </div>
-                <div className="flex justify-between border-b border-[#404040] pb-2">
-                  <span>RADAR FREQUENCY:</span>
-                  <span className="text-[#f4f3e8]">5.405 GHz (C-BAND)</span>
-                </div>
-                <div className="flex justify-between border-b border-[#404040] pb-2">
-                  <span>SPECTRAL BANDS:</span>
-                  <span className="text-[#f4f3e8]">COASTAL TO SWIR-2</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>TEMPORAL REVISIT:</span>
-                  <span className="text-[#f4f3e8]">5 DAYS (S2A + S2B)</span>
-                </div>
               </div>
             </div>
 
-            {/* Diagnostic Modules Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {/* Module 1 */}
-              <div className="border border-[#404040] p-6 space-y-4 bg-[#13140e]">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-[#ebfc72]">DIAGNOSTIC 01</span>
-                  <Crosshair className="w-4 h-4 text-[#84837b]" />
-                </div>
-                <h3 className="text-xl font-normal text-[#f4f3e8] tracking-[-0.03em]">
-                  10-Band Spectral Reflectance Graph
-                </h3>
-                <p className="text-[15px] text-[#84837b] leading-relaxed">
-                  Click any coordinate to sample calibrated bottom-of-atmosphere surface reflectance from Coastal Blue (443nm) through Red Edge to SWIR-2 (2190nm). Distinguish iron oxide signatures from healthy chlorophyll.
-                </p>
-                <div className="pt-2 border-t border-[#404040] font-mono text-[11px] text-[#84837b] flex justify-between">
-                  <span>CHANNELS: B2-B12</span>
-                  <span className="text-[#ebfc72]">LIVE INSPECT</span>
-                </div>
-              </div>
-
-              {/* Module 2 */}
-              <div className="border border-[#404040] p-6 space-y-4 bg-[#13140e]">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-[#ebfc72]">DIAGNOSTIC 02</span>
-                  <Activity className="w-4 h-4 text-[#84837b]" />
-                </div>
-                <h3 className="text-xl font-normal text-[#f4f3e8] tracking-[-0.03em]">
-                  Multi-Year Pixel Trajectory &amp; LandTrendr
-                </h3>
-                <p className="text-[15px] text-[#84837b] leading-relaxed">
-                  Chart harmonic temporal trajectories across a 5-year satellite record. Separate seasonal crop growth cycles from permanent deforestation, illegal mining expansion, and urban land conversions.
-                </p>
-                <div className="pt-2 border-t border-[#404040] font-mono text-[11px] text-[#84837b] flex justify-between">
-                  <span>SPAN: 2018–2025</span>
-                  <span className="text-[#ebfc72]">CHRONO AUDIT</span>
-                </div>
-              </div>
-
-              {/* Module 3 */}
-              <div className="border border-[#404040] p-6 space-y-4 bg-[#13140e]">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-[#ebfc72]">DIAGNOSTIC 03</span>
-                  <Layers className="w-4 h-4 text-[#84837b]" />
-                </div>
-                <h3 className="text-xl font-normal text-[#f4f3e8] tracking-[-0.03em]">
-                  Sentinel-1 SAR Cloud Penetration
-                </h3>
-                <p className="text-[15px] text-[#84837b] leading-relaxed">
-                  Active synthetic aperture radar emits microwave pulses that ignore equatorial cloud cover and atmospheric smoke. Monitor surface roughness, soil moisture, and hydrological flooding year-round.
-                </p>
-                <div className="pt-2 border-t border-[#404040] font-mono text-[11px] text-[#84837b] flex justify-between">
-                  <span>POLARIZATION: VV + VH</span>
-                  <span className="text-[#ebfc72]">ALL-WEATHER</span>
-                </div>
-              </div>
-
-            </div>
-
+            <ul className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-x-10">
+              {LAYERS.map((l) => (
+                <li key={l.name} className="flex gap-4 py-5 border-t border-[#E3E0D5]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={l.img} alt="" className="w-12 h-12 rounded-md object-cover flex-shrink-0" loading="lazy" />
+                  <div className="min-w-0">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <h3 className="font-medium text-[16px] tracking-[-0.01em]">{l.name}</h3>
+                      <span className="font-mono text-[11px] text-[#8A908A] whitespace-nowrap">{l.source}</span>
+                    </div>
+                    <p className="mt-1 text-[14px] leading-[1.5] text-[#5B6159]">{l.note}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
-        {/* ────────────────────────────────── Section: Layer Registry ────────────────────────────────── */}
-        <section id="platform" className="py-24 bg-[#13140e] border-t border-[#404040]">
-          <div className="max-w-[1240px] mx-auto px-6">
-            
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
-              <div className="space-y-4 max-w-xl">
-                <span className="inversa-tag">
-                  SPECTRAL INVENTORY // 12 TILES
-                </span>
-                <h2 className="inversa-heading">
-                  Synchronized satellite layers.
-                </h2>
-                <p className="inversa-body text-[#84837b]">
-                  Authentic raster composites computed on Google Earth Engine supercomputing clusters inside GeoClass.
-                </p>
-              </div>
-              <div className="font-mono text-[12px] text-[#84837b]">
-                TOTAL REGISTRY: 12 PRODUCTS // CLOUD MASKED
-              </div>
-            </div>
+        {/* ─────────── Tools ─────────── */}
+        <section id="tools" className="px-5 sm:px-10 lg:px-14 py-24 sm:py-32 bg-[#1F241D] text-[#F1EEE4]">
+          <div className="max-w-[1320px] mx-auto">
+            <h2 className="font-display text-[clamp(34px,4.6vw,64px)] font-medium tracking-[-0.04em] leading-[1.02] max-w-[820px]">
+              Look closer than a map lets you.
+            </h2>
+            <p className="mt-6 text-[17px] leading-[1.6] text-[#B9B6AA] max-w-[560px]">
+              When a colour on the map raises a question, these answer it — straight from the underlying reflectance,
+              backscatter and elevation values.
+            </p>
 
-            {/* 6-Column Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {[
-                { name: 'True Color RGB', img: '/layer-thumbnails/true_color.png', spec: 'Sentinel-2 (10m)' },
-                { name: 'False Color NIR', img: '/layer-thumbnails/false_color.png', spec: 'Vegetation NIR' },
-                { name: 'Land Cover AI', img: '/layer-thumbnails/land_cover.png', spec: 'U-Net 9-Class' },
-                { name: 'Vegetation NDVI', img: '/layer-thumbnails/vegetation.png', spec: 'Canopy Vitality' },
-                { name: 'SAR Radar C-Band', img: '/layer-thumbnails/sar_radar.png', spec: 'Sentinel-1 GRD' },
-                { name: 'Water (MNDWI)', img: '/layer-thumbnails/water.png', spec: 'Surface Hydrology' },
-                { name: 'Burn Ratio (NBR)', img: '/layer-thumbnails/burn_ratio.png', spec: 'Fire Severity' },
-                { name: 'Built-up (NDBI)', img: '/layer-thumbnails/built_up.png', spec: 'Urban Impervious' },
-                { name: 'Digital Elevation', img: '/layer-thumbnails/digital_elevation.png', spec: 'Copernicus 30m' },
-                { name: 'Slope Stability', img: '/layer-thumbnails/slope_stability.png', spec: 'Gradient Degrees' },
-                { name: 'Terrain Hillshade', img: '/layer-thumbnails/terrain_hillshade.png', spec: 'Sun Azimuth 315°' },
-                { name: 'Landsat 8/9 RGB', img: '/layer-thumbnails/landsat_rgb.png', spec: 'USGS Baseline' },
-              ].map((layer, idx) => (
-                <div 
-                  key={idx}
-                  className="border border-[#404040] p-2.5 bg-[#13140e] hover:border-[#ebfc72] transition-colors flex flex-col justify-between"
-                >
-                  <div className="aspect-video w-full overflow-hidden mb-2 bg-[#13140e] border border-[#404040]/70">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={layer.img} 
-                      alt={layer.name} 
-                      className="w-full h-full object-cover"
-                    />
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
+              {TOOLS.map((t) => (
+                <article key={t.n} className="border-t border-white/15 pt-6">
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-display text-[30px] tracking-[-0.03em] text-[#E9C79F]">{t.n}</span>
+                    <span className="font-mono text-[11px] text-[#8E8B80]">{t.meta}</span>
                   </div>
-                  <div>
-                    <div className="text-[13px] font-normal text-[#f4f3e8] tracking-[-0.02em] leading-snug">
-                      {layer.name}
-                    </div>
-                    <div className="text-[11px] font-mono text-[#84837b] mt-1">
-                      {layer.spec}
-                    </div>
-                  </div>
-                </div>
+                  <h3 className="mt-5 font-display text-[24px] tracking-[-0.02em]">{t.title}</h3>
+                  <p className="mt-3 text-[15px] leading-[1.6] text-[#B9B6AA]">{t.body}</p>
+                </article>
               ))}
             </div>
-
           </div>
         </section>
 
-        {/* ────────────────────────────────── Section: Deliverables & Export Console ────────────────────────────────── */}
-        <section id="deliverables" className="py-24 bg-[#13140e] border-t border-[#404040]">
-          <div className="max-w-[1240px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            <div className="lg:col-span-6 space-y-6">
-              <span className="inversa-tag">
-                EXPORT ARCHITECTURE // DOSSIERS
-              </span>
-              <h2 className="inversa-heading">
-                Ready for QGIS, ArcGIS, and executive review.
+        {/* ─────────── Exports ─────────── */}
+        <section id="exports" className="px-5 sm:px-10 lg:px-14 py-24 sm:py-32 bg-[#F4F1E8]">
+          <div className="max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+            <div className="lg:col-span-5">
+              <h2 className="font-display text-[clamp(34px,4.2vw,56px)] font-medium tracking-[-0.04em] leading-[1.02]">
+                Take it into QGIS, ArcGIS or a board meeting.
               </h2>
-              <p className="inversa-body text-[#84837b]">
-                Every raster layer, classification mask, and statistical chart can be downloaded in standard geospatial formats. Deliver verifiable spatial proofs directly into enterprise GIS workflows.
+              <p className="mt-6 text-[17px] leading-[1.6] text-[#5B6159] max-w-[440px]">
+                Results leave GeoClass in standard formats, in WGS 84, ready to drop into whatever comes next.
               </p>
+            </div>
 
-              <div className="flex items-center gap-4 pt-2">
-                <Link 
-                  href="/app" 
-                  className="inversa-btn-lime"
+            <div className="lg:col-span-7">
+              <table className="w-full text-left">
+                <tbody>
+                  {EXPORTS.map((e) => (
+                    <tr key={e.fmt} className="border-t border-[#D8D5CA] last:border-b">
+                      <td className="py-5 pr-4 font-display text-[20px] sm:text-[22px] tracking-[-0.02em] whitespace-nowrap align-top">
+                        {e.fmt}
+                      </td>
+                      <td className="py-5 pr-4 text-[15px] text-[#5B6159] align-top pt-[23px]">{e.what}</td>
+                      <td className="py-5 font-mono text-[12px] text-[#8A908A] text-right align-top pt-[25px] hidden sm:table-cell">
+                        {e.ext}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* ─────────── Closing ─────────── */}
+        <section className="relative overflow-hidden text-white min-h-[520px] flex items-end">
+          {/* Kainji Lake, Niger State — Esri World Imagery */}
+          <SatelliteBackdrop z={11} x0={1046} y0={963} cols={8} rows={5} focusX={0.5} focusY={0.45} />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'linear-gradient(90deg, rgba(14,18,12,0.82) 0%, rgba(14,18,12,0.35) 60%, rgba(14,18,12,0.15) 100%)' }}
+          />
+          <div className="relative z-10 w-full px-5 sm:px-10 lg:px-14 py-20 sm:py-24">
+            <div className="max-w-[1320px] mx-auto flex flex-col lg:flex-row lg:items-end lg:justify-between gap-10">
+              <div>
+                <h2 className="font-display text-[clamp(38px,5.4vw,80px)] font-medium tracking-[-0.045em] leading-[0.98]">
+                  Pick a place.
+                  <br />
+                  <span className="text-[#E9C79F]">See what changed.</span>
+                </h2>
+                <p className="mt-6 text-[17px] leading-[1.55] text-white/80 max-w-[460px]">
+                  No install and no sign-up to start. Draw an area and the imagery comes to you.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/app"
+                  className="group inline-flex items-center gap-2 rounded-lg bg-[#E9C79F] hover:bg-[#F1D5B4] text-[#1F231E] px-5 py-3 text-[15px] font-medium transition-colors"
                 >
-                  <span>TEST WITH YOUR REGION</span>
-                  <ArrowRight className="w-4 h-4" />
+                  Open the workspace
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  href="/methods"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/30 hover:border-white/60 px-5 py-3 text-[15px] text-white/90 transition-colors"
+                >
+                  Read the methods <ArrowUpRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
-
-            {/* Utilitarian Formats Terminal Box */}
-            <div className="lg:col-span-6 border border-[#404040] p-6 sm:p-8 bg-[#13140e] space-y-6">
-              <div className="flex items-center justify-between border-b border-[#404040] pb-4 font-mono text-[12px]">
-                <span className="text-[#ebfc72]">GEO-DELIVERABLE MATRIX</span>
-                <span className="text-[#84837b]">COMPLIANCE: OGC / ISO 19115</span>
-              </div>
-
-              <div className="space-y-3 font-mono text-[13px]">
-                <div className="border border-[#404040] p-3 flex items-center justify-between hover:border-[#ebfc72] transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[#ebfc72]">01</span>
-                    <span className="text-[#f4f3e8]">GeoTIFF (32-Bit Floating Point)</span>
-                  </div>
-                  <span className="text-[#84837b] text-xs">UNCOMPRESSED RASTER</span>
-                </div>
-
-                <div className="border border-[#404040] p-3 flex items-center justify-between hover:border-[#ebfc72] transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[#ebfc72]">02</span>
-                    <span className="text-[#f4f3e8]">GeoJSON Vector Boundaries</span>
-                  </div>
-                  <span className="text-[#84837b] text-xs">POLYGON FEATURE SET</span>
-                </div>
-
-                <div className="border border-[#404040] p-3 flex items-center justify-between hover:border-[#ebfc72] transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[#ebfc72]">03</span>
-                    <span className="text-[#f4f3e8]">KMZ Package for Google Earth</span>
-                  </div>
-                  <span className="text-[#84837b] text-xs">TILED GROUND OVERLAY</span>
-                </div>
-
-                <div className="border border-[#404040] p-3 flex items-center justify-between hover:border-[#ebfc72] transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[#ebfc72]">04</span>
-                    <span className="text-[#f4f3e8]">Executive Geospatial PDF Dossier</span>
-                  </div>
-                  <span className="text-[#84837b] text-xs">STATISTICAL AUDIT REPORT</span>
-                </div>
-              </div>
-
-              <div className="pt-2 font-mono text-[11px] text-[#84837b] flex justify-between items-center border-t border-[#404040]">
-                <span>COORDINATE REFERENCE: EPSG:4326 / EPSG:3857</span>
-                <span className="text-[#ebfc72]">INSTANT DOWNLOAD</span>
-              </div>
-            </div>
-
           </div>
+          <p className="absolute z-10 bottom-2 right-3 text-[10px] text-white/45">
+            Kainji Lake, Niger State · Imagery © Esri, Maxar, Earthstar Geographics
+          </p>
         </section>
-
-        {/* ────────────────────────────────── Section: Terminal Launch CTA ────────────────────────────────── */}
-        <section className="py-28 bg-[#13140e] border-t border-[#404040] text-center">
-          <div className="max-w-3xl mx-auto px-6 space-y-8">
-            <span className="inversa-tag">
-              COMMAND INITIALIZATION // ZERO SIGNUP COST
-            </span>
-
-            <h2 className="inversa-display text-[#f4f3e8]">
-              Initialize your survey terminal.
-            </h2>
-
-            <p className="inversa-body text-[#84837b] max-w-xl mx-auto">
-              Access real-time Earth observation data for any coordinate on Earth. Launch the workspace now to delineate your study area.
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-              <Link 
-                href="/app" 
-                className="inversa-btn-lime !text-[15px] !py-3.5 !px-6"
-              >
-                <span>LAUNCH FIELD WORKSPACE NOW</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link 
-                href="/methods" 
-                className="inversa-btn-ghost !text-[15px] !py-3.5 !px-6"
-              >
-                <span>EXPLORE METHODS &amp; API</span>
-              </Link>
-            </div>
-
-            <div className="pt-6 font-mono text-[11px] text-[#84837b]">
-              SYSTEM ENGINE: GEOCLASS CLOUD KERNEL // v2.4.0 // CONNECTED
-            </div>
-          </div>
-        </section>
-
       </main>
 
-      {/* ────────────────────────────────── Footer ────────────────────────────────── */}
-      <footer className="border-t border-[#404040] bg-[#13140e] pt-[86px] pb-16">
-        <div className="max-w-[1240px] mx-auto px-6">
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pb-16 border-b border-[#404040]">
-            
-            {/* Column 1: Brand & Coordinates */}
-            <div className="space-y-3 font-mono text-[13px]">
-              <div className="flex items-center gap-2">
-                <span className="text-[#ebfc72] font-bold">▲</span>
-                <span className="font-sans font-bold text-[16px] text-[#f4f3e8] uppercase tracking-[-0.02em]">
-                  GEOCLASS
-                </span>
-              </div>
-              <p className="text-[#84837b] text-xs leading-relaxed max-w-xs font-mono">
-                Topographic Field Terminal &amp; Multi-Spectral Earth Observation Command System.
-              </p>
-              <div className="text-[12px] text-[#84837b] pt-2">
-                LAT 08°29&apos;N · LON 05°31&apos;E · ELEV 382M
-              </div>
-            </div>
-
-            {/* Column 2: Terminal Links */}
-            <div className="space-y-3 font-mono text-[13px]">
-              <div className="text-[#84837b] uppercase text-[11px] tracking-wider">
-                TERMINAL DIRECTORY
-              </div>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/app" className="text-[#f4f3e8] hover:text-[#ebfc72] transition-colors">
-                    01 // LIVE WORKSPACE
-                  </Link>
-                </li>
-                <li>
-                  <a href="#workflow" className="text-[#f4f3e8] hover:text-[#ebfc72] transition-colors">
-                    02 // OPERATIONAL WORKFLOW
-                  </a>
-                </li>
-                <li>
-                  <a href="#platform" className="text-[#f4f3e8] hover:text-[#ebfc72] transition-colors">
-                    03 // SPECTRAL REGISTRY
-                  </a>
-                </li>
-                <li>
-                  <a href="#tools" className="text-[#f4f3e8] hover:text-[#ebfc72] transition-colors">
-                    04 // DIAGNOSTICS SUITE
-                  </a>
-                </li>
-                <li>
-                  <Link href="/methods" className="text-[#f4f3e8] hover:text-[#ebfc72] transition-colors">
-                    05 // METHODS &amp; API SPECIFICATION
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Column 3: Telemetry Constellations */}
-            <div className="space-y-3 font-mono text-[13px]">
-              <div className="text-[#84837b] uppercase text-[11px] tracking-wider">
-                ACTIVE CONSTELLATIONS
-              </div>
-              <div className="text-[#84837b] text-xs space-y-1.5 leading-relaxed">
-                <div>• ESA Sentinel-2A / Sentinel-2B (MSI)</div>
-                <div>• ESA Sentinel-1A / Sentinel-1B (SAR C-Band)</div>
-                <div>• USGS / NASA Landsat-8 / Landsat-9 (OLI-2/TIRS-2)</div>
-                <div>• Copernicus Global 30m DEM (GLO-30)</div>
-                <div>• Google Dynamic World Real-Time Consensus</div>
-              </div>
-            </div>
-
+      {/* ─────────── Footer ─────────── */}
+      <footer className="px-5 sm:px-10 lg:px-14 py-12 bg-[#F4F1E8] border-t border-[#E3E0D5]">
+        <div className="max-w-[1320px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="flex items-center gap-2.5">
+            <LogoMark dark />
+            <span className="font-display text-[17px] font-medium tracking-[-0.02em]">GeoClass</span>
+            <span className="text-[13px] text-[#8A908A] ml-3">© {new Date().getFullYear()}</span>
           </div>
-
-          {/* Sub-Footer Row */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[12px] text-[#84837b]">
-            <div>
-              © {new Date().getFullYear()} GEOCLASS. ALL COORDINATES RECORDED IN WGS 84.
-            </div>
-            <div className="flex items-center gap-6">
-              <Link href="/app" className="hover:text-[#f4f3e8]">OPEN WORKSPACE</Link>
-              <Link href="/methods" className="hover:text-[#f4f3e8]">DOCUMENTATION</Link>
-            </div>
-          </div>
-
+          <nav className="flex flex-wrap gap-x-7 gap-y-2 text-[14px] text-[#5B6159]" aria-label="Footer">
+            <Link href="/app" className="hover:text-[#1F231E]">Workspace</Link>
+            <a href="#layers" className="hover:text-[#1F231E]">Layers</a>
+            <a href="#exports" className="hover:text-[#1F231E]">Exports</a>
+            <Link href="/methods" className="hover:text-[#1F231E]">Methods &amp; API</Link>
+          </nav>
+          <p className="text-[12.5px] text-[#8A908A] max-w-[360px] md:text-right">
+            Data: ESA Copernicus Sentinel-1/2, USGS Landsat 8/9, Copernicus DEM, Google Dynamic World.
+          </p>
         </div>
       </footer>
-
     </div>
+  );
+}
+
+/* A simple contour-ring mark: concentric survey rings with an offset pin. */
+function LogoMark({ dark = false }: { dark?: boolean }) {
+  const ink = dark ? '#1F231E' : '#FFFFFF';
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="10.25" stroke={ink} strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="6" stroke={ink} strokeWidth="1.5" strokeOpacity="0.7" />
+      <circle cx="14.2" cy="10" r="2.4" fill="#C96B3C" />
+    </svg>
   );
 }

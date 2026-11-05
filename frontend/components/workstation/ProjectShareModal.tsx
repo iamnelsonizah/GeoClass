@@ -18,7 +18,7 @@ interface ProjectShareModalProps {
   onLoadProject: (projectData: any) => void;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+import { API_BASE as BACKEND_URL } from '@/lib/apiBase';
 
 export default function ProjectShareModal({
   isOpen,
@@ -60,6 +60,16 @@ export default function ProjectShareModal({
       setLoadingList(false);
     }
   };
+
+  // Close on Escape key press (declared before any early return to keep hook order stable)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -141,15 +151,6 @@ export default function ProjectShareModal({
       console.warn('Could not delete project:', e);
     }
   };
-
-  // Close on Escape key press
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
 
   return (
     <div 

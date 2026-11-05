@@ -2015,3 +2015,14 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 
 
+
+/* ── Landing page display face ── */
+.font-display {
+  font-family: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+}
+
+@keyframes sat-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, IBM_Plex_Mono, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Inter, Inter_Tight, IBM_Plex_Mono, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 
@@ -8,6 +8,13 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-sans",
+});
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-display",
 });
 
 const spaceGrotesk = Space_Grotesk({
@@ -32,8 +39,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GeoClass — Earth Observation & Land Cover Analysis",
-  description: "A professional scientific mapping workstation for satellite remote sensing, land cover classification, and geospatial intelligence.",
+  title: "GeoClass — Satellite land cover analysis",
+  description: "Draw an area, pull cloud-free satellite imagery, and classify land cover, vegetation and water in the browser. Export to GeoTIFF, GeoJSON or PDF.",
 };
 
 export default function RootLayout({
@@ -44,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`h-full antialiased ${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${jetbrainsMono.variable}`}
+      className={`h-full antialiased ${inter.variable} ${interTight.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans bg-[#0D1316] text-[#FFFFFF]" suppressHydrationWarning>

@@ -93,6 +93,15 @@ export function PixelTimelinePanel({
     ndbi: false,
   });
 
+  // Map of periods that have disturbances for reference line & tooltip lookup
+  const disturbanceMap = React.useMemo(() => {
+    const map = new Map<string, DisturbanceEvent>();
+    if (data?.disturbances) {
+      data.disturbances.forEach((d) => map.set(d.period, d));
+    }
+    return map;
+  }, [data?.disturbances]);
+
   if (!data && !loading) return null;
 
   const toggleIndex = (key: keyof typeof visibleIndices) => {
@@ -118,15 +127,6 @@ export function PixelTimelinePanel({
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-
-  // Map of periods that have disturbances for reference line & tooltip lookup
-  const disturbanceMap = React.useMemo(() => {
-    const map = new Map<string, DisturbanceEvent>();
-    if (data?.disturbances) {
-      data.disturbances.forEach((d) => map.set(d.period, d));
-    }
-    return map;
-  }, [data?.disturbances]);
 
   return (
     <DraggableContainer

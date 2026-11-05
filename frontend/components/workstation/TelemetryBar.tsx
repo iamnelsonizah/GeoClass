@@ -100,7 +100,7 @@ export function TelemetryBar({
 
         <div>
           <div className="text-[9px] uppercase tracking-wider text-[#8A908A] font-mono leading-tight">ACTIVE LAYERS</div>
-          <div className="font-mono text-[#1A1D23] font-medium">{readyLayersCount > 0 ? readyLayersCount : 6} / {totalLayersCount}</div>
+          <div className="font-mono text-[#1A1D23] font-medium">{readyLayersCount} / {totalLayersCount}</div>
         </div>
 
         {processingTime !== null && (

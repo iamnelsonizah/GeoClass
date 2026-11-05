@@ -783,14 +783,15 @@ function Minimap() {
     const MinimapControl = L.Control.extend({
       options: { position: 'bottomright' as L.ControlPosition },
       onAdd() {
-        const wrapper = L.DomUtil.create('div', 'leaflet-minimap-wrapper');
+        const wrapper = L.DomUtil.create('div', 'leaflet-minimap-wrapper max-md:hidden');
         wrapper.style.cssText = `
-          width: 150px;
-          height: 110px;
-          border: 2px solid rgba(51, 65, 85, 0.8);
-          border-radius: 10px;
+          width: 132px;
+          height: 96px;
+          border: 1px solid #D8D5CA;
+          border-radius: 6px;
           overflow: hidden;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+          background: #F4F1E8;
+          box-shadow: 0 2px 8px rgba(31,35,30,0.18);
           cursor: default;
         `;
 
@@ -830,11 +831,19 @@ function Minimap() {
         zoomSnap: 0.5,
       }).setView(center, Math.max(map.getZoom() - 5, 1));
 
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 16,
       }).addTo(minimap);
 
       minimapRef.current = minimap;
+      // The control's container may have no layout size at creation time; recompute once it does.
+      requestAnimationFrame(() => minimap.invalidateSize());
+      setTimeout(() => {
+        if (minimapRef.current === minimap) {
+          minimap.invalidateSize();
+          minimap.setView(map.getCenter(), Math.max(map.getZoom() - 5, 1), { animate: false });
+        }
+      }, 400);
 
       // Draw viewport rectangle
       const bounds = map.getBounds();
@@ -2827,7 +2836,7 @@ export default function MapComponent({
             <LayerGroup>
               <TileLayer
                 attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
-                url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                 maxZoom={19}
                 maxNativeZoom={16}
               />

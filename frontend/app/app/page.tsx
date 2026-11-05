@@ -105,6 +105,7 @@ import {
 import CustomTrainingModal from '@/components/workstation/CustomTrainingModal';
 import ClimateContextCard, { ClimateContextData } from '@/components/workstation/ClimateContextCard';
 import ProjectShareModal from '@/components/workstation/ProjectShareModal';
+import { API_BASE } from '@/lib/apiBase';
 import {
   MAX_AOI_HA,
   CONFIDENCE_ROWS,
@@ -152,8 +153,8 @@ function Notification({
   }, [type, onDismiss]);
 
   const styles = type === 'error' 
-    ? 'bg-rose-950/40 border-rose-800/40 text-rose-200' 
-    : 'bg-emerald-950/40 border-emerald-800/40 text-emerald-200';
+    ? 'bg-[#F7E9E4] border-[#E3C3B8] text-[#8A3B2B]'
+    : 'bg-[#E4E9DF] border-[#C9D3BF] text-[#4A5A3E]';
 
   const Icon = type === 'error' ? AlertTriangle : CheckCircle;
 
@@ -163,10 +164,10 @@ function Notification({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.2 }}
-      className={`flex items-center gap-2.5 px-3.5 py-2.5 border rounded-lg ${styles} text-xs print:hidden shadow-sm`}
+      className={`flex items-start gap-2.5 px-3 py-2.5 border rounded-md ${styles} text-xs leading-relaxed print:hidden`}
     >
-      <Icon className="w-4 h-4 flex-shrink-0" />
-      <div className="font-medium flex-1">{message}</div>
+      <Icon className="w-4 h-4 flex-shrink-0 mt-px" />
+      <div className="flex-1">{message}</div>
       <button 
         onClick={onDismiss} 
         className="p-1 hover:bg-white/10 rounded transition flex-shrink-0 cursor-pointer text-slate-400 hover:text-white"
@@ -176,6 +177,13 @@ function Notification({
       </button>
     </motion.div>
   );
+}
+
+/** Format a coordinate pair with correct hemisphere letters, e.g. 8.4872° N · 5.5283° E */
+function formatLatLng(lat: number, lng: number, digits = 4): string {
+  const ns = lat >= 0 ? 'N' : 'S';
+  const ew = lng >= 0 ? 'E' : 'W';
+  return `${Math.abs(lat).toFixed(digits)}° ${ns} · ${Math.abs(lng).toFixed(digits)}° ${ew}`;
 }
 
 export default function Home() {
@@ -302,7 +310,7 @@ export default function Home() {
   const [leftRailCollapsed, setLeftRailCollapsed] = useState(false);
   const [rightRailCollapsed, setRightRailCollapsed] = useState(false);
   const [toolstripCollapsed, setToolstripCollapsed] = useState(false);
-  const [analyticsExpanded, setAnalyticsExpanded] = useState(true);
+  const [analyticsExpanded, setAnalyticsExpanded] = useState(false);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<'analysis' | 'statistics' | 'metadata'>('analysis');
   const [analyticsHeight, setAnalyticsHeight] = useState<number>(380);
   const [isDraggingAnalytics, setIsDraggingAnalytics] = useState(false);
@@ -412,12 +420,6 @@ export default function Home() {
     window.dispatchEvent(new CustomEvent('map-toggle-fullscreen'));
   };
 
-  // Backend API Base URL (auto-normalizes protocol to prevent relative path 404s)
-  const rawApiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000').trim();
-  const normalizedApiBase = rawApiBase.startsWith('http://') || rawApiBase.startsWith('https://')
-    ? rawApiBase
-    : `https://${rawApiBase}`;
-  const API_BASE = normalizedApiBase.replace(/\/$/, '');
 
   // Compute workflow step
   const workflowStep = statistics ? 4 : (tileUrls.classified ? 4 : (tileUrls.trueColor ? 3 : (coords.length > 0 ? 2 : 1)));
@@ -1000,14 +1002,14 @@ export default function Home() {
         if (!isMounted) return;
         setGeeConnected(data.gee_connected);
         if (!data.gee_connected) {
-          setErrorMessage("Earth Engine API is not initialized. Please verify the backend credentials.");
+          setErrorMessage("The analysis server is up, but Google Earth Engine isn't authorised yet. Imagery requests will fail until its credentials are configured.");
         }
       })
       .catch((error) => {
         if (!isMounted) return;
         console.error("Backend status check failed:", error);
         setGeeConnected(false);
-        setErrorMessage(`Cannot connect to backend at ${API_BASE}.`);
+        setErrorMessage("The analysis server isn't reachable. You can still draw an area and explore the map; imagery and classification will resume once it's back online.");
       });
 
     return () => {
@@ -3205,46 +3207,9 @@ export default function Home() {
 
         {/* ---------- Map area ---------- */}
         <main className="map-area">
-          {/* Status Telemetry Strip */}
+          {/* Contextual result strip — only shown when there is something the top bar doesn't already say */}
+          {(aiQualityMetrics || buildingStats || ((tileUrls.trueColor || tileUrls.landsatTrueColor) && !tileUrls.classified && !loadingClassify)) && (
           <div className="status-strip">
-            <div className="status-item">
-              <div className="k">Status</div>
-              <div className="v">
-                {loadingMapId ? (
-                  <span className="status-badge status-badge-computing"><Loader2 className="w-3 h-3 animate-spin mr-1" />Fetching Scene...</span>
-                ) : loadingClassify ? (
-                  <span className="status-badge status-badge-computing"><Loader2 className="w-3 h-3 animate-spin mr-1" />Classifying...</span>
-                ) : tileUrls.classified ? (
-                  <span className="status-badge status-badge-active">Classified</span>
-                ) : tileUrls.trueColor ? (
-                  <span className="status-badge status-badge-ready">Imagery Ready</span>
-                ) : (
-                  <span className="status-badge status-badge-standby">Ready for AOI</span>
-                )}
-              </div>
-            </div>
-            <div className="status-item">
-              <div className="k">AOI Area</div>
-              <div className="v font-medium text-slate-200">
-                {aoiAreaHa ? (
-                  <span className="text-[#E0DCD3] font-semibold">{aoiAreaHa.toFixed(1)} ha</span>
-                ) : (
-                  <span className="text-slate-500">None selected</span>
-                )}
-              </div>
-            </div>
-            <div className="status-item">
-              <div className="k">Date Window</div>
-              <div className="v font-medium text-slate-200">{startDate.slice(0, 4)} Season</div>
-            </div>
-            <div className="status-item">
-              <div className="k">Cloud Mask</div>
-              <div className="v font-medium text-slate-200">{cloudCover}% Max</div>
-            </div>
-            <div className="status-item">
-              <div className="k">Active Layers</div>
-              <div className="v font-medium text-[#E0DCD3]">{readyLayersCount} / {layerStack.length} ready</div>
-            </div>
             {aiQualityMetrics && (
               <div className="status-item">
                 <div className="k">Quality Score</div>
@@ -3272,7 +3237,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={runClassification}
-                  className="px-3 py-1 bg-[#306840] hover:bg-[#265433] text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                  className="px-3 py-1 bg-[#C96B3C] hover:bg-[#AD5630] text-white rounded text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
                   title="Run land cover classification and analysis on fetched imagery"
                 >
                   <span>Analyze & Classify AOI</span>
@@ -3280,6 +3245,7 @@ export default function Home() {
               </div>
             )}
           </div>
+          )}
 
           {/* Map canvas */}
           <div className="map-canvas">
@@ -3293,10 +3259,10 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setLeftRailCollapsed(false)}
-                  className="px-2.5 py-1.5 bg-[#1A1D17]/95 hover:bg-[#22261E] border border-[#2E3429] text-[#E0DCD3] rounded-md shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer group"
+                  className="max-md:hidden px-2.5 py-1.5 bg-[#FAF9F5]/95 hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded-md shadow-sm backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer group"
                   title="Expand Workflow Sidebar"
                 >
-                  <PanelLeftOpen className="w-3.5 h-3.5 text-[#306840] group-hover:text-[#4B6445]" />
+                  <PanelLeftOpen className="w-3.5 h-3.5 text-[#C96B3C]" />
                   <span>Workflow</span>
                 </button>
               )}
@@ -3304,10 +3270,10 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setToolstripCollapsed(false)}
-                  className="px-2.5 py-1.5 bg-[#1A1D17]/95 hover:bg-[#22261E] border border-[#2E3429] text-[#E0DCD3] rounded-md shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer group"
+                  className="px-2.5 py-1.5 bg-[#FAF9F5]/95 hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded-md shadow-sm backdrop-blur-md transition flex items-center gap-1.5 text-xs font-medium cursor-pointer group"
                   title="Expand Drawing & Analysis Tools"
                 >
-                  <Wrench className="w-3.5 h-3.5 text-[#306840] group-hover:text-[#4B6445]" />
+                  <Wrench className="w-3.5 h-3.5 text-[#C96B3C]" />
                   <span>Tools</span>
                   <ChevronRight className="w-3 h-3 text-[#9A97A4]" />
                 </button>
@@ -3319,7 +3285,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setRightRailCollapsed(false)}
-                className="absolute top-3.5 right-3.5 z-[1005] px-3 py-1.5 bg-[#FAF9F5]/95 hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded-lg shadow-md backdrop-blur-md transition-all flex items-center gap-2 text-xs font-semibold cursor-pointer group hover:border-[#BCB8AA]"
+                className="max-md:hidden absolute top-3.5 right-3.5 z-[1005] px-3 py-1.5 bg-[#FAF9F5]/95 hover:bg-[#F4F1E8] border border-[#D8D5CA] text-[#1A1D23] rounded-lg shadow-md backdrop-blur-md transition-all flex items-center gap-2 text-xs font-semibold cursor-pointer group hover:border-[#BCB8AA]"
                 title="Expand Layers & Tools"
               >
                 <Layers className="w-4 h-4 text-[#D9622B]" />
@@ -3333,7 +3299,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setRightRailCollapsed(false)}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-[1005] bg-[#FAF9F5] hover:bg-[#F4F1E8] border-l border-t border-b border-[#D8D5CA] rounded-l-lg py-3.5 px-1.5 shadow-md flex flex-col items-center gap-2 cursor-pointer transition-all hover:pr-2.5 text-[#1A1D23] group hover:border-[#BCB8AA]"
+                className="max-md:hidden absolute right-0 top-1/2 -translate-y-1/2 z-[1005] bg-[#FAF9F5] hover:bg-[#F4F1E8] border-l border-t border-b border-[#D8D5CA] rounded-l-lg py-3.5 px-1.5 shadow-md flex flex-col items-center gap-2 cursor-pointer transition-all hover:pr-2.5 text-[#1A1D23] group hover:border-[#BCB8AA]"
                 title="Open Layers & Tools"
               >
                 <ChevronLeft className="w-4 h-4 text-[#D9622B] group-hover:-translate-x-0.5 transition-transform" />
@@ -3384,34 +3350,27 @@ export default function Home() {
             )}
 
             {/* Unified Neatline Telemetry Footer Bar */}
-            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#FAF9F5]/95 backdrop-blur-md border-t border-[#D8D5CA] px-3.5 py-1.5 flex items-center justify-between text-xs text-[#69706A] select-none shadow-xs">
+            <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#FAF9F5]/95 backdrop-blur-md border-t border-[#D8D5CA] px-3.5 py-1.5 flex items-center justify-between gap-4 text-xs text-[#69706A] select-none whitespace-nowrap overflow-hidden">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[#8A908A] font-semibold text-[11px] uppercase tracking-wider">LAT</span>
-                  <span className="text-[#1A1D23] font-mono font-medium text-[11.5px]">{mapCenter[0].toFixed(5)}°</span>
-                  <span className="text-[#8A908A] font-semibold text-[11px] uppercase tracking-wider ml-1">LNG</span>
-                  <span className="text-[#1A1D23] font-mono font-medium text-[11.5px]">{mapCenter[1].toFixed(5)}°</span>
+                  <span className="text-[#8A908A] text-[11px]">Center</span>
+                  <span className="text-[#1A1D23] font-mono text-[11.5px]">{formatLatLng(mapCenter[0], mapCenter[1])}</span>
                 </div>
                 <span className="text-[#D8D5CA]">|</span>
                 <div className="hidden sm:flex items-center gap-1">
                   <span className="text-[#8A908A]">GSD:</span>
-                  <span className="text-[#1A1D23] font-mono">10m / px</span>
+                  <span className="text-[#1A1D23] font-mono">{selectedSensor === 'sentinel_2' ? '10 m' : '30 m'}</span>
                 </div>
                 <span className="text-[#D8D5CA] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1">
                   <span className="text-[#8A908A]">Sensor:</span>
-                  <span className="text-[#1A1D23] font-medium">Sentinel-2 MSI</span>
+                  <span className="text-[#1A1D23] font-medium">{selectedSensor === 'sentinel_2' ? 'Sentinel-2 MSI' : 'Landsat 8/9 OLI'}</span>
                 </div>
                 <span className="text-[#D8D5CA] hidden md:inline">|</span>
                 <div className="hidden md:flex items-center gap-1.5 font-mono text-[11px]">
                   <span className="text-[#8A908A] font-sans">Cursor:</span>
                   {cursorCoords ? (
-                    <>
-                      <span className="text-[#4B8055] font-medium">Lat</span>
-                      <span className="text-[#1A1D23]">{cursorCoords.lat.toFixed(6)}°</span>
-                      <span className="text-[#4B8055] font-medium ml-1">Lng</span>
-                      <span className="text-[#1A1D23]">{cursorCoords.lng.toFixed(6)}°</span>
-                    </>
+                    <span className="text-[#1A1D23]">{formatLatLng(cursorCoords.lat, cursorCoords.lng)}</span>
                   ) : (
                     <span className="text-[#8A908A] italic font-sans text-[11px]">Move cursor over map</span>
                   )}
@@ -3421,7 +3380,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 {aoiAreaHa ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#4B8055]"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C96B3C]"></span>
                     <span className="text-[#1A1D23] font-medium font-mono">{aoiAreaHa.toFixed(1)} ha AOI</span>
                   </div>
                 ) : (
@@ -3563,29 +3522,6 @@ export default function Home() {
                 </div>
               </DraggableContainer>
             )}
-          </div>
-
-          {/* ---------- Map Status Bar (IBM Plex Mono) ---------- */}
-          <div className="flex items-center justify-between px-4 py-1.5 bg-[#FAF9F5] border-t border-b border-[#D8D5CA] text-[11px] font-mono text-[#454B46] select-none z-20">
-            <div className="flex items-center gap-3 overflow-x-auto">
-              <span className="font-semibold text-[#1A1D23]">{selectedSensor === 'sentinel_2' ? 'Sentinel-2' : 'Landsat 8/9'}</span>
-              <span className="text-[#8A908A]">·</span>
-              <span>{selectedSensor === 'sentinel_2' ? '10m' : '30m'}</span>
-              <span className="text-[#8A908A]">·</span>
-              <span>{startDate} → {endDate}</span>
-              <span className="text-[#8A908A]">·</span>
-              <span>{cloudCover}% cloud</span>
-              <span className="text-[#8A908A]">·</span>
-              <span>{coords.length > 0 ? `${coords[0][1].toFixed(4)}° N · ${coords[0][0].toFixed(4)}° W` : '37.7749° N · 122.4194° W'}</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-1.5 text-[#69706A] flex-shrink-0">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-              </svg>
-              <span>EPSG:4326</span>
-            </div>
           </div>
 
           {/* Draggable Divider between Map Canvas and Analytics Report */}
@@ -4393,17 +4329,17 @@ export default function Home() {
                         const isVisible = layerVisibility.none !== false;
                         return (
                           <div
-                            className="flex items-center justify-between py-2 px-1 hover:bg-[#F4F1E8]/70 transition-colors cursor-pointer rounded-lg group"
+                            className={`flex items-center justify-between py-2 px-1 hover:bg-[#F4F1E8]/70 transition cursor-pointer rounded-md group ${isVisible ? '' : 'opacity-50'}`}
                             onClick={() => handleToggleLayer('none')}
                           >
                             <div className="flex items-center gap-3 min-w-0">
                               <img
                                 src="/layer-thumbnails/base_map.png"
                                 alt="Base map"
-                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-[#D8D5CA]/50 shadow-2xs"
+                                className="w-9 h-9 rounded object-cover flex-shrink-0 border border-[#D8D5CA]/60"
                               />
                               <div className="min-w-0">
-                                <div className="text-xs font-bold text-[#1A1D23] tracking-tight truncate">Base map</div>
+                                <div className="text-xs font-semibold text-[#1A1D23] truncate">Base map</div>
                                 <div className="text-[10.5px] text-[#69706A] truncate">Cartographic reference</div>
                               </div>
                             </div>
@@ -4418,20 +4354,6 @@ export default function Home() {
                               >
                                 {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4 text-[#8A908A]" />}
                               </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleToggleLayer('none');
-                                }}
-                                className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition cursor-pointer ${
-                                  isVisible
-                                    ? 'bg-[#EAF3EB] text-[#3B7A46]'
-                                    : 'bg-[#FDEAE8] text-[#C24E43]'
-                                }`}
-                              >
-                                {isVisible ? 'Visible' : 'Hidden'}
-                              </button>
                             </div>
                           </div>
                         );
@@ -4443,17 +4365,17 @@ export default function Home() {
                         return (
                           <div
                             key={layer.key}
-                            className="flex items-center justify-between py-2 px-1 hover:bg-[#F4F1E8]/70 transition-colors cursor-pointer rounded-lg group"
+                            className={`flex items-center justify-between py-2 px-1 hover:bg-[#F4F1E8]/70 transition cursor-pointer rounded-md group ${isVisible ? '' : 'opacity-50'}`}
                             onClick={() => handleToggleLayer(layer.key)}
                           >
                             <div className="flex items-center gap-3 min-w-0">
                               <img
                                 src={layer.thumbnail}
                                 alt={layer.label}
-                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-[#D8D5CA]/50 shadow-2xs"
+                                className="w-9 h-9 rounded object-cover flex-shrink-0 border border-[#D8D5CA]/60"
                               />
                               <div className="min-w-0">
-                                <div className="text-xs font-bold text-[#1A1D23] tracking-tight truncate">{layer.label}</div>
+                                <div className="text-xs font-semibold text-[#1A1D23] truncate flex items-center gap-1.5">{layer.label}{layer.hasUrl && <span className="w-1.5 h-1.5 rounded-full bg-[#C96B3C]" title="Computed for current AOI" />}</div>
                                 <div className="text-[10.5px] text-[#69706A] truncate">{layer.sub}</div>
                               </div>
                             </div>
@@ -4467,20 +4389,6 @@ export default function Home() {
                                 className="text-[#69706A] hover:text-[#1A1D23] transition-colors p-1 rounded cursor-pointer"
                               >
                                 {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4 text-[#8A908A]" />}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleToggleLayer(layer.key);
-                                }}
-                                className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition cursor-pointer ${
-                                  isVisible
-                                    ? 'bg-[#EAF3EB] text-[#3B7A46]'
-                                    : 'bg-[#FDEAE8] text-[#C24E43]'
-                                }`}
-                              >
-                                {isVisible ? 'Visible' : 'Hidden'}
                               </button>
                             </div>
                           </div>
