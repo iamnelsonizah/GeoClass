@@ -38,9 +38,35 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
 });
 
+const SITE_URL = "https://geoclass.nelsonizah.com";
+const DESCRIPTION =
+  "Draw an area, pull cloud-free satellite imagery, and classify land cover, vegetation and water in the browser. Export to GeoTIFF, GeoJSON or PDF.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "GeoClass — Satellite land cover analysis",
-  description: "Draw an area, pull cloud-free satellite imagery, and classify land cover, vegetation and water in the browser. Export to GeoTIFF, GeoJSON or PDF.",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: "GeoClass",
+    title: "GeoClass — Satellite analysis, without the GIS overhead",
+    description: DESCRIPTION,
+    images: [
+      {
+        url: "/og.jpg",
+        width: 1200,
+        height: 630,
+        alt: "GeoClass over a satellite view of the Niger–Benue confluence at Lokoja",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GeoClass — Satellite analysis, without the GIS overhead",
+    description: DESCRIPTION,
+    images: ["/og.jpg"],
+  },
 };
 
 export default function RootLayout({

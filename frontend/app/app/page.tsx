@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
@@ -9,13 +8,11 @@ import { useAuth } from '@/lib/AuthContext';
 import { 
   Loader2, 
   BarChart3, 
-  Settings, 
   Download, 
   AlertTriangle, 
   CheckCircle, 
   ShieldAlert, 
   FileText,
-  LogOut, 
   Printer, 
   ChevronDown, 
   ChevronUp, 
@@ -24,40 +21,25 @@ import {
   GripHorizontal,
   Wrench,
   Info, 
-  MapPin, 
   Upload, 
   TrendingUp, 
   TrendingDown, 
   X, 
   Satellite, 
   Activity, 
-  Clock, 
   Search, 
-  Bookmark, 
   Ruler, 
   StickyNote, 
   Save,
   Mountain,
   History,
   Columns2,
-  Cloud,
-  Move,
-  RotateCw,
-  Type,
   PanelLeftClose,
   PanelLeftOpen,
   PanelRightClose,
-  PanelRightOpen,
   Layers,
-  Sliders,
-  Square,
   Pentagon,
-  Edit3,
-  Wand2,
-  Hand,
   Trash2,
-  Share2,
-  BookOpen,
   Database,
   Eye,
   EyeOff,
@@ -66,19 +48,9 @@ import {
   Box,
   Network,
   PlusSquare,
-  Bell,
   Folder,
-  LayoutGrid,
-  Crosshair,
-  SplitSquareVertical,
-  Plus,
-  Minus,
   Compass,
-  MousePointer,
-  Calendar,
-  Maximize2,
-  Minimize2,
-  GripVertical
+  Calendar
 } from 'lucide-react';
 import DashboardCharts, { SpectralData } from '@/components/DashboardCharts';
 import { DraggableContainer } from '@/components/DraggableContainer';
@@ -106,10 +78,14 @@ import CustomTrainingModal from '@/components/workstation/CustomTrainingModal';
 import ClimateContextCard, { ClimateContextData } from '@/components/workstation/ClimateContextCard';
 import ProjectShareModal from '@/components/workstation/ProjectShareModal';
 import { API_BASE } from '@/lib/apiBase';
+import ProgressCard from '@/components/workstation/ProgressCard';
+import Notification from '@/components/workstation/Notification';
+import MobileBottomNav, { type MobilePanel } from '@/components/workstation/MobileBottomNav';
+import WorkflowSteps from '@/components/workstation/WorkflowSteps';
+import { useSavedWorkspaces } from '@/components/workstation/useSavedWorkspaces';
+import { formatLatLng, EXAMPLE_AREA, humanizeError } from '@/lib/geo';
 import {
   MAX_AOI_HA,
-  CONFIDENCE_ROWS,
-  CONFIDENCE_COLS,
   VEGETATION_CLASSES,
   calculateAOIArea,
   formatHectares,
@@ -119,7 +95,6 @@ import {
   createBoundingBoxAOI,
   parseCoordinateQuery,
   getLocationZoom,
-  getConfidenceScore,
   getConfidenceReview,
   getTemporalChangeTone,
 } from '@/components/workstation/utils';
@@ -138,54 +113,6 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 });
 
 // Notification component with auto-dismiss
-function Notification({ 
-  type, message, onDismiss 
-}: { 
-  type: 'error' | 'success'; 
-  message: string; 
-  onDismiss: () => void;
-}) {
-  useEffect(() => {
-    if (type === 'success') {
-      const timer = setTimeout(onDismiss, 8000);
-      return () => clearTimeout(timer);
-    }
-  }, [type, onDismiss]);
-
-  const styles = type === 'error' 
-    ? 'bg-[#F7E9E4] border-[#E3C3B8] text-[#8A3B2B]'
-    : 'bg-[#E4E9DF] border-[#C9D3BF] text-[#4A5A3E]';
-
-  const Icon = type === 'error' ? AlertTriangle : CheckCircle;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.2 }}
-      className={`flex items-start gap-2.5 px-3 py-2.5 border rounded-md ${styles} text-xs leading-relaxed print:hidden`}
-    >
-      <Icon className="w-4 h-4 flex-shrink-0 mt-px" />
-      <div className="flex-1">{message}</div>
-      <button 
-        onClick={onDismiss} 
-        className="p-1 hover:bg-white/10 rounded transition flex-shrink-0 cursor-pointer text-slate-400 hover:text-white"
-        aria-label="Dismiss notification"
-      >
-        <X className="w-3.5 h-3.5" />
-      </button>
-    </motion.div>
-  );
-}
-
-/** Format a coordinate pair with correct hemisphere letters, e.g. 8.4872° N · 5.5283° E */
-function formatLatLng(lat: number, lng: number, digits = 4): string {
-  const ns = lat >= 0 ? 'N' : 'S';
-  const ew = lng >= 0 ? 'E' : 'W';
-  return `${Math.abs(lat).toFixed(digits)}° ${ns} · ${Math.abs(lng).toFixed(digits)}° ${ew}`;
-}
-
 export default function Home() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
@@ -194,9 +121,9 @@ export default function Home() {
   // Map State
   const [coords, setCoords] = useState<number[][]>([]);
   const [aoiAreaHa, setAoiAreaHa] = useState<number | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([37.7749, -122.4194]);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([EXAMPLE_AREA.lat, EXAMPLE_AREA.lng]);
   const [cursorCoords, setCursorCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [mapZoom, setMapZoom] = useState<number>(10);
+  const [mapZoom, setMapZoom] = useState<number>(11);
   const [savedAreas, setSavedAreas] = useState<SavedArea[]>(SAVED_AREAS);
   const [areaSearch, setAreaSearch] = useState('');
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
@@ -205,6 +132,8 @@ export default function Home() {
   const [locationLoading, setLocationLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationSuggestion | null>(null);
   const [dismissedInvite, setDismissedInvite] = useState(false);
+  // 'pending' → AOI set, waiting for state to settle; 'running' → imagery + classification in flight
+  const [exampleRun, setExampleRun] = useState<null | 'pending' | 'running'>(null);
   
   // Standard Configuration State
   const [startDate, setStartDate] = useState('2024-01-01');
@@ -320,8 +249,8 @@ export default function Home() {
 
   // Individual Phase Folding Accordion States
   const [phase1Open, setPhase1Open] = useState(true);
-  const [phase2Open, setPhase2Open] = useState(true);
-  const [phase3Open, setPhase3Open] = useState(true);
+  const [phase2Open, setPhase2Open] = useState(false);
+  const [phase3Open, setPhase3Open] = useState(false);
   const [phase4Open, setPhase4Open] = useState(true);
   const [phase5Open, setPhase5Open] = useState(false);
   const [exportsOpen, setExportsOpen] = useState(false);
@@ -383,13 +312,15 @@ export default function Home() {
   const [downloadFormat, setDownloadFormat] = useState<'geotiff' | 'png' | 'geojson' | 'kml' | 'kmz' | 'ipynb'>('kmz');
   const [downloading, setDownloading] = useState(false);
   const [isStudyAreaModalOpen, setIsStudyAreaModalOpen] = useState(false);
-  const [savedWorkspaces, setSavedWorkspaces] = useState<any[]>([]);
+  const [savedWorkspaces, setSavedWorkspaces] = useSavedWorkspaces();
   const [isSavingWorkspace, setIsSavingWorkspace] = useState(false);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [isWorkspaceLibraryOpen, setIsWorkspaceLibraryOpen] = useState(false);
   const [singleClassPromptOpen, setSingleClassPromptOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessageRaw] = useState<string | null>(null);
+  // Translate browser-level network failures ("Failed to fetch", "Load failed", …) into plain language.
+  const setErrorMessage = useCallback((msg: string | null) => setErrorMessageRaw(humanizeError(msg)), []);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const [activeInfoTab, setActiveInfoTab] = useState<'none' | 'true_color' | 'false_color' | 'ndvi' | 'classified'>('none');
@@ -423,6 +354,16 @@ export default function Home() {
 
   // Compute workflow step
   const workflowStep = statistics ? 4 : (tileUrls.classified ? 4 : (tileUrls.trueColor ? 3 : (coords.length > 0 ? 2 : 1)));
+  // Guide the left panel one step at a time: when the workflow advances, open the
+  // section for the new step and fold the finished one. (Adjusting state during
+  // render on a tracked change is React's recommended alternative to an effect.)
+  const [panelStep, setPanelStep] = useState(workflowStep);
+  if (panelStep !== workflowStep) {
+    setPanelStep(workflowStep);
+    if (workflowStep === 2) { setPhase2Open(true); setPhase3Open(false); }
+    if (workflowStep === 3) { setPhase2Open(false); setPhase3Open(true); }
+    if (workflowStep === 1) { setPhase2Open(false); setPhase3Open(false); }
+  }
   const aoiAreaKm2 = aoiAreaHa !== null ? aoiAreaHa / 100 : null;
   const confidenceReview = getConfidenceReview(confidenceThreshold);
   const confidenceReady = !!statistics;
@@ -567,23 +508,14 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    const aoiParam = params.get('aoi');
     const startParam = params.get('start');
     const endParam = params.get('end');
     const modelParam = params.get('model');
     const layerParam = params.get('layer');
     const sarParam = params.get('sar');
+    const sensorParam = params.get('sensor');
+    if (sensorParam === 'landsat') setSelectedSensor('landsat');
 
-    if (aoiParam) {
-      try {
-        const parsedCoords = JSON.parse(decodeURIComponent(aoiParam));
-        if (Array.isArray(parsedCoords) && parsedCoords.length > 0) {
-          setCoords(parsedCoords);
-        }
-      } catch (e) {
-        console.error('Failed to parse aoi param from URL', e);
-      }
-    }
     if (startParam) setStartDate(startParam);
     if (endParam) setEndDate(endParam);
     if (modelParam && ['random_forest', 'dynamic_world', 'deep_learning'].includes(modelParam)) {
@@ -1075,6 +1007,34 @@ export default function Home() {
     setSuccessMessage(`Created ${sizeKm}km AOI boundary at [${lat.toFixed(4)}, ${lng.toFixed(4)}]. Ready to fetch imagery.`);
   }, [handleAOIDrawn]);
 
+  const startExample = useCallback(() => {
+    const box = createBoundingBoxAOI(EXAMPLE_AREA.lat, EXAMPLE_AREA.lng, EXAMPLE_AREA.sizeKm);
+    setStartDate(EXAMPLE_AREA.start);
+    setEndDate(EXAMPLE_AREA.end);
+    handleAOIDrawn(box);
+    setDismissedInvite(true);
+    setSuccessMessage(`Example: ${EXAMPLE_AREA.name}, dry season 2024–25. Fetching imagery and classifying…`);
+    setExampleRun('pending');
+  }, [handleAOIDrawn]);
+
+  // Shared links (?aoi=…) and the demo link (?example=lokoja) — read once on mount.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('example') === 'lokoja') {
+      startExample();
+      return;
+    }
+    const aoiParam = params.get('aoi');
+    if (!aoiParam) return;
+    try {
+      const parsed = JSON.parse(aoiParam);
+      if (Array.isArray(parsed) && parsed.length >= 3) handleAOIDrawn(parsed);
+    } catch (e) {
+      console.error('Failed to parse aoi param from URL', e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const selectSavedArea = (area: SavedArea) => {
     handleAOIDrawn(area.coords);
     setSelectedAreaId(area.id);
@@ -1105,37 +1065,6 @@ export default function Home() {
     setSuccessMessage(`${customArea.name} saved to the boundary library.`);
   };
 
-  // Saved workspaces live in this browser's localStorage. (The old /api/workspaces
-  // Next.js route can't run on the static export, so every call to it returned 404.)
-  const WORKSPACES_KEY = 'geoclass_saved_workspaces_v1';
-  const workspacesLoadedRef = useRef(false);
-  const fetchWorkspaces = useCallback(() => {
-    try {
-      const local = localStorage.getItem(WORKSPACES_KEY);
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed)) setSavedWorkspaces(parsed);
-      }
-    } catch (err) {
-      console.warn('Could not read saved workspaces', err);
-    } finally {
-      workspacesLoadedRef.current = true;
-    }
-  }, []);
-
-  // Persist every change (save, delete) so nothing is lost on reload.
-  useEffect(() => {
-    if (!workspacesLoadedRef.current) return;
-    try {
-      localStorage.setItem(WORKSPACES_KEY, JSON.stringify(savedWorkspaces));
-    } catch (err) {
-      console.warn('Could not persist saved workspaces', err);
-    }
-  }, [savedWorkspaces]);
-
-  useEffect(() => {
-    fetchWorkspaces();
-  }, [fetchWorkspaces]);
 
   // Global Escape key listener to close any open modal
   useEffect(() => {
@@ -2628,6 +2557,40 @@ export default function Home() {
     }
   }, [activeLayer]);
 
+  // Keep the address bar in sync with the current area and dates so the URL itself
+  // is a shareable link to this view (read back by the ?aoi= handler on load).
+  useEffect(() => {
+    if (exampleRun) return;
+    const url = new URL(window.location.href);
+    if (coords.length >= 3) {
+      const compact = coords.map(([x, y]) => [Number(x.toFixed(5)), Number(y.toFixed(5))]);
+      url.searchParams.set('aoi', JSON.stringify(compact));
+      url.searchParams.set('start', startDate);
+      url.searchParams.set('end', endDate);
+      if (selectedSensor !== 'sentinel_2') url.searchParams.set('sensor', selectedSensor);
+      else url.searchParams.delete('sensor');
+    } else {
+      ['aoi', 'start', 'end', 'sensor'].forEach((k) => url.searchParams.delete(k));
+    }
+    url.searchParams.delete('example');
+    window.history.replaceState(window.history.state, '', url.toString());
+  }, [coords, startDate, endDate, selectedSensor, exampleRun]);
+
+  // Drive the demo: once the example AOI and dates are in state, fetch imagery then classify.
+  useEffect(() => {
+    if (exampleRun !== 'pending' || coords.length === 0) return;
+    setExampleRun('running');
+    (async () => {
+      try {
+        await fetchSatelliteImagery();
+        await runClassification();
+      } finally {
+        setExampleRun(null);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exampleRun, coords]);
+
   const readyLayersCount = layerStack.filter(l => l.hasUrl).length;
 
   return (
@@ -2705,6 +2668,17 @@ export default function Home() {
               <PanelLeftClose className="w-4 h-4" />
             </button>
           </div>
+
+          <WorkflowSteps
+            step={workflowStep}
+            hasResults={!!statistics}
+            onGo={(n) => {
+              if (n === 1) setPhase2Open(false);
+              if (n === 2) setPhase2Open(true);
+              if (n === 3) setPhase3Open(true);
+              if (n === 4) setAnalyticsExpanded(true);
+            }}
+          />
 
           <div className="p-3.5 space-y-4">
 
@@ -2870,7 +2844,7 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <Satellite className="w-4 h-4 text-[#1A1D23]" />
                   <span className="text-[13px] font-bold text-[#1A1D23] tracking-tight">Satellite Imagery</span>
-                  {tileUrls.trueColor && <span className="text-[9px] px-1.5 py-0.5 bg-[#EAF3EB] text-[#3B7A46] font-mono font-semibold rounded">READY</span>}
+                  {tileUrls.trueColor && <span className="text-[10px] px-1.5 py-0.5 bg-[#F3DFD3] text-[#AD5630] font-medium rounded">Ready</span>}
                 </div>
                 <span className="text-[#69706A]">
                   {phase2Open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -3073,7 +3047,6 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <Network className="w-4 h-4 text-[#1A1D23]" />
                   <span className="text-[13px] font-bold text-[#1A1D23] tracking-tight">Classification</span>
-                  <span className="px-1.5 py-0.2 rounded-full bg-[#EAE7DE] text-[10px] font-mono text-[#69706A] font-semibold">03</span>
                 </div>
                 <span className="text-[#69706A]">
                   {phase3Open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -3329,13 +3302,26 @@ export default function Home() {
                 </button>
                 <div className="text-xs font-bold text-[#1A1D23] flex items-center gap-1.5 mb-1">
                   <span className="w-2 h-2 rounded-full bg-[#D9622B]"></span>
-                  Define Area of Interest
+                  Start with an area
                 </div>
                 <div className="text-xs text-[#69706A] leading-relaxed">
-                  Use the rectangle or polygon tools on the floating toolbar to draw your boundary for satellite ingestion and classification.
+                  Draw a rectangle or polygon with the toolbar, search for a place, or import a boundary file.
                 </div>
+                <button
+                  type="button"
+                  onClick={startExample}
+                  className="mt-2.5 inline-flex items-center gap-1.5 rounded-md bg-[#C96B3C] hover:bg-[#AD5630] text-white px-3 py-1.5 text-xs font-medium transition cursor-pointer"
+                >
+                  Try an example: Lokoja, Nigeria
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             )}
+
+            <ProgressCard
+              job={loadingClassify ? 'classify' : loadingMapId ? 'imagery' : null}
+              sensorLabel={selectedSensor === 'sentinel_2' ? 'Sentinel-2' : 'Landsat 8/9'}
+            />
 
             {/* Unified Neatline Telemetry Footer Bar */}
             <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-[#FAF9F5]/95 backdrop-blur-md border-t border-[#D8D5CA] px-3.5 py-1.5 flex items-center justify-between gap-4 text-xs text-[#69706A] select-none whitespace-nowrap overflow-hidden">
@@ -5033,118 +5019,25 @@ export default function Home() {
         onLoadProject={handleLoadProject}
       />
 
-      {/* Mobile Bottom Navigation Bar (Visible only on < 1024px screens) */}
-      <nav className="mobile-bottom-nav select-none" aria-label="Mobile Navigation">
-        {/* 1. Map Tab */}
-        <button
-          type="button"
-          onClick={() => {
-            setLeftRailCollapsed(true);
-            setRightRailCollapsed(true);
-            setAnalyticsExpanded(false);
-          }}
-          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
-            leftRailCollapsed && rightRailCollapsed && !analyticsExpanded
-              ? 'text-[#D9622B]'
-              : 'text-[#69706A] hover:text-[#1A1D23]'
-          }`}
-        >
-          <div className="relative">
-            <Compass className="w-5 h-5" />
-          </div>
-          <span className={`text-[10px] tracking-tight mt-0.5 ${
-            leftRailCollapsed && rightRailCollapsed && !analyticsExpanded ? 'font-bold' : 'font-medium'
-          }`}>
-            Map
-          </span>
-        </button>
-
-        {/* 2. Workflow Tab */}
-        <button
-          type="button"
-          onClick={() => {
-            const willOpen = leftRailCollapsed;
-            setLeftRailCollapsed(!willOpen);
-            setRightRailCollapsed(true);
-            setAnalyticsExpanded(false);
-          }}
-          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
-            !leftRailCollapsed
-              ? 'text-[#D9622B]'
-              : 'text-[#69706A] hover:text-[#1A1D23]'
-          }`}
-        >
-          <div className="relative">
-            <Target className="w-5 h-5" />
-            {coords.length > 0 && (
-              <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-[#4B8055] ring-2 ring-[#FAF9F5]" />
-            )}
-          </div>
-          <span className={`text-[10px] tracking-tight mt-0.5 ${
-            !leftRailCollapsed ? 'font-bold' : 'font-medium'
-          }`}>
-            Workflow
-          </span>
-        </button>
-
-        {/* 3. Layers Tab */}
-        <button
-          type="button"
-          onClick={() => {
-            const willOpen = rightRailCollapsed;
-            setRightRailCollapsed(!willOpen);
-            setLeftRailCollapsed(true);
-            setAnalyticsExpanded(false);
-          }}
-          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
-            !rightRailCollapsed
-              ? 'text-[#D9622B]'
-              : 'text-[#69706A] hover:text-[#1A1D23]'
-          }`}
-        >
-          <div className="relative">
-            <Layers className="w-5 h-5" />
-            {readyLayersCount > 0 && (
-              <span className="absolute -top-1 -right-2 px-1 text-[8.5px] font-bold rounded-full bg-[#D9622B] text-white">
-                {readyLayersCount}
-              </span>
-            )}
-          </div>
-          <span className={`text-[10px] tracking-tight mt-0.5 ${
-            !rightRailCollapsed ? 'font-bold' : 'font-medium'
-          }`}>
-            Layers
-          </span>
-        </button>
-
-        {/* 4. Analytics Tab */}
-        <button
-          type="button"
-          onClick={() => {
-            const willOpen = !analyticsExpanded;
-            setAnalyticsExpanded(willOpen);
-            setLeftRailCollapsed(true);
-            setRightRailCollapsed(true);
-          }}
-          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
-            analyticsExpanded
-              ? 'text-[#D9622B]'
-              : 'text-[#69706A] hover:text-[#1A1D23]'
-          }`}
-        >
-          <div className="relative">
-            <LayoutGrid className="w-5 h-5" />
-            {statistics && (
-              <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-[#3B7A46] ring-2 ring-[#FAF9F5]" />
-            )}
-          </div>
-          <span className={`text-[10px] tracking-tight mt-0.5 ${
-            analyticsExpanded ? 'font-bold' : 'font-medium'
-          }`}>
-            Analytics
-          </span>
-        </button>
-      </nav>
+      {/* Mobile tab bar (< 1024 px) */}
+      <MobileBottomNav
+        active={
+          analyticsExpanded ? 'analytics' : !rightRailCollapsed ? 'layers' : !leftRailCollapsed ? 'workflow' : 'map'
+        }
+        onSelect={(panel: MobilePanel) => {
+          const isOpen =
+            (panel === 'workflow' && !leftRailCollapsed) ||
+            (panel === 'layers' && !rightRailCollapsed) ||
+            (panel === 'analytics' && analyticsExpanded);
+          const target = isOpen ? 'map' : panel;
+          setLeftRailCollapsed(target !== 'workflow');
+          setRightRailCollapsed(target !== 'layers');
+          setAnalyticsExpanded(target === 'analytics');
+        }}
+        hasArea={coords.length > 0}
+        readyLayersCount={readyLayersCount}
+        hasResults={!!statistics}
+      />
     </div>
   );
 }

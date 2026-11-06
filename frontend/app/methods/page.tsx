@@ -40,14 +40,15 @@ print("Cluster Status:", health["status"])
 # 2. Run Classification with Sentinel-1 SAR Fusion
 payload = {
     "coords": [
-        [-122.35, 37.75],
-        [-122.30, 37.75],
-        [-122.30, 37.80],
-        [-122.35, 37.80],
-        [-122.35, 37.75]
+        # 8 km box over the Niger–Benue confluence, Lokoja (lon, lat)
+        [6.708732, 7.764068],
+        [6.781268, 7.764068],
+        [6.781268, 7.835932],
+        [6.708732, 7.835932],
+        [6.708732, 7.764068]
     ],
-    "start_date": "2024-01-01",
-    "end_date": "2024-12-31",
+    "start_date": "2024-11-01",   # dry season: least cloud over central Nigeria
+    "end_date": "2025-02-28",
     "cloud_cover": 20.0,
     "num_trees": 100,
     "sample_points": 150,
@@ -68,14 +69,14 @@ for class_name, metrics in data["statistics"].items():
   -H "Content-Type: application/json" \\
   -d '{
     "coords": [
-      [-122.35, 37.75],
-      [-122.30, 37.75],
-      [-122.30, 37.80],
-      [-122.35, 37.80],
-      [-122.35, 37.75]
+      [6.708732, 7.764068],
+      [6.781268, 7.764068],
+      [6.781268, 7.835932],
+      [6.708732, 7.835932],
+      [6.708732, 7.764068]
     ],
-    "start_date": "2024-01-01",
-    "end_date": "2024-12-31",
+    "start_date": "2024-11-01",
+    "end_date": "2025-02-28",
     "cloud_cover": 20.0,
     "num_trees": 100,
     "sample_points": 150,

@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Compass, Save, Folder, Maximize2, Minimize2, LayoutGrid, Layers, Share2, Database, CloudSun } from 'lucide-react';
+import React, { useState } from 'react';
+import { Compass, Save, Folder, Maximize2, Minimize2, LayoutGrid, Layers, Share2, Database, CloudSun, Link2, Check } from 'lucide-react';
 import { calculateAOIArea, MAX_AOI_HA } from './utils';
 
 interface TelemetryBarProps {
@@ -155,6 +155,9 @@ export function TelemetryBar({
           </button>
         )}
 
+        {/* Copy a link to this exact view (area + dates live in the URL) */}
+        <CopyLinkButton disabled={coords.length === 0} />
+
         {/* Cloud-Saved Projects & Share Permalink */}
         {onOpenCloudShare && (
           <button 
@@ -236,5 +239,34 @@ export function TelemetryBar({
         </button>
       </div>
     </div>
+  );
+}
+
+function CopyLinkButton({ disabled }: { disabled: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.prompt('Copy this link:', window.location.href);
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      disabled={disabled}
+      className={`px-2 sm:px-2.5 py-1 rounded border transition flex items-center gap-1.5 text-xs font-medium ${
+        disabled
+          ? 'text-[#8A908A] border-[#E5E5E0] cursor-not-allowed opacity-60'
+          : 'bg-[#FAF9F5] text-[#1A1D23] border-[#D8D5CA] hover:bg-[#F4F1E8] cursor-pointer'
+      }`}
+      title={disabled ? 'Draw an area first' : 'Copy a link to this area and date range'}
+    >
+      {copied ? <Check className="w-3.5 h-3.5 text-[#C96B3C]" /> : <Link2 className="w-3.5 h-3.5 text-[#C96B3C]" />}
+      <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy link'}</span>
+    </button>
   );
 }
