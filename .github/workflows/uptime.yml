@@ -17,9 +17,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Website responds
+        # geoclass.nelsonizah.com sits behind Cloudflare bot protection, which answers
+        # CI runners with 403. geoclass.pages.dev serves the identical deployment.
         run: |
           for path in / /app /methods; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://geoclass.nelsonizah.com$path")
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 -A "Mozilla/5.0 (GeoClass uptime check)" "https://geoclass.pages.dev$path")
             echo "$path -> $code"
             [ "$code" = "200" ] || { echo "::error::Website $path returned $code"; exit 1; }
           done
