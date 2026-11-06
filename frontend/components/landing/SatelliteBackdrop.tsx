@@ -19,6 +19,8 @@ type Props = {
   focusX?: number;
   focusY?: number;
   className?: string;
+  /** Below-the-fold mosaics should load lazily so they don't compete with the hero */
+  lazy?: boolean;
 };
 
 const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile';
@@ -32,6 +34,7 @@ export default function SatelliteBackdrop({
   focusX = 0.5,
   focusY = 0.5,
   className = '',
+  lazy = false,
 }: Props) {
   const tiles: { x: number; y: number }[] = [];
   for (let r = 0; r < rows; r++) {
@@ -61,7 +64,8 @@ export default function SatelliteBackdrop({
             src={`${TILE_URL}/${z}/${y}/${x}`}
             alt=""
             draggable={false}
-            loading="eager"
+            loading={lazy ? 'lazy' : 'eager'}
+            fetchPriority={lazy ? 'low' : 'auto'}
             decoding="async"
             className="block max-w-none select-none"
             style={{ width: 'calc(100% + 1px)', height: 'calc(100% + 1px)' }}

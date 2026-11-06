@@ -58,11 +58,11 @@ REDIS_URL=redis://default:password@your-redis-host:6379
 5. Click **Deploy**.
 6. Once deployment finishes, FastAPI Cloud will provide your live API URL:
    ```text
-   https://geoclass-api.fastapicloud.app
+   https://geoclass.fastapicloud.dev
    ```
 7. Verify deployment by opening:
    ```text
-   https://geoclass-api.fastapicloud.app/api/status
+   https://geoclass.fastapicloud.dev/api/status
    ```
    You should see:
    ```json
@@ -89,7 +89,7 @@ The frontend is a Next.js 16 application configured with static HTML export (`ou
    - **Build output directory**: `out`
 4. Set the Environment Variable:
    ```text
-   NEXT_PUBLIC_API_BASE_URL=https://geoclass-api.fastapicloud.app
+   NEXT_PUBLIC_API_BASE_URL=https://geoclass.fastapicloud.dev
    ```
 5. Click **Save and Deploy**.
 
@@ -98,7 +98,7 @@ The frontend is a Next.js 16 application configured with static HTML export (`ou
 2. Select root directory: `frontend`.
 3. Set environment variable:
    ```text
-   NEXT_PUBLIC_API_BASE_URL=https://geoclass-api.fastapicloud.app
+   NEXT_PUBLIC_API_BASE_URL=https://geoclass.fastapicloud.dev
    ```
 4. Deploy.
 

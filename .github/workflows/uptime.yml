@@ -1,0 +1,31 @@
+# Checks every 30 minutes that the site is up and the analysis server can reach
+# Google Earth Engine. A failed run shows a red ✗ in the Actions tab and GitHub
+# emails the repository owner (default notification settings).
+name: Uptime
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Website responds
+        run: |
+          for path in / /app /methods; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://geoclass.nelsonizah.com$path")
+            echo "$path -> $code"
+            [ "$code" = "200" ] || { echo "::error::Website $path returned $code"; exit 1; }
+          done
+
+      - name: Analysis server is online and Earth Engine is connected
+        run: |
+          body=$(curl -s --max-time 30 --retry 2 --retry-delay 10 https://geoclass.fastapicloud.dev/api/status)
+          echo "$body"
+          echo "$body" | grep -q '"gee_connected":true' || { echo "::error::Backend down or Earth Engine not connected"; exit 1; }

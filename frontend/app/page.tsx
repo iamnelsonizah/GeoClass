@@ -2,8 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ArrowUpRight, LogOut } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import SatelliteBackdrop from '@/components/landing/SatelliteBackdrop';
 
 /* ───────────────────────────── Content ───────────────────────────── */
@@ -81,8 +80,6 @@ const EXPORTS = [
 /* ───────────────────────────── Page ───────────────────────────── */
 
 export default function LandingPage() {
-  const { user, isAuthenticated, logout } = useAuth();
-
   return (
     <div className="min-h-screen bg-[#F4F1E8] text-[#1F231E] antialiased selection:bg-[#E8C9A8] selection:text-[#1F231E]">
       {/* ─────────── Hero ─────────── */}
@@ -146,29 +143,24 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="mt-10 sm:mt-14 grid grid-cols-1 lg:grid-cols-[1fr_auto] items-end gap-10">
-            <div className="flex flex-wrap items-center gap-3 order-2 lg:order-1">
+          <div className="mt-10 sm:mt-14 grid grid-cols-1 xl:grid-cols-[auto_1fr] items-end gap-10">
+            <div className="flex flex-wrap items-center gap-3 order-2 xl:order-1">
               <Link
                 href="/app"
-                className="group inline-flex items-center gap-2 rounded-lg bg-[#E9C79F] hover:bg-[#F1D5B4] text-[#1F231E] px-5 py-3 text-[15px] font-medium transition-colors"
+                className="group inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#E9C79F] hover:bg-[#F1D5B4] text-[#1F231E] px-5 py-3 text-[15px] font-medium transition-colors"
               >
                 Open the workspace
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-              {isAuthenticated && (
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="inline-flex items-center gap-1.5 text-[13px] text-white/70 hover:text-white px-2 py-2 cursor-pointer"
-                  title="Sign out"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  {user?.fullName ? `Sign out ${user.fullName.split(' ')[0]}` : 'Sign out'}
-                </button>
-              )}
+              <Link
+                href="/app?example=lokoja"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-white/35 hover:border-white/70 hover:bg-white/5 px-5 py-3 text-[15px] text-white/90 transition-colors"
+              >
+                See it on Lokoja
+              </Link>
             </div>
 
-            <ol className="order-1 lg:order-2 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 lg:max-w-[880px]">
+            <ol className="order-1 xl:order-2 xl:justify-self-end grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 lg:max-w-[880px]">
               {STEPS.map((s) => (
                 <li key={s.n} className="max-w-[260px]">
                   <div className="font-display text-[28px] sm:text-[34px] font-normal tracking-[-0.03em] leading-none">{s.n}</div>
@@ -321,7 +313,7 @@ export default function LandingPage() {
         {/* ─────────── Closing ─────────── */}
         <section className="relative overflow-hidden text-white min-h-[520px] flex items-end">
           {/* Kainji Lake, Niger State — Esri World Imagery */}
-          <SatelliteBackdrop z={11} x0={1046} y0={963} cols={8} rows={5} focusX={0.5} focusY={0.45} />
+          <SatelliteBackdrop z={11} x0={1046} y0={963} cols={8} rows={5} focusX={0.5} focusY={0.45} lazy />
           <div
             className="absolute inset-0 pointer-events-none"
             style={{ background: 'linear-gradient(90deg, rgba(14,18,12,0.82) 0%, rgba(14,18,12,0.35) 60%, rgba(14,18,12,0.15) 100%)' }}
@@ -341,7 +333,7 @@ export default function LandingPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href="/app"
-                  className="group inline-flex items-center gap-2 rounded-lg bg-[#E9C79F] hover:bg-[#F1D5B4] text-[#1F231E] px-5 py-3 text-[15px] font-medium transition-colors"
+                  className="group inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[#E9C79F] hover:bg-[#F1D5B4] text-[#1F231E] px-5 py-3 text-[15px] font-medium transition-colors"
                 >
                   Open the workspace
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />

@@ -1,0 +1,5 @@
+# Sign-in pages were removed (they relied on server routes that can't run on
+# the static export). Send old links to the workspace instead of a 404.
+/login            /app   302
+/signup           /app   302
+/forgot-password  /app   302
