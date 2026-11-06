@@ -1105,23 +1105,33 @@ export default function Home() {
     setSuccessMessage(`${customArea.name} saved to the boundary library.`);
   };
 
-  // Fetch Saved Workspaces from Supabase + LocalStorage
-  const fetchWorkspaces = useCallback(async () => {
+  // Saved workspaces live in this browser's localStorage. (The old /api/workspaces
+  // Next.js route can't run on the static export, so every call to it returned 404.)
+  const WORKSPACES_KEY = 'geoclass_saved_workspaces_v1';
+  const workspacesLoadedRef = useRef(false);
+  const fetchWorkspaces = useCallback(() => {
     try {
-      const res = await fetch(`/api/workspaces?userId=${user?.id || 'guest'}`);
-      const data = await res.json();
-      if (data.success && Array.isArray(data.workspaces)) {
-        setSavedWorkspaces(data.workspaces);
-        localStorage.setItem('geoclass_saved_workspaces_v1', JSON.stringify(data.workspaces));
-      } else {
-        const local = localStorage.getItem('geoclass_saved_workspaces_v1');
-        if (local) setSavedWorkspaces(JSON.parse(local));
+      const local = localStorage.getItem(WORKSPACES_KEY);
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed)) setSavedWorkspaces(parsed);
       }
-    } catch {
-      const local = localStorage.getItem('geoclass_saved_workspaces_v1');
-      if (local) setSavedWorkspaces(JSON.parse(local));
+    } catch (err) {
+      console.warn('Could not read saved workspaces', err);
+    } finally {
+      workspacesLoadedRef.current = true;
     }
-  }, [user?.id]);
+  }, []);
+
+  // Persist every change (save, delete) so nothing is lost on reload.
+  useEffect(() => {
+    if (!workspacesLoadedRef.current) return;
+    try {
+      localStorage.setItem(WORKSPACES_KEY, JSON.stringify(savedWorkspaces));
+    } catch (err) {
+      console.warn('Could not persist saved workspaces', err);
+    }
+  }, [savedWorkspaces]);
 
   useEffect(() => {
     fetchWorkspaces();
@@ -1219,7 +1229,7 @@ export default function Home() {
     }
   }, []);
 
-  // Save current workspace state to Supabase / LocalStorage
+  // Save current workspace state to this browser
   const handleSaveWorkspace = async (customName?: string) => {
     if (coords.length === 0 && !selectedLocation) {
       setErrorMessage("Please select or draw an Area of Interest before saving.");
@@ -1257,26 +1267,9 @@ export default function Home() {
     };
 
     try {
-      const res = await fetch('/api/workspaces', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (data.success && data.workspace) {
-        setSavedWorkspaces(prev => [data.workspace, ...prev.filter(w => w.id !== data.workspace.id)]);
-        setSuccessMessage(`Analysis state "${name}" saved to Supabase!`);
-      } else {
-        const localWs = { ...payload, id: `local-${Date.now()}`, updated_at: new Date().toISOString() };
-        setSavedWorkspaces(prev => [localWs, ...prev]);
-        setSuccessMessage(`Analysis state "${name}" saved to local cache.`);
-      }
-      setSaveModalOpen(false);
-      setNewWorkspaceName('');
-    } catch (err: any) {
       const localWs = { ...payload, id: `local-${Date.now()}`, updated_at: new Date().toISOString() };
       setSavedWorkspaces(prev => [localWs, ...prev]);
-      setSuccessMessage(`Analysis state "${name}" saved to local cache.`);
+      setSuccessMessage(`"${name}" saved in this browser.`);
       setSaveModalOpen(false);
       setNewWorkspaceName('');
     } finally {
@@ -1321,13 +1314,8 @@ export default function Home() {
   // Delete saved workspace
   const handleDeleteWorkspace = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      await fetch(`/api/workspaces?id=${id}`, { method: 'DELETE' });
-      setSavedWorkspaces(prev => prev.filter(w => w.id !== id));
-      setSuccessMessage("Analysis workspace removed.");
-    } catch {
-      setSavedWorkspaces(prev => prev.filter(w => w.id !== id));
-    }
+    setSavedWorkspaces(prev => prev.filter(w => w.id !== id));
+    setSuccessMessage("Saved analysis removed.");
   };
 
   // Handle Smart Select (SAM) Click
@@ -4229,11 +4217,11 @@ export default function Home() {
                       </div>
                       <div className="flex justify-between">
                         <dt className="text-[#69706A]">Active Layers:</dt>
-                        <dd className="text-[#1A1D23] font-mono text-right">{readyLayersCount > 0 ? readyLayersCount : 6} / {layerStack.length} ready</dd>
+                        <dd className="text-[#1A1D23] font-mono text-right">{readyLayersCount} / {layerStack.length} ready</dd>
                       </div>
                       <div className="flex justify-between">
-                        <dt className="text-[#69706A]">Database Storage:</dt>
-                        <dd className="text-[#1A1D23] font-medium text-right">Supabase PostgreSQL</dd>
+                        <dt className="text-[#69706A]">Saved analyses:</dt>
+                        <dd className="text-[#1A1D23] font-medium text-right">This browser</dd>
                       </div>
                       <div className="flex justify-between">
                         <dt className="text-[#69706A]">Export Formats:</dt>
@@ -4306,7 +4294,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-[#69706A] font-semibold">
-                    {readyLayersCount > 0 ? readyLayersCount : 6}/{layerStack.length}
+                    {readyLayersCount}/{layerStack.length}
                   </span>
                   <span className="text-[#69706A]">
                     {phase4Open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -4768,7 +4756,7 @@ export default function Home() {
             </div>
 
             <p className="text-xs text-[#69706A] leading-relaxed">
-              Persist your current study area polygon, classified land-use layers, date filters, sensor configurations, and statistical summary to Supabase for instant retrieval.
+              Saves your study area, layers, dates, sensor settings and statistics in this browser so you can pick up where you left off.
             </p>
 
             <div className="space-y-1.5">
@@ -4905,7 +4893,7 @@ export default function Home() {
             </div>
 
             <div className="border-t border-[#EFECE3] px-4 sm:px-6 py-3 bg-[#FAF9F5] flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#8A908A]">
-              <span>Saved states are stored in Supabase with local redundancy.</span>
+              <span>Saved in this browser only. Use Share to save a copy to the cloud.</span>
               <button
                 type="button"
                 onClick={() => setIsWorkspaceLibraryOpen(false)}

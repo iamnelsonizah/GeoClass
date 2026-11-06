@@ -321,7 +321,7 @@ export default function LandingPage() {
         {/* ─────────── Closing ─────────── */}
         <section className="relative overflow-hidden text-white min-h-[520px] flex items-end">
           {/* Kainji Lake, Niger State — Esri World Imagery */}
-          <SatelliteBackdrop z={11} x0={1046} y0={963} cols={8} rows={5} focusX={0.5} focusY={0.45} />
+          <SatelliteBackdrop z={11} x0={1046} y0={963} cols={8} rows={5} focusX={0.5} focusY={0.45} lazy />
           <div
             className="absolute inset-0 pointer-events-none"
             style={{ background: 'linear-gradient(90deg, rgba(14,18,12,0.82) 0%, rgba(14,18,12,0.35) 60%, rgba(14,18,12,0.15) 100%)' }}

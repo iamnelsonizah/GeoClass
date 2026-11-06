@@ -26,7 +26,7 @@ export function WorkstationHeader({
     <header className="topbar relative bg-[#FAF9F5] border-b border-[#D8D5CA] px-5 py-2.5 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2.5">
-          <Link href="/" className="flex items-center gap-2.5 cursor-pointer group" title="Return to Overview">
+          <Link href="/" prefetch={false} className="flex items-center gap-2.5 cursor-pointer group" title="Return to Overview">
             <svg width="24" height="20" viewBox="0 0 28 22" fill="none" className="flex-shrink-0">
               <path d="M14 2L2 19H26L14 2Z" stroke="#2D4A34" strokeWidth="2.2" strokeLinejoin="round" />
               <path d="M8 14L14 7L20 14" stroke="#2D4A34" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
