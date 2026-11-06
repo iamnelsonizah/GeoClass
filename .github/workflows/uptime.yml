@@ -29,3 +29,15 @@ jobs:
           body=$(curl -s --max-time 30 --retry 2 --retry-delay 10 https://geoclass.fastapicloud.dev/api/status)
           echo "$body"
           echo "$body" | grep -q '"gee_connected":true' || { echo "::error::Backend down or Earth Engine not connected"; exit 1; }
+
+      - name: Map tiles load for the live site
+        # Requests a tiny map and fetches one tile with the site's Referer, exactly as a
+        # browser on geoclass.nelsonizah.com would. Catches API-key referrer restrictions.
+        run: |
+          payload='{"coords":[[6.74,7.79],[6.75,7.79],[6.75,7.80],[6.74,7.80],[6.74,7.79]],"start_date":"2024-11-01","end_date":"2025-02-28","cloud_percentage":20}'
+          url=$(curl -s --max-time 90 -H "Content-Type: application/json" -d "$payload" \
+                https://geoclass.fastapicloud.dev/api/gee/map-id | python3 -c "import sys,json;print(json.load(sys.stdin)['true_color_tile_url'])")
+          tile=$(echo "$url" | sed 's/{z}/12/;s/{x}/2124/;s/{y}/1958/')
+          code=$(curl -s -o /tmp/tile -w "%{http_code}" --max-time 60 -H "Referer: https://geoclass.nelsonizah.com/" "$tile")
+          echo "tile -> $code"
+          [ "$code" = "200" ] || { echo "::error::Earth Engine tile returned $code: $(head -c 300 /tmp/tile)"; exit 1; }

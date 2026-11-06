@@ -1011,6 +1011,9 @@ export default function Home() {
     const box = createBoundingBoxAOI(EXAMPLE_AREA.lat, EXAMPLE_AREA.lng, EXAMPLE_AREA.sizeKm);
     setStartDate(EXAMPLE_AREA.start);
     setEndDate(EXAMPLE_AREA.end);
+    // Random Forest without radar fusion finishes in ~25 s; the deep-learning default takes ~90 s.
+    setModelType('random_forest');
+    setUseSarFusion(false);
     handleAOIDrawn(box);
     setDismissedInvite(true);
     setSuccessMessage(`Example: ${EXAMPLE_AREA.name}, dry season 2024–25. Fetching imagery and classifying…`);
